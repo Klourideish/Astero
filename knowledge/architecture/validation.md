@@ -186,3 +186,40 @@ GUI runtime launch was not repeated; its build and existing tests passed. These 
 checks, not proof of PS5/emulator correctness. No commit, push or M3 work occurred.
 
 See [loader pipeline](loader_pipeline.md) for ownership, exact invariants and deferred design pressure.
+
+## M3 immutable source binding — 2026-09-08
+
+Started from clean main at 19f8e6d. Scope: loader source/inspection/admission/plan contracts, loader tests,
+README/architecture records and active state. No other crate implementation, Cargo manifest, lockfile,
+dependency policy or structural inventory changed. No real file or prototype material was accessed.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 49 passed: 41 executable tests + 8 compile-fail doctests; 0 failed/ignored |
+| python tools/check_policy.py | passed: 15 packages, 6 internal edges, valid active state |
+| python tools/check_structure.py | passed: unchanged 152 module homes |
+| python -m unittest discover -s tools -p "test_*.py" -v | 27 passed: 18 dependency/state + 9 structure |
+| python tools/check_whitespace.py | passed |
+| git diff --check | passed; only Windows line-ending conversion notices |
+
+Preserved: all 16 M2 integration tests and three M2 compile-fail doctests, adapted to actual source
+buffers and nested source errors; all 15 M1 tests remain unchanged. Added: nine source integration tests,
+one isolated identity-exhaustion unit test and five compile-fail doctests. New coverage includes
+shared ownership, source retention after other handles drop, token mismatch, immutable public APIs,
+non-spoofable input identity/length, truncation, exact/empty/overflow boundaries, concurrent identity
+allocation/reads and deterministic plans. A 6,137-case range sweep compares to native slice bounds;
+the retained M2 size sweep covers 1,056 combinations. Sweeps count as one test each, not thousands.
+
+The source object owns private immutable boxed bytes through Arc and IDs cannot wrap. Review confirms
+all admission source ranges use SourceArtifact::checked_range; plans retain a matching source and copy
+tokens, with zero-fill separate. No I/O, parsing, guest application, relocation evaluation, resolution
+or session/runtime mutation occurs. Source creation alone advances a process-local ID counter.
+No dependencies or actual internal edges were added. GUI runtime launch was not repeated.
+
+These checks establish in-memory source-binding contracts, not PS5/emulator correctness, recoverable
+allocator exhaustion, persistent identity or a complete hostile-input resource policy. See
+[source binding](source_binding.md) for those explicit limits. No commit, push or M4 work occurred.

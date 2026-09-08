@@ -20,9 +20,16 @@ recommendation that core own admission. Core owns future composition; its M1 ses
 Inspection, admission and planning are distinct; acceptance implies neither mapping nor execution.
 M2 remains dependency-free and admits only synthetic descriptions. Real ELF/SELF is deferred.
 
-## Recommended bounded M3
+## M3: immutable source binding
 
-Bind synthetic metadata to immutable in-memory source bytes with explicit identity/size guarantees,
-and exercise the same admission/planning contract with adversarial byte-backed fixtures.
-No real ELF/SELF parsing, runtime application or prototype migration is implicitly authorized.
+[Source binding](source_binding.md) replaces caller-supplied identity/length with a shared immutable
+byte owner and generated process-local object identity. No content hashing or dependencies are needed.
+Admission validates source extents against actual bytes; plans retain source handles and checked tokens.
+No filesystem adapter, parsing, session integration or application occurs.
+
+## Recommended bounded M4
+
+Inspect ELF headers/program headers using generated in-memory fixtures and primary format evidence,
+adapting into the existing source-bound inspection/admission contract. Decide supported ELF admission
+explicitly; no SELF, real binaries or runtime application is implicitly authorized. M4 has not begun.
 The separate host Ready versus target-admitted lifecycle decision remains deferred until integration.

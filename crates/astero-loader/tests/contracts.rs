@@ -22,9 +22,9 @@ fn inspection_preserves_observations_without_admitting_them() {
     raw.description.regions[0].alignment = 3;
     let observed = inspect(raw.clone());
     assert_eq!(observed.description(), &raw.description);
-    assert_eq!(observed.identity(), raw.identity);
-    assert_eq!(observed.source_size(), raw.source_size);
-    assert_eq!(observed.source_label(), raw.source_label.as_deref());
+    assert_eq!(observed.identity(), raw.source.identity());
+    assert_eq!(observed.source_size(), raw.source.len());
+    assert_eq!(observed.source_label(), raw.source.provenance());
     assert_eq!(
         admit(&observed),
         Err(Rejection::UnsupportedArchitecture(Architecture::Unknown))
@@ -52,7 +52,7 @@ fn multi_region_plan_preserves_linking_and_mapping_intent() {
     let observed = inspect(input.clone());
     let target = admit(&observed).unwrap();
     let result = plan(&target);
-    assert_eq!(result.metadata().identity, input.identity);
+    assert_eq!(result.metadata().identity, input.source.identity());
     assert_eq!(result.metadata().family, ArtifactFamily::Synthetic);
     assert_eq!(result.metadata().module, input.description.module.unwrap());
     assert_eq!(
@@ -94,7 +94,7 @@ fn multi_region_plan_preserves_linking_and_mapping_intent() {
     assert_eq!(data.alignment, 16);
     let copy = data.copy.as_ref().unwrap();
     assert_eq!(
-        copy.source,
+        copy.source.extent(),
         SourceRange {
             offset: FileOffset(16),
             size: 8
@@ -115,6 +115,7 @@ fn multi_region_plan_preserves_linking_and_mapping_intent() {
     reordered.regions.reverse();
     let mut raw = linked();
     raw.description = reordered;
+    raw.source = observed.source().clone();
     assert_eq!(plan(&admit(&inspect(raw)).unwrap()), result);
 }
 #[test]
@@ -231,13 +232,16 @@ fn sizes_and_source_boundaries_are_checked() {
         }
     );
     let mut raw = executable();
-    raw.source_size = 15;
+    raw.source = SourceArtifact::new(vec![0; 15], None).unwrap();
     assert_eq!(
         reject(raw),
-        Rejection::SourceOutOfBounds {
+        Rejection::SourceRange {
             region: 0,
-            end: 16,
-            source_size: 15
+            error: SourceError::LengthOutOfBounds {
+                offset: 0,
+                length: 16,
+                source_len: 15
+            }
         }
     );
     let mut raw = executable();
@@ -247,10 +251,12 @@ fn sizes_and_source_boundaries_are_checked() {
     };
     assert_eq!(
         reject(raw),
-        Rejection::SourceOutOfBounds {
+        Rejection::SourceRange {
             region: 0,
-            end: 65,
-            source_size: 64
+            error: SourceError::OffsetOutOfBounds {
+                offset: 65,
+                source_len: 64
+            }
         }
     );
 }
@@ -258,20 +264,17 @@ fn sizes_and_source_boundaries_are_checked() {
 fn arithmetic_overflow_is_rejected_before_comparisons() {
     let mut raw = executable();
     raw.description.regions[0].address = VirtualAddress(u64::MAX - 15);
-    assert_eq!(
-        reject(raw),
-        Rejection::RangeOverflow {
-            region: 0,
-            domain: RangeDomain::Virtual
-        }
-    );
+    assert_eq!(reject(raw), Rejection::VirtualRangeOverflow { region: 0 });
     let mut raw = executable();
     raw.description.regions[0].source.offset = FileOffset(u64::MAX);
     assert_eq!(
         reject(raw),
-        Rejection::RangeOverflow {
+        Rejection::SourceRange {
             region: 0,
-            domain: RangeDomain::Source
+            error: SourceError::RangeOverflow {
+                offset: u64::MAX,
+                length: 16
+            }
         }
     );
 }
@@ -480,7 +483,7 @@ fn boundary_sweep_preserves_copy_zero_fill_partition() {
             let result = plan(&result.unwrap());
             let mapping = &result.mappings()[0];
             assert_eq!(
-                mapping.copy.as_ref().map_or(0, |c| c.source.size),
+                mapping.copy.as_ref().map_or(0, |c| c.source.extent().size),
                 file_size
             );
             assert_eq!(

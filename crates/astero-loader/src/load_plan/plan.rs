@@ -1,10 +1,11 @@
 use crate::{
     admission::{TargetMetadata, ValidatedTarget},
-    metadata::{AddressRange, Permissions, SourceRange, VirtualAddress},
+    artifact::{BoundSourceRange, SourceArtifact},
+    metadata::{AddressRange, Permissions, VirtualAddress},
 };
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CopyIntent {
-    pub source: SourceRange,
+    pub source: BoundSourceRange,
     pub destination: VirtualAddress,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -15,17 +16,21 @@ pub struct MappingIntent {
     pub copy: Option<CopyIntent>,
     pub zero_fill: Option<AddressRange>,
 }
-/// Immutable work description; contains neither handles nor executable callbacks.
+/// Immutable work description; contains neither runtime handles nor executable callbacks.
 /// ```compile_fail
 /// use astero_loader::load_plan::LoadPlan;
 /// fn alter(plan: &mut LoadPlan) { plan.mappings()[0].alignment = 0; }
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LoadPlan {
+    source: SourceArtifact,
     metadata: TargetMetadata,
     mappings: Vec<MappingIntent>,
 }
 impl LoadPlan {
+    pub fn source(&self) -> &SourceArtifact {
+        &self.source
+    }
     pub fn metadata(&self) -> &TargetMetadata {
         &self.metadata
     }
@@ -40,7 +45,7 @@ pub fn plan(target: &ValidatedTarget) -> LoadPlan {
         .regions()
         .iter()
         .map(|region| {
-            let copied = region.source.size;
+            let copied = region.source.extent().size;
             MappingIntent {
                 range: region.range,
                 alignment: region.alignment,
@@ -58,6 +63,7 @@ pub fn plan(target: &ValidatedTarget) -> LoadPlan {
         })
         .collect();
     LoadPlan {
+        source: target.source().clone(),
         metadata: target.metadata().clone(),
         mappings,
     }

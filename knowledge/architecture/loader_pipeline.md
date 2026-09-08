@@ -1,6 +1,6 @@
-# M2: synthetic inspection, admission and load plans
+# Loader inspection, admission and load plans (M2/M3)
 
-InputArtifact -> inspect -> InspectedArtifact -> admit -> ValidatedTarget -> plan -> LoadPlan.
+SourceArtifact -> InputArtifact -> inspect -> InspectedArtifact -> admit -> ValidatedTarget -> plan -> LoadPlan.
 Application to memory/runtime is future work. Admission success means a supported description of
 synthetic work, never permission or ability to execute guest code.
 
@@ -10,7 +10,8 @@ synthetic work, never permission or ability to execute guest code.
 the old M1 recommendation that core own admission. Core remains session composition and is not
 changed or connected to the loader in M2. Neither runtime services nor frontends are changed.
 
-- artifact/inspection.rs: synthetic input, classification, immutable inspected view.
+- artifact/source.rs: immutable source ownership, generated identity and checked bound ranges.
+- artifact/inspection.rs: source-bound synthetic input, classification, immutable inspected view.
 - metadata/regions.rs: loader-local address, source-range, permission and region intent.
 - modules/identity.rs: synthetic module identity/metadata and observed/admitted roles.
 - dependencies/requirement.rs, imports/symbol.rs, exports/symbol.rs, relocations/work.rs:
@@ -27,15 +28,15 @@ a mapped-memory capability or justification for trivial-type reuse dependencies.
 
 > A target being syntactically inspectable does not mean Astero accepts it for loading or execution.
 
-InputArtifact is an explicitly synthetic metadata envelope: identity, declared source size, optional
-source label and ArtifactDescription. inspect preserves that supplied information, including invalid
-ranges and unsupported classifications. It opens no file, reads no byte, detects no format and cannot
-verify the truth of the supplied observations. There is no synthetic byte parser hidden in this API.
+InputArtifact contains a required immutable SourceArtifact and synthetic ArtifactDescription.
+inspect preserves supplied metadata, including unsupported classifications; it performs no parsing.
+Identity, actual source length and provenance come only from the source. M3 intentionally removes
+M2's caller-assigned ArtifactId and declared size fields; there is no unbound compatibility path.
+See [immutable source binding](source_binding.md) for ownership, checked reads and error semantics.
 
-ArtifactId is a caller-assigned u128 identity for an artifact version, stable across inspection,
-admission and planning. It is not a generated ID, content hash, authenticity claim or global uniqueness
-check. ModuleId identifies a module within the caller's synthetic dependency graph; it is not a kernel
-handle. Labels and module/symbol names are text; bounded classification and failure categories are enums.
+SourceId identifies one immutable process-local source object; it is not a hash or persistent identity.
+ModuleId identifies a module within the caller's synthetic dependency graph; it is not a kernel handle.
+Labels and module/symbol names are text; bounded classifications and failure categories are enums.
 No PS5 identifiers, page sizes, relocation numbers or firmware constants are invented.
 
 Observed families are Synthetic, Elf, SelfFormat and Unknown; architectures are X86_64, Aarch64 and
@@ -59,7 +60,7 @@ The caller retains the inspected artifact identity alongside a structured reject
 | Explicit requirements | UnsupportedRequirement for TLS, initializer callbacks or dynamic placement; never silently dropped |
 | Required metadata | MissingMetadata identifies module metadata, nonblank module name or nonempty regions |
 | Region sizes | EmptyRegion; InvalidSize when source size exceeds memory size |
-| Extents | RangeOverflow identifies virtual/source domain; SourceOutOfBounds reports end and declared source size |
+| Extents | VirtualRangeOverflow identifies the region; SourceRange nests a SourceError for overflow, invalid offset or excessive length against actual bytes |
 | Alignment | InvalidAlignment for zero/non-power-of-two alignment or a misaligned requested address |
 | Overlap | OverlappingRegions identifies both original indices; even identical virtual overlaps are rejected conservatively |
 | Entry | InvalidEntryPoint retains optional address; executable requires an entry, module may omit it; any entry must be within source-backed executable bytes |
@@ -68,7 +69,7 @@ The caller retains the inspected artifact identity alongside a structured reject
 
 Adjacent virtual regions are valid. Source extents may overlap (shared input bytes); source offsets
 need not be aligned. This is intentionally not ELF congruence or host-page mapping policy. Empty source
-extents are allowed, including offset at declared EOF, and produce pure zero fill. Virtual/source end
+extents are allowed, including offset at actual EOF, and produce pure zero fill. Virtual/source end
 overflow is rejected, including an otherwise tempting extent ending at 2^64.
 
 Dependencies are unique and cannot refer to the current module. Imports require a nonblank symbol,
@@ -94,16 +95,17 @@ shared references/slices. TargetRole excludes Unknown and all values held in a v
 passed admission. Detached metadata/region copies can be edited but cannot mint admission authority.
 
 Only plan(&ValidatedTarget) constructs LoadPlan. It clones the admitted metadata and emits mappings
-with requested range, alignment and permissions. An initialized prefix has a CopyIntent from its source
-range to mapping start. A remaining tail has an explicit zero-fill AddressRange; zero-length operations
+with requested range, alignment and permissions. An initialized prefix has a CopyIntent from its
+validated source-identity/range token to mapping start; the plan retains one shared immutable source. A remaining tail has an explicit zero-fill AddressRange; zero-length operations
 are omitted. Admission proofs make range arithmetic infallible. Metadata retains identity, family,
 architecture, role, module, source provenance/size, entry, dependencies, imports, exports and relocations.
 Descriptor order is preserved because relocation import indices refer to that order. No initializer
 order exists: inputs declaring initialization callbacks are rejected instead.
 
-Repeated input yields equal plans; region permutations yield the same canonical mappings. No runtime
-handles, callbacks, global registries or mutable shared state enter these contracts. Planning allocates
-ordinary host-owned result vectors only. Tests compare observations and targets before/after repeated
+Repeated planning of the same bound source/input yields equal plans; region permutations yield the
+same canonical mappings. A reconstructed source has a new identity. No runtime handles or callbacks
+enter these contracts. Source creation alone advances a private identity counter; inspection, admission
+and planning do not. Planning allocates ordinary host-owned result vectors and clones source handles only. Tests compare observations and targets before/after repeated
 planning; dependency policy and direct source review establish that no session/runtime interface or I/O
 is involved. This is not a memory application, import resolver or relocation executor.
 
@@ -115,14 +117,10 @@ family, metadata consistency, canonical planning, copy/BSS intent and a 1,056-ca
 Compile-fail doctests cover private target construction and immutable target/plan views. See
 [validation](validation.md) for exact executed counts; synthetic tests establish no emulator correctness.
 
-Before real input is applied, source identity must be bound to immutable bytes or independently verified
-content and size. M2's caller-supplied identity/extent is insufficient to authenticate future I/O. Before
-large hostile inputs, define input limits and replace quadratic overlap checks if warranted. Accepted
-permission combinations are descriptions, not host protection guarantees. Cross-module linking, richer
-symbol/relocation vocabulary, relocation evaluation and dynamic placement require separate contracts.
+M3 closes the declared-size/identity trust gap with immutable source ownership. Future work still needs
+resource limits and potentially faster overlap checks for large hostile metadata. Accepted permission
+combinations are descriptions, not host protection guarantees. Cross-module linking, richer symbol/
+relocation vocabulary, relocation evaluation and dynamic placement require separate contracts.
 Networking, platform/input, video decoding, playback, compatibility, firmware runtime interfaces,
-caches and global configuration remain untouched decision gates.
-
-Recommended M3: a bounded synthetic byte-backed inspection adapter and source-identity/bounds contract,
-with adversarial in-memory fixtures feeding the same admission/planning APIs. No real ELF/SELF parsing
-or guest application should begin implicitly; select that next scope explicitly.
+caches and global configuration remain untouched decision gates. See [source binding](source_binding.md)
+for remaining lifetime, persistent-identity and byte-acquisition design pressure and recommended M4.

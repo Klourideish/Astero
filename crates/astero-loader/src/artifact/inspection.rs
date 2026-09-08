@@ -1,3 +1,4 @@
+use super::{SourceArtifact, SourceId};
 use crate::{
     dependencies::Dependency,
     exports::Export,
@@ -6,9 +7,6 @@ use crate::{
     modules::{ArtifactRole, ModuleMetadata},
     relocations::Relocation,
 };
-/// Stable caller-assigned identity of a synthetic artifact version. Not a content hash.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ArtifactId(pub u128);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ArtifactFamily {
     Synthetic,
@@ -43,12 +41,18 @@ pub struct ArtifactDescription {
     pub relocations: Vec<Relocation>,
     pub requirements: Vec<DeferredRequirement>,
 }
-/// Metadata-only synthetic input. No files are opened and no bytes are parsed.
+/// Synthetic observations must carry an actual immutable source. No bytes are parsed.
+/// ```compile_fail
+/// use astero_loader::artifact::InputArtifact;
+/// fn spoof(input: &mut InputArtifact) { input.source_size = 0x5000; }
+/// ```
+/// ```compile_fail
+/// use astero_loader::artifact::{InputArtifact, SourceId};
+/// fn spoof(input: &mut InputArtifact, identity: SourceId) { input.identity = identity; }
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InputArtifact {
-    pub identity: ArtifactId,
-    pub source_size: u64,
-    pub source_label: Option<String>,
+    pub source: SourceArtifact,
     pub description: ArtifactDescription,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -56,14 +60,17 @@ pub struct InspectedArtifact {
     input: InputArtifact,
 }
 impl InspectedArtifact {
-    pub fn identity(&self) -> ArtifactId {
-        self.input.identity
+    pub fn identity(&self) -> SourceId {
+        self.input.source.identity()
     }
     pub fn source_size(&self) -> u64 {
-        self.input.source_size
+        self.input.source.len()
     }
     pub fn source_label(&self) -> Option<&str> {
-        self.input.source_label.as_deref()
+        self.input.source.provenance()
+    }
+    pub fn source(&self) -> &SourceArtifact {
+        &self.input.source
     }
     pub fn description(&self) -> &ArtifactDescription {
         &self.input.description

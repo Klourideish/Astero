@@ -1,16 +1,16 @@
 use crate::{
-    artifact::{Architecture, ArtifactFamily, ArtifactId},
+    artifact::{Architecture, ArtifactFamily, BoundSourceRange, SourceArtifact, SourceId},
     dependencies::Dependency,
     exports::Export,
     imports::Import,
-    metadata::{AddressRange, Permissions, SourceRange, VirtualAddress},
+    metadata::{AddressRange, Permissions, VirtualAddress},
     modules::{ModuleMetadata, TargetRole},
     relocations::Relocation,
 };
 /// Normalized, format-independent facts. Public detached values do not grant admission authority.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TargetMetadata {
-    pub identity: ArtifactId,
+    pub identity: SourceId,
     pub family: ArtifactFamily,
     pub source_size: u64,
     pub source_label: Option<String>,
@@ -26,7 +26,7 @@ pub struct TargetMetadata {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ValidatedRegion {
     pub range: AddressRange,
-    pub source: SourceRange,
+    pub source: BoundSourceRange,
     pub alignment: u64,
     pub permissions: Permissions,
 }
@@ -37,14 +37,18 @@ pub struct ValidatedRegion {
 /// ```
 /// ```compile_fail
 /// use astero_loader::admission::ValidatedTarget;
-/// let forged = ValidatedTarget { metadata: unreachable!(), regions: Vec::new() };
+/// let forged = ValidatedTarget { source: unreachable!(), metadata: unreachable!(), regions: Vec::new() };
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ValidatedTarget {
+    pub(super) source: SourceArtifact,
     pub(super) metadata: TargetMetadata,
     pub(super) regions: Vec<ValidatedRegion>,
 }
 impl ValidatedTarget {
+    pub fn source(&self) -> &SourceArtifact {
+        &self.source
+    }
     pub fn metadata(&self) -> &TargetMetadata {
         &self.metadata
     }

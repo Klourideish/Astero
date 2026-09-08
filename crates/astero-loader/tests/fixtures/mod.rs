@@ -9,9 +9,8 @@ use astero_loader::{
 };
 pub fn executable() -> InputArtifact {
     InputArtifact {
-        identity: ArtifactId(42),
-        source_size: 64,
-        source_label: Some("synthetic executable v1".into()),
+        source: SourceArtifact::new((0..64).collect(), Some("synthetic executable v1".into()))
+            .unwrap(),
         description: ArtifactDescription {
             family: ArtifactFamily::Synthetic,
             architecture: Architecture::X86_64,

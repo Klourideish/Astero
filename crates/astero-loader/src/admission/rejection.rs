@@ -1,12 +1,7 @@
 use crate::{
-    artifact::{Architecture, ArtifactFamily, DeferredRequirement},
+    artifact::{Architecture, ArtifactFamily, DeferredRequirement, SourceError},
     modules::ArtifactRole,
 };
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum RangeDomain {
-    Virtual,
-    Source,
-}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MetadataField {
     Module,
@@ -45,19 +40,17 @@ pub enum Rejection {
     EmptyRegion {
         region: usize,
     },
-    RangeOverflow {
+    VirtualRangeOverflow {
         region: usize,
-        domain: RangeDomain,
     },
     InvalidSize {
         region: usize,
         file_size: u64,
         memory_size: u64,
     },
-    SourceOutOfBounds {
+    SourceRange {
         region: usize,
-        end: u64,
-        source_size: u64,
+        error: SourceError,
     },
     InvalidAlignment {
         region: usize,
@@ -85,4 +78,11 @@ impl std::fmt::Display for Rejection {
         write!(f, "target admission rejected: {self:?}")
     }
 }
-impl std::error::Error for Rejection {}
+impl std::error::Error for Rejection {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::SourceRange { error, .. } => Some(error),
+            _ => None,
+        }
+    }
+}

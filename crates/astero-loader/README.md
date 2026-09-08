@@ -5,6 +5,9 @@ Binary parsing, load plans, relocations and import metadata.
 ## Interfaces and status
 
 M2 implements synthetic metadata inspection, explicit admission and immutable load planning.
+M3 requires immutable source bytes via artifact::SourceArtifact; identity and length are source-owned.
+Copy work retains validated source-identity/range tokens and the plan retains the source lifetime.
+See [source binding](../../knowledge/architecture/source_binding.md).
 Use artifact::inspect, admission::admit and load_plan::plan in order.
 Only synthetic x86-64 executable/module descriptions are admitted; no bytes are parsed or applied.
 See the [loader pipeline](../../knowledge/architecture/loader_pipeline.md) for invariants, errors and limits.
@@ -19,7 +22,7 @@ Implementation lives in focused child files; module roots only declare/re-export
 
 Forbidden: Executing guest code or owning session lifecycle.
 
-M2 is dependency-free, enforced by repository policy. Run `cargo test -p astero-loader`
+The loader is dependency-free, enforced by repository policy. Run `cargo test -p astero-loader`
 for synthetic invariant tests and immutable-boundary compile-fail doctests.
 See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),

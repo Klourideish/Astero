@@ -1,6 +1,6 @@
 use super::{
-    DescriptorKind, MetadataField, MetadataProblem, RangeDomain, Rejection, TargetMetadata,
-    ValidatedRegion, ValidatedTarget,
+    DescriptorKind, MetadataField, MetadataProblem, Rejection, TargetMetadata, ValidatedRegion,
+    ValidatedTarget,
 };
 use crate::{
     artifact::{Architecture, ArtifactFamily, InspectedArtifact},
@@ -54,26 +54,11 @@ pub fn admit(inspected: &InspectedArtifact) -> Result<ValidatedTarget, Rejection
         r.address
             .0
             .checked_add(r.memory_size)
-            .ok_or(Rejection::RangeOverflow {
-                region: i,
-                domain: RangeDomain::Virtual,
-            })?;
-        let source_end =
-            r.source
-                .offset
-                .0
-                .checked_add(r.source.size)
-                .ok_or(Rejection::RangeOverflow {
-                    region: i,
-                    domain: RangeDomain::Source,
-                })?;
-        if source_end > inspected.source_size() {
-            return Err(Rejection::SourceOutOfBounds {
-                region: i,
-                end: source_end,
-                source_size: inspected.source_size(),
-            });
-        }
+            .ok_or(Rejection::VirtualRangeOverflow { region: i })?;
+        let source = inspected
+            .source()
+            .checked_range(r.source.offset.0, r.source.size)
+            .map_err(|error| Rejection::SourceRange { region: i, error })?;
         if !r.alignment.is_power_of_two() || !r.address.0.is_multiple_of(r.alignment) {
             return Err(Rejection::InvalidAlignment {
                 region: i,
@@ -96,7 +81,7 @@ pub fn admit(inspected: &InspectedArtifact) -> Result<ValidatedTarget, Rejection
                 start: r.address,
                 size: r.memory_size,
             },
-            source: r.source,
+            source,
             alignment: r.alignment,
             permissions: r.permissions,
         });
@@ -230,6 +215,7 @@ pub fn admit(inspected: &InspectedArtifact) -> Result<ValidatedTarget, Rejection
     }
     regions.sort_by_key(|r| r.range.start);
     Ok(ValidatedTarget {
+        source: inspected.source().clone(),
         metadata: TargetMetadata {
             identity: inspected.identity(),
             family: d.family,
