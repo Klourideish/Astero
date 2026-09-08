@@ -223,3 +223,54 @@ No dependencies or actual internal edges were added. GUI runtime launch was not 
 These checks establish in-memory source-binding contracts, not PS5/emulator correctness, recoverable
 allocator exhaustion, persistent identity or a complete hostile-input resource policy. See
 [source binding](source_binding.md) for those explicit limits. No commit, push or M4 work occurred.
+
+## Indexing foundation before M4 — 2026-09-08
+
+Started from clean main at a28b04c with M3 already committed/cleaned up. Changes are limited to indexing
+and policy tooling, generated knowledge/indexes, repository navigation instructions and active state.
+No crate Rust source, Cargo manifest, lockfile, dependency policy or module-home inventory changed.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 49 passed: 41 executable tests + 8 compile-fail doctests; 0 failed/ignored |
+| python tools/generate_indexes.py --check | passed; all generated indexes current |
+| python tools/check_policy.py | passed: index freshness, 15 crates, 6 internal edges, valid active state |
+| python tools/check_structure.py | passed: 152 declared homes |
+| python -m unittest discover -s tools -p "test_*.py" -v | 47 passed: 27 existing policy/structure + 20 new index/extraction tests |
+| python tools/check_whitespace.py | passed |
+| git diff --check | passed |
+
+Two consecutive generator executions produced byte-identical output across all 16 generated files
+(eight data JSON files, seven Markdown views and INDEX_SCHEMA.json). Aggregate SHA-256, calculated
+from sorted filename + NUL + raw file bytes:
+4b345d6395b9c4fba8237a9181adf289f8dfd2e58d3da1dd40404fe07db10ece.
+README.md is the maintained indexing contract and is not a generated output.
+
+Record counts: implementation 141; subsystems 113; modules 215; NIDs 0; ABI 0; diagnostics 5;
+tests 96 (49 Rust declarations/doctests + 47 Python unittest declarations); sources 212 (204 Rust +
+8 Python tools). All 152 required homes are represented. Current sources produce zero unsupported or
+unlinked extraction notes. Implementation statuses are 135 implemented, 2 scaffolded method declarations,
+3 tested and 1 runtime_validated. The four promotions come from explicitly scoped, fingerprint-pinned
+M1/M3 evidence, not from indexing or the existence of tests. No GUI runtime launch occurred in this pass.
+
+Search checks: BoundSourceRange/checked_range returns four implementation Markdown rows; the artifact
+subsystem query returns 32 implementation records; implemented returns 135 records. The NID field query
+returns zero matches (expected rg exit 1). The documented PowerShell JSON filter resolves checked_range.
+jq examples are documented as optional and were not executed. Passing results above are separate from
+TEST_INDEX's declaration inventory and do not establish guest correctness.
+
+Index tests cover deterministic output, source movement with stable symbol IDs, stale content/hashes,
+paths/ranges, empty homes, duplicate IDs, statuses, source ownership, missing homes, line endings,
+unlinked sources, zero semantic categories, stale reviews, read-only generated locations, repository
+freshness, comments/literals, impl/trait/inline modules, opaque macros, unsupported path overrides and
+doctest fences. An initial CRLF test fixture accidentally doubled existing CR characters; it was corrected
+and all 20 index tests and the combined 47-test suite passed. Initial diagnostic links also exposed a
+duplicate related-test list; generation now deduplicates those relations before validation.
+
+No dependencies were added. No external catalogue/NID/ABI data, emulator functionality, real binary
+parsing, migration, guest execution, commit, push or M4 work was introduced. See
+[index contract and limits](../indexes/README.md).

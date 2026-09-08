@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "test_links": [
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::source::impl[SourceArtifact]::checked_range",
+      "tests": [
+        "test:astero-loader/test:source_binding/bounded_range_sweep_matches_native_slice_bounds",
+        "test:astero-loader/test:source_binding/range_errors_preserve_overflow_offset_and_extent_distinctions"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::source::impl[SourceArtifact]::read",
+      "tests": [
+        "test:astero-loader/test:source_binding/checked_tokens_cannot_be_rebound_to_identical_or_larger_sources",
+        "test:astero-loader/test:source_binding/plans_retain_source_lifetime_and_never_copy_zero_fill_from_input"
+      ]
+    },
+    {
+      "implementation": "impl:astero-debug/lib:astero_debug/session::inspection::inspect_session",
+      "tests": [
+        "test:astero-debug/test:unsupported/inspection_uses_the_common_snapshot",
+        "test:astero-debug/test:unsupported/inspection_rejects_closed_session"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/session::observation::snapshot::SessionSnapshot",
+      "tests": [
+        "test:astero-core/test:session/detached_snapshot_mutation_cannot_change_session",
+        "test:astero-core/test:session/observation_is_coherent_across_threads"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/session::observation::snapshot::Diagnostic",
+      "tests": [
+        "test:astero-core/test:session/host_fault_has_provenance_and_no_guest_execution"
+      ]
+    },
+    {
+      "implementation": "impl:astero-debug/lib:astero_debug/session::capabilities::INVENTORY",
+      "tests": [
+        "test:astero-debug/test:unsupported/all_guest_capabilities_remain_explicitly_unsupported"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/render",
+      "tests": [
+        "test:astero-cli/test:presentation/presentation_tracks_common_state_and_all_capabilities"
+      ]
+    },
+    {
+      "implementation": "impl:astero-gui/lib:astero_gui/model::session_view::impl[SessionView]::inspect",
+      "tests": [
+        "test:astero-gui/test:view_model/gui_reads_the_same_report_as_debugger_and_observer"
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::source::impl[SourceArtifact]::checked_range",
+      "symbol_hash": "f1b8c09fc96ed834738ebc04e8c689b2ca1742d7e798a058a175b252827be490",
+      "source_fingerprints": {
+        "crates/astero-loader/src/artifact/source.rs": "d333caa345d0b8f29446c0f24230b0fd71de8ad43bec4a6253ed112d3bad9b1e",
+        "crates/astero-loader/tests/source_binding.rs": "65ae9e36ed87f17df7d4febb8eb92a22c6b1cc458f3ac46414221cb1c5affd73"
+      },
+      "status": "tested",
+      "evidence": [
+        "knowledge/architecture/validation.md"
+      ],
+      "scope": "Named contract tests executed in M3; source-bound behavior only, not guest correctness."
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::source::impl[SourceArtifact]::read",
+      "symbol_hash": "c32166c7bb9b026a6ced7b1d299c5b2aba3e15a1a55a7e5e6d1fc39affdabe54",
+      "source_fingerprints": {
+        "crates/astero-loader/src/artifact/source.rs": "d333caa345d0b8f29446c0f24230b0fd71de8ad43bec4a6253ed112d3bad9b1e",
+        "crates/astero-loader/tests/source_binding.rs": "65ae9e36ed87f17df7d4febb8eb92a22c6b1cc458f3ac46414221cb1c5affd73"
+      },
+      "status": "tested",
+      "evidence": [
+        "knowledge/architecture/validation.md"
+      ],
+      "scope": "Named contract tests executed in M3; source-bound behavior only, not guest correctness."
+    },
+    {
+      "implementation": "impl:astero-debug/lib:astero_debug/session::inspection::inspect_session",
+      "symbol_hash": "88f6909ca36b2253ba5353ed1649444c06e2692d708466858a7a8369ea671f0f",
+      "source_fingerprints": {
+        "crates/astero-core/src/session/lifecycle/state.rs": "ed0f3cffed58d547430bda95a95e1b0c95c63a00aed6c43d6e92d9039b3e37cb",
+        "crates/astero-core/src/session/observation/snapshot.rs": "a9c2e5f5989e2c7f0acb482aa52a1c8b64d92880dadb6f6bac936504a6be8bcc",
+        "crates/astero-core/src/session/owner.rs": "a24b94223191255f1b89029cf77ed1f89748c9e2066dd8baf949d34264a474cb",
+        "crates/astero-core/src/session/statistics/counters.rs": "8ce8350b8e1f474c6905c7056278c3b350e7d36e6c70b73b76abc83e670e1cd7",
+        "crates/astero-debug/src/session/inspection.rs": "b1442795341295f86f6276f81d44aee7971bc2c11420c393fd852ea110d9e09a",
+        "crates/astero-debug/tests/unsupported.rs": "4a05fcb95246e7aa4216c469326f3df58ecf867428a3d5de092107feb33ffa51"
+      },
+      "status": "tested",
+      "evidence": [
+        "knowledge/architecture/validation.md"
+      ],
+      "scope": "Named contract tests executed in M3; source-bound behavior only, not guest correctness."
+    },
+    {
+      "implementation": "impl:astero-gui/lib:astero_gui/window::events::run",
+      "symbol_hash": "07d0f1c91d574771d1bad66a9966c75381811a3ebb6a3cdefac1a173cba63d5d",
+      "source_fingerprints": {
+        "crates/astero-core/src/session/lifecycle/state.rs": "ed0f3cffed58d547430bda95a95e1b0c95c63a00aed6c43d6e92d9039b3e37cb",
+        "crates/astero-core/src/session/observation/snapshot.rs": "a9c2e5f5989e2c7f0acb482aa52a1c8b64d92880dadb6f6bac936504a6be8bcc",
+        "crates/astero-core/src/session/owner.rs": "a24b94223191255f1b89029cf77ed1f89748c9e2066dd8baf949d34264a474cb",
+        "crates/astero-core/src/session/statistics/counters.rs": "8ce8350b8e1f474c6905c7056278c3b350e7d36e6c70b73b76abc83e670e1cd7",
+        "crates/astero-debug/src/session/capabilities.rs": "9a88f509e995eb75e66d874c5eef97842b7ca2d709ca35a57493069450364ec7",
+        "crates/astero-debug/src/session/control.rs": "f565b1c5d254d11c33ee7dcdd3d34dcc548088315363d531bb465b2dc146b81c",
+        "crates/astero-debug/src/session/inspection.rs": "b1442795341295f86f6276f81d44aee7971bc2c11420c393fd852ea110d9e09a",
+        "crates/astero-gui/src/main.rs": "95c169254e2ee5a1b9697dd37c550a7abdd0e7d9d3beb57401b966ae662ec70d",
+        "crates/astero-gui/src/model/session_view.rs": "bc7401aa00792551cd134fc56e60a5b70cdb05e145eee5418d11f5ed7c88fee9",
+        "crates/astero-gui/src/renderer/vulkan/context.rs": "d987913581ff18c74f80951b0bdf28ff2e9bd07001481aeb1be096505dd57657",
+        "crates/astero-gui/src/renderer/vulkan/mod.rs": "895c5552d252d4d15e5954a876a5eaf62da8cb9a2a4d076e6f6ff352311b211e",
+        "crates/astero-gui/src/renderer/vulkan/rendering.rs": "03046ca612b973a70126ed74d916d1f771d3cbab0026efbe42037739c12489b9",
+        "crates/astero-gui/src/renderer/vulkan/swapchain.rs": "5153369baf9e132bc507b5db1d008cd722ca8febea54c42ef3f853e825865fc2",
+        "crates/astero-gui/src/ui/toolkit.rs": "ce2816fd13ecdc7792dbf12bc57c3a2afd7dc470f2f42d5f196dac98f3fe9a86",
+        "crates/astero-gui/src/window/events.rs": "914a8ebaa1ec1096d51c313991b3fe58fab3ddfad93c01f2398c5d52a11cfc57"
+      },
+      "status": "runtime_validated",
+      "evidence": [
+        "knowledge/architecture/validation.md"
+      ],
+      "scope": "M1 Windows RTX 4070 GUI initialization, visible session, input, resize and clean shutdown; not guest correctness."
+    }
+  ],
+  "diagnostics": [
+    {
+      "id": "diagnostic:session.snapshot",
+      "implementation": "impl:astero-core/lib:astero_core/session::observation::snapshot::SessionSnapshot",
+      "consumers": [
+        "impl:astero-debug/lib:astero_debug/session::inspection::inspect_session"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/render",
+        "impl:astero-gui/lib:astero_gui/ui::toolkit::impl[Toolkit]::prepare"
+      ],
+      "description": "Host session snapshot consumed through debugger inspection; no guest snapshot.",
+      "evidence": [
+        "knowledge/architecture/session_observation.md"
+      ]
+    },
+    {
+      "id": "diagnostic:session.host",
+      "implementation": "impl:astero-core/lib:astero_core/session::observation::snapshot::Diagnostic",
+      "consumers": [
+        "impl:astero-debug/lib:astero_debug/session::inspection::inspect_session"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/render",
+        "impl:astero-gui/lib:astero_gui/ui::toolkit::impl[Toolkit]::prepare"
+      ],
+      "description": "NoGuestLoaded and HostFault carried within SessionSnapshot; not guest exception capture.",
+      "evidence": [
+        "knowledge/architecture/session_observation.md"
+      ]
+    },
+    {
+      "id": "diagnostic:debug.capabilities",
+      "implementation": "impl:astero-debug/lib:astero_debug/session::capabilities::INVENTORY",
+      "consumers": [
+        "impl:astero-debug/lib:astero_debug/session::inspection::inspect_session"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/render",
+        "impl:astero-gui/lib:astero_gui/ui::toolkit::impl[Toolkit]::prepare"
+      ],
+      "description": "Explicit supported/unsupported capability inventory; not implemented guest debugger operations.",
+      "evidence": [
+        "knowledge/architecture/debugger_capabilities.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.admission",
+      "implementation": "impl:astero-loader/lib:astero_loader/admission::rejection::Rejection",
+      "consumers": [],
+      "surfaces": [],
+      "description": "Structured admission rejection contract; frontend presentation not connected.",
+      "evidence": [
+        "knowledge/architecture/loader_pipeline.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.source",
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::source::SourceError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/admission::validation::admit"
+      ],
+      "surfaces": [],
+      "description": "Checked-source errors nested by admission; frontend presentation deferred.",
+      "evidence": [
+        "knowledge/architecture/source_binding.md"
+      ]
+    }
+  ],
+  "nids": [],
+  "abi": []
+}

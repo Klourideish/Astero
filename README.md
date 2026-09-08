@@ -12,6 +12,7 @@ No emulator implementation has been migrated. There is no guest loading, executi
 Core owns session state; presentation holds read-only handles. Ready means host initialization,
 not guest readiness. Guest debugger features remain explicitly unsupported.
 
+Use [generated navigation](knowledge/indexes/README.md) to locate subsystem owners, source symbols and tests.
 Start with [architecture](knowledge/architecture/README.md), [session contract](knowledge/architecture/session_observation.md),
 [GUI decisions](knowledge/architecture/gui_framework.md), [agent instructions](AGENTS.md),
 [active work](PROJECT_STATE.json) and [validation](knowledge/architecture/validation.md).

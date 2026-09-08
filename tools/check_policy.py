@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import subprocess
 from check_structure import check_structure
+from generate_indexes import check_generated
 
 ROOT = Path(__file__).resolve().parents[1]
 STATUSES = {"planned", "investigating", "implementing", "testing", "blocked", "ready_for_cleanup"}
@@ -90,6 +91,8 @@ def main():
         (ROOT / "knowledge/architecture/dependency_policy.json").read_text(encoding="utf-8")))
     homes = check_structure(ROOT, json.loads(
         (ROOT / "knowledge/architecture/module_structure.json").read_text(encoding="utf-8")))
+    indexes = check_generated(ROOT, metadata)
+    print(f"Indexes current: {sum(x['record_count'] for x in indexes.values())} navigation records.")
     print(f"Policy passed: {len(metadata['workspace_members'])} workspace members, {edges} internal edges; active state valid.")
     print(f"Structure policy passed: {homes} declared module homes.")
 
