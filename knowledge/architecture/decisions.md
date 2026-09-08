@@ -1,6 +1,6 @@
 # Decisions and next bounded milestone
 
-M1 locks debug â†’ core and forbids core â†’ debug; runtime services depend on neither.
+M1 locks debug Ã¢â€ â€™ core and forbids core Ã¢â€ â€™ debug; runtime services depend on neither.
 Core owns session/observation contracts. CLI and GUI consume the same debugger report.
 A separate observation/interface crate is only a future option if core is outgrown.
 
@@ -27,9 +27,16 @@ byte owner and generated process-local object identity. No content hashing or de
 Admission validates source extents against actual bytes; plans retain source handles and checked tokens.
 No filesystem adapter, parsing, session integration or application occurs.
 
-## Recommended bounded M4
+## M4: bounded ELF64 inspection
 
-Inspect ELF headers/program headers using generated in-memory fixtures and primary format evidence,
-adapting into the existing source-bound inspection/admission contract. Decide supported ELF admission
-explicitly; no SELF, real binaries or runtime application is implicitly authorized. M4 has not begun.
-The separate host Ready versus target-admitted lifecycle decision remains deferred until integration.
+[ELF inspection](elf_inspection.md) supports little-endian ELF64 headers and ordinary program tables.
+Generic Elf format does not identify a PS5 platform. Admission permits bounded ELF descriptions;
+non-load semantics and platform flags remain explicit requirements. No runtime application occurs.
+The host Ready versus target-admitted lifecycle decision remains deferred until integration.
+
+## Recommended bounded M5
+
+Define bounded PT_DYNAMIC observation and completeness contracts using generated in-memory fixtures,
+with explicit pointer-to-source translation rules and resource policy before decoding dependent tables.
+Do not resolve symbols/NIDs, derive complete linking support, execute relocations, map memory or add SELF.
+This is a recommendation only; M5 has not started. Existing unrelated architectural gates remain open.

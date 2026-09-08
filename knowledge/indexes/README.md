@@ -2,7 +2,8 @@
 
 Start here to locate implementation, its narrow owner and relevant evidence before scanning source.
 These indexes describe Astero only. No PS5Rust, firmware catalogue, NID database or guest ABI data is
-imported. M4 has not started. Generation never parses ELF/SELF or changes emulator code.
+imported. M4 ELF inspection is indexed as Astero source. Index generation itself never parses ELF/SELF
+input artifacts or changes emulator code.
 
 ## Generate and validate
 

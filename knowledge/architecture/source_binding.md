@@ -1,5 +1,8 @@
 # M3: immutable source binding
 
+M4 now consumes this unchanged source API for [bounded ELF inspection](elf_inspection.md).
+Statements below about absent parsing describe the M3 milestone boundary.
+
 > Metadata may describe source-backed work, but actual source bytes are authoritative for identity and bounds.
 
 SourceArtifact -> InputArtifact / inspect -> InspectedArtifact -> admit -> ValidatedTarget -> plan -> LoadPlan.

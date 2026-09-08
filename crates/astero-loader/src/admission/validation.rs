@@ -11,11 +11,11 @@ use crate::{
 };
 use std::collections::BTreeSet;
 
-/// Conservative M2 admission policy. Success means describable synthetic work, not executable code.
+/// Conservative admission policy. Success describes work, not executable code.
 /// Errors identify original input indices; the first failure in stage/input order is returned.
 pub fn admit(inspected: &InspectedArtifact) -> Result<ValidatedTarget, Rejection> {
     let d = inspected.description();
-    if d.family != ArtifactFamily::Synthetic {
+    if !matches!(d.family, ArtifactFamily::Synthetic | ArtifactFamily::Elf) {
         return Err(Rejection::UnsupportedFormat(d.family));
     }
     if d.architecture != Architecture::X86_64 {

@@ -25,6 +25,10 @@ pub enum DeferredRequirement {
     ThreadLocalStorage,
     InitializationCallbacks,
     DynamicPlacement,
+    /// Observed platform flags/ABI semantics require a future interpretation stage.
+    PlatformSemantics,
+    /// A non-load program descriptor requires interpretation before planning.
+    UninspectedProgramSemantics,
 }
 /// Observations are untrusted loader-local values, not admission results.
 #[derive(Clone, Debug, PartialEq, Eq)]

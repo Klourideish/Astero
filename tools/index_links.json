@@ -52,6 +52,53 @@
       "tests": [
         "test:astero-gui/test:view_model/gui_reads_the_same_report_as_debugger_and_observer"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::inspect::adapter::inspect",
+      "tests": [
+        "test:astero-loader/test:elf_inspection/executable_pipeline_preserves_identity_bytes_and_entry",
+        "test:astero-loader/test:elf_inspection/multi_region_plan_preserves_permissions_bss_and_unused_headers",
+        "test:astero-loader/test:elf_inspection/classifications_and_missing_context_are_admission_decisions",
+        "test:astero-loader/test:elf_inspection/uninspected_semantics_cannot_silently_become_a_complete_plan"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::identification::decode::decode",
+      "tests": [
+        "test:astero-loader/test:elf_inspection/identification_errors_are_distinct_from_truncation",
+        "test:astero-loader/test:elf_inspection/source_lengths_around_identification_header_and_table_boundaries"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::header::decode::decode",
+      "tests": [
+        "test:astero-loader/test:elf_inspection/header_sizes_versions_and_deferred_section_fields",
+        "test:astero-loader/test:elf_inspection/table_shape_overflow_and_extended_count_are_structured",
+        "test:astero-loader/test:elf_inspection/table_extent_sweep_matches_checked_arithmetic_oracle"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::program_headers::decode::decode",
+      "tests": [
+        "test:astero-loader/test:elf_inspection/multi_region_plan_preserves_permissions_bss_and_unused_headers",
+        "test:astero-loader/test:elf_inspection/maximum_nonextended_table_is_iterated_without_untrusted_reservation",
+        "test:astero-loader/test:elf_inspection/incomplete_individual_entries_fail_at_whole_table_boundary"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/admission::validation::admit",
+      "tests": [
+        "test:astero-loader/test:elf_inspection/region_defects_reach_admission_instead_of_byte_errors",
+        "test:astero-loader/test:elf_inspection/classifications_and_missing_context_are_admission_decisions",
+        "test:astero-loader/test:elf_inspection/source_segment_sweep_matches_actual_bounds_and_zero_fill"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/load_plan::plan::plan",
+      "tests": [
+        "test:astero-loader/test:elf_inspection/executable_pipeline_preserves_identity_bytes_and_entry",
+        "test:astero-loader/test:elf_inspection/multi_region_plan_preserves_permissions_bss_and_unused_headers"
+      ]
     }
   ],
   "reviews": [
@@ -191,6 +238,18 @@
       "description": "Checked-source errors nested by admission; frontend presentation deferred.",
       "evidence": [
         "knowledge/architecture/source_binding.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::error::failure::ElfError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::inspect::adapter::inspect"
+      ],
+      "surfaces": [],
+      "description": "Bounded ELF byte-inspection failures, separate from admission; no frontend integration.",
+      "evidence": [
+        "knowledge/architecture/elf_inspection.md"
       ]
     }
   ],

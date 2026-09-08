@@ -1,8 +1,8 @@
-# Loader inspection, admission and load plans (M2/M3)
+# Loader inspection, admission and load plans (M2/M3/M4)
 
 SourceArtifact -> InputArtifact -> inspect -> InspectedArtifact -> admit -> ValidatedTarget -> plan -> LoadPlan.
 Application to memory/runtime is future work. Admission success means a supported description of
-synthetic work, never permission or ability to execute guest code.
+synthetic or bounded ELF-derived work, never permission or ability to execute guest code.
 
 ## Ownership and entry points
 
@@ -40,13 +40,13 @@ Labels and module/symbol names are text; bounded classifications and failure cat
 No PS5 identifiers, page sizes, relocation numbers or firmware constants are invented.
 
 Observed families are Synthetic, Elf, SelfFormat and Unknown; architectures are X86_64, Aarch64 and
-Unknown; roles are Executable, Module and Unknown. M2 accepts only Synthetic/X86_64/executable-or-module.
+Unknown; roles are Executable, Module and Unknown. M2 accepted only Synthetic/X86_64/executable-or-module; M4 also permits Elf at this format gate.
 This is an explicit synthetic policy, not a claim that x86-64 or a PS5 binary is supported at runtime.
 All ranges use u64 sizes and half-open extents; requested virtual addresses are fixed intents.
 
 Future format-specific parsing -> InspectedArtifact -> format-independent admission/planning.
 ELF/SELF adapters must produce these loader contracts, not expose parser structures to the application.
-Their parser construction/error interface may evolve; elf/ and self_format/ remain untouched scaffolds.
+M4 implements the ELF adapter; SELF remains scaffolded. See [ELF inspection](elf_inspection.md).
 
 ## Admission invariants and rejection taxonomy
 
@@ -124,3 +124,12 @@ relocation vocabulary, relocation evaluation and dynamic placement require separ
 Networking, platform/input, video decoding, playback, compatibility, firmware runtime interfaces,
 caches and global configuration remain untouched decision gates. See [source binding](source_binding.md)
 for remaining lifetime, persistent-identity and byte-acquisition design pressure and recommended M4.
+
+## M4 extension
+
+elf::inspect decodes immutable bytes and returns an ELF-specific report with the same InspectedArtifact.
+The only admission algorithm change is allowing ArtifactFamily::Elf; its region/linking checks and
+validated target/plan representation remain unchanged. PlatformSemantics and UninspectedProgramSemantics
+requirements prevent ignored ABI flags or non-load descriptors from silently yielding a complete plan.
+This gate accepts bounded work descriptions, not PS5 platform support or fully conforming ELF images.
+See [ELF inspection](elf_inspection.md) for the conservative alignment and ET_DYN limitations.

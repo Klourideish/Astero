@@ -12,7 +12,7 @@ child declarations. At that stage only relocated M1 code used additional impleme
 loader contract files under existing roots; see [loader pipeline](loader_pipeline.md).
 
 The [final gap audit](structural_gap_audit.md) adds four documentation-only homes: kernel/objects,
-kernel/filesystem, libs/media and audio/codecs. The current inventory totals 152 modules.
+kernel/filesystem, libs/media and audio/codecs. M4 adds five focused ELF child homes; the current inventory totals 157 modules.
 
 ## Inventory and ownership
 
@@ -22,7 +22,7 @@ links navigate each root. These names do not imply implemented capabilities.
 | Crate | Directory module homes | Deliberate nested areas |
 |---|---:|---|
 | [astero-core](../../crates/astero-core/README.md) | 4 | session/lifecycle, observation, statistics |
-| [astero-loader](../../crates/astero-loader/README.md) | 11 | artifact, admission, load_plan, ELF/SELF and metadata/import/export/relocation/dependency stages |
+| [astero-loader](../../crates/astero-loader/README.md) | 16 | artifact, admission, load_plan, ELF/SELF and metadata/import/export/relocation/dependency stages |
 | [astero-memory](../../crates/astero-memory/README.md) | 6 | address, mapping, protection, allocation, access, regions |
 | [astero-kernel](../../crates/astero-kernel/README.md) | 18 | objects, filesystem, execution/host, threading/thread/tls/context, synchronization/mutex/condvar/rwlock/semaphore/event_flag, process/timing/signals/errno |
 | [astero-hle](../../crates/astero-hle/README.md) | 6 | dispatch, providers, registration, resolution, calls, nids |
@@ -37,7 +37,7 @@ links navigate each root. These names do not imply implemented capabilities.
 
 ## AGC boundary
 
-Guest → astero-libs::agc → future GPU service/interface → astero-gpu::agc → PM4/registers/resources/submission.
+Guest â†’ astero-libs::agc â†’ future GPU service/interface â†’ astero-gpu::agc â†’ PM4/registers/resources/submission.
 
 - libs/agc owns exported functions, HLE registrations, guest ABI translation and guest-visible
   resource/submission calls. It delegates mechanisms and never owns the GPU backend.
@@ -87,3 +87,7 @@ Run all Python checks with `python -m unittest discover -s tools -p "test_*.py" 
 See [validation](validation.md) for exact results. The structural pass preceded M2 and added no guest
 APIs, parsing, execution or emulator behavior. M2 uses the same 152 module homes and six actual internal
 dependency edges; its loader admission policy is documented separately.
+
+M4 nests identification, header, program_headers, error and inspect beneath loader/elf.
+Private decoding.rs contains only bounded source reads and little-endian scalar decoding.
+See [ELF scope](elf_inspection.md); no unrelated crate is restructured.

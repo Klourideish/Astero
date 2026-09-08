@@ -1,7 +1,7 @@
 # Astero
 
 Astero is a Rust PS5 emulator workspace informed by lessons from PS5Rust.
-M1 implements a real host session → read-only observation → debugger → CLI/GUI slice.
+M1 implements a real host session â†’ read-only observation â†’ debugger â†’ CLI/GUI slice.
 No emulator implementation has been migrated. There is no guest loading, execution or emulated GPU.
 
 - `cargo run -p astero-cli`: create an unloaded host session and print state/capabilities.
@@ -22,5 +22,5 @@ ImGui needs a C++ build toolchain. Vulkan is the primary host graphics choice, n
 Project licensing remains unresolved: LICENSE is empty and no licence grant is asserted.
 [M2](knowledge/architecture/loader_pipeline.md) provides synthetic inspection, admission and immutable
 load-plan contracts. [M3](knowledge/architecture/source_binding.md) binds them to immutable in-memory
-source bytes and checked ranges; `cargo test -p astero-loader` exercises both. Real ELF/SELF parsing and runtime
-application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).
+source bytes and checked ranges; `cargo test -p astero-loader` exercises both. [M4](knowledge/architecture/elf_inspection.md) adds bounded ELF64 header/program-header inspection
+using generated fixtures. Remaining ELF features, SELF and runtime application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).

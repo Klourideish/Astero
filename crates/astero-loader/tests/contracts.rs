@@ -150,11 +150,7 @@ fn detached_values_cannot_modify_admitted_target_or_reexecute_work() {
 }
 #[test]
 fn unsupported_classifications_and_requirements_are_explicit() {
-    for family in [
-        ArtifactFamily::Elf,
-        ArtifactFamily::SelfFormat,
-        ArtifactFamily::Unknown,
-    ] {
+    for family in [ArtifactFamily::SelfFormat, ArtifactFamily::Unknown] {
         let mut raw = executable();
         raw.description.family = family;
         assert_eq!(reject(raw), Rejection::UnsupportedFormat(family));

@@ -274,3 +274,48 @@ duplicate related-test list; generation now deduplicates those relations before 
 No dependencies were added. No external catalogue/NID/ABI data, emulator functionality, real binary
 parsing, migration, guest execution, commit, push or M4 work was introduced. See
 [index contract and limits](../indexes/README.md).
+
+## M4: bounded ELF64 header/program-header inspection — 2026-09-08
+
+Started from clean main at fedd9e2. Only loader Rust code/tests, architecture/navigation records,
+semantic index links, generated indexes and active state changed. No dependencies, manifests,
+lockfile or internal edges changed: loader remains dependency-free; workspace has 15 crates/6 edges.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including existing GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 56 executable tests + 8 compile-fail doctests passed; 0 failed/ignored |
+| python -m unittest discover -s tools -p "test_*.py" -v | 47 passed: 27 policy/structure + 20 index/extraction |
+| python tools/check_policy.py | passed: dependency/state/structure and index freshness |
+| python tools/check_whitespace.py | passed, 297 files |
+| git diff --check | passed |
+| python tools/generate_indexes.py --check | passed |
+
+All 16 M2 and 9 M3 integration tests, the source-ID unit test and 8 doctests remain. M2's obsolete
+Elf-is-always-unsupported expectation was removed for the deliberate format-gate extension; all other
+admission checks are unchanged. Fifteen new ELF integration tests cover generated header-only,
+executable/module, RX/RW, BSS and PT_NULL cases; identification/header/table errors; unsupported
+machine/role; source/size/alignment/overlap/entry admission failures; and explicit deferred semantics.
+Sweeps cover 129 source lengths, 72 table offset/count combinations and 49 segment extents; a separate
+fixture iterates the maximum 65,534 ordinary PT_NULL entries. No real input or guest runtime is tested.
+
+Two consecutive generator runs produced byte-identical output across 16 generated files. Aggregate
+SHA256 of sorted filename + NUL + bytes:
+198a982ba65c95fba694c9bd232500f8715b4eab7c5806ce42bd2970f59a6aa7.
+Index counts (before -> after): implementation 141 -> 165; subsystems 113 -> 114; modules 215 -> 228;
+diagnostics 5 -> 6; tests 96 -> 111; sources 212 -> 225; NIDs and ABI remain zero. Total 849 records.
+Five new required ELF child homes bring structural policy to 157. All 24 ELF symbols resolve to
+loader/elf; rg ELF/subsystem searches each found 24 implementation rows. Extraction notes remain empty.
+Reviewed semantic links connect parser/admission/planning symbols to the new tests and ElfError to
+its inspection consumer. No new runtime_validated claim is made; indexed tests are not execution evidence.
+
+During development, initial private re-export visibility failed compilation and was corrected to
+ELF-local visibility. The original M2 rejection fixture then exposed the intentional format-gate
+change described above. Subsequent loader and complete workspace runs passed. These results establish
+bounded byte inspection and synthetic contract behavior, not complete ELF/PS5 support or emulator
+correctness. GUI runtime launch was not repeated. See [ELF scope and pressures](elf_inspection.md).
+No SELF, dynamic parsing, filesystem adapter, memory application, migration, guest execution, commit
+or push occurred. Recommended M5 remains a proposal only.
