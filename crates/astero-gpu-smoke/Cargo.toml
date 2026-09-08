@@ -1,0 +1,8 @@
+[package]
+name = "astero-gpu-smoke"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

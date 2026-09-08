@@ -1,0 +1,30 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/astero-abi",
+    "crates/astero-memory",
+    "crates/astero-loader",
+    "crates/astero-kernel",
+    "crates/astero-hle",
+    "crates/astero-libs",
+    "crates/astero-shader",
+    "crates/astero-gpu",
+    "crates/astero-video",
+    "crates/astero-audio",
+    "crates/astero-debug",
+    "crates/astero-core",
+    "crates/astero-cli",
+    "crates/astero-gui",
+    "crates/astero-gpu-smoke",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"

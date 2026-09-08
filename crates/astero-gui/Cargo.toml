@@ -1,0 +1,23 @@
+[package]
+name = "astero-gui"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# Ash FFI exception: deny everywhere except the private vulkan module.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+all = "warn"
+
+[dependencies]
+astero-core = { path = "../astero-core" }
+astero-debug = { path = "../astero-debug" }
+winit = "=0.30.13"
+ash = "=0.38.0"
+ash-window = "=0.13.0"
+raw-window-handle = "=0.6.2"
+imgui = { version = "=0.12.0", features = ["tables-api"] }
+imgui-winit-support = "=0.13.0"
+imgui-rs-vulkan-renderer = "=1.16.0"

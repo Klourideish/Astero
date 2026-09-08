@@ -1,0 +1,12 @@
+[package]
+name = "astero-cli"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+astero-core = { path = "../astero-core" }
+astero-debug = { path = "../astero-debug" }

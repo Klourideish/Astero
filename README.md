@@ -1,0 +1,22 @@
+# Astero
+
+Astero is a Rust PS5 emulator workspace informed by lessons from PS5Rust.
+M1 implements a real host session → read-only observation → debugger → CLI/GUI slice.
+No emulator implementation has been migrated. There is no guest loading, execution or emulated GPU.
+
+- `cargo run -p astero-cli`: create an unloaded host session and print state/capabilities.
+- `cargo run -p astero-gui`: real Winit/ImGui window using an independent Ash/Vulkan context.
+  Requires a Vulkan loader/driver and graphics/present-capable device; failures return errors without fallback.
+- `cargo run -p astero-gpu-smoke`: unchanged scaffold; no guest GPU validation occurs.
+
+Core owns session state; presentation holds read-only handles. Ready means host initialization,
+not guest readiness. Guest debugger features remain explicitly unsupported.
+
+Start with [architecture](knowledge/architecture/README.md), [session contract](knowledge/architecture/session_observation.md),
+[GUI decisions](knowledge/architecture/gui_framework.md), [agent instructions](AGENTS.md),
+[active work](PROJECT_STATE.json) and [validation](knowledge/architecture/validation.md).
+There are 15 packages; GUI alone has external dependencies. Rust edition 2024 is used; no MSRV is promised.
+ImGui needs a C++ build toolchain. Vulkan is the primary host graphics choice, not the PS5 guest API.
+
+Project licensing remains unresolved: LICENSE is empty and no licence grant is asserted.
+[Recommended M2](knowledge/architecture/decisions.md) is synthetic target admission/load-plan design.

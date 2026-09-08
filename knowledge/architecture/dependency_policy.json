@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "allowed_internal_dependencies": {
+    "astero-abi": [],
+    "astero-memory": [
+      "astero-abi"
+    ],
+    "astero-loader": [
+      "astero-abi",
+      "astero-memory"
+    ],
+    "astero-kernel": [
+      "astero-abi",
+      "astero-memory"
+    ],
+    "astero-hle": [
+      "astero-abi"
+    ],
+    "astero-libs": [
+      "astero-abi",
+      "astero-hle",
+      "astero-memory",
+      "astero-kernel",
+      "astero-gpu",
+      "astero-video",
+      "astero-audio"
+    ],
+    "astero-shader": [
+      "astero-abi"
+    ],
+    "astero-gpu": [
+      "astero-abi",
+      "astero-memory",
+      "astero-shader"
+    ],
+    "astero-video": [
+      "astero-abi",
+      "astero-gpu"
+    ],
+    "astero-audio": [
+      "astero-abi",
+      "astero-memory"
+    ],
+    "astero-debug": [
+      "astero-abi",
+      "astero-memory",
+      "astero-loader",
+      "astero-kernel",
+      "astero-hle",
+      "astero-shader",
+      "astero-gpu",
+      "astero-video",
+      "astero-audio",
+      "astero-core"
+    ],
+    "astero-core": [
+      "astero-abi",
+      "astero-memory",
+      "astero-loader",
+      "astero-kernel",
+      "astero-hle",
+      "astero-libs",
+      "astero-shader",
+      "astero-gpu",
+      "astero-video",
+      "astero-audio"
+    ],
+    "astero-cli": [
+      "astero-core",
+      "astero-debug"
+    ],
+    "astero-gui": [
+      "astero-core",
+      "astero-debug"
+    ],
+    "astero-gpu-smoke": [
+      "astero-gpu",
+      "astero-shader"
+    ]
+  },
+  "gui_only_dependencies": [
+    "imgui",
+    "imgui-sys",
+    "imgui-winit-support",
+    "imgui-rs-vulkan-renderer"
+  ],
+  "forbidden_dependencies": [
+    "eframe",
+    "egui",
+    "egui-winit",
+    "egui-wgpu",
+    "egui_glow",
+    "glow",
+    "glutin",
+    "wgpu"
+  ]
+}
