@@ -151,3 +151,38 @@ Manifests, lockfile and dependency policy are unchanged. No guest implementation
 or migration was introduced; these results do not establish emulator correctness. GUI compilation and
 its four tests passed; GUI runtime launch was not repeated for this structural-only audit. No commit or push.
 See [audit classifications and evidence](structural_gap_audit.md).
+
+## M2 synthetic admission/load-plan contracts — 2026-09-08
+
+Started from clean main at e444215. M2 changes only loader implementation/tests, focused architecture
+and README records, active state, and dependency-policy tooling. ELF/SELF homes and every other
+crate's implementation are unchanged. No source bytes or prototype material were inspected/migrated.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 34 passed total: 31 executable tests + 3 compile-fail doctests; 0 failed/ignored |
+| python tools/check_policy.py | passed: 15 packages, 6 internal edges, valid active state |
+| python tools/check_structure.py | passed: unchanged 152 declared module homes |
+| python -m unittest discover -s tools -p "test_*.py" -v | 27 passed: 18 dependency/state + 9 structure tests |
+| python tools/check_whitespace.py | passed |
+| git diff --check | passed |
+
+Rust additions: 16 loader integration tests and 3 compile-fail doctests. The integration tests cover
+all rejection families, deterministic multi-region plans, deferred descriptors, source/alignment/
+permission preservation, immutable observations and a 1,056-case file/memory-size partition sweep
+(counted as one test). The unchanged M1 suite contributes 15 tests: core 6, debug 3, CLI 2, GUI 4.
+Policy additions reject loader runtime/convenience dependencies and speculative dependency permissions.
+The focused and full validation runs passed; formatting was applied before the final format check.
+
+No Cargo manifests or Cargo.lock changes, no external dependencies and no actual internal-edge
+changes. Policy now requires loader to remain dependency-free, removing its previous unused ABI/memory
+permissions. Direct review confirms planning only creates owned values: no I/O, session references,
+guest allocations, mappings, relocation evaluation, symbol resolution or runtime callbacks exist.
+GUI runtime launch was not repeated; its build and existing tests passed. These are synthetic contract
+checks, not proof of PS5/emulator correctness. No commit, push or M3 work occurred.
+
+See [loader pipeline](loader_pipeline.md) for ownership, exact invariants and deferred design pressure.

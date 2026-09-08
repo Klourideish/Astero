@@ -19,4 +19,6 @@ There are 15 packages; GUI alone has external dependencies. Rust edition 2024 is
 ImGui needs a C++ build toolchain. Vulkan is the primary host graphics choice, not the PS5 guest API.
 
 Project licensing remains unresolved: LICENSE is empty and no licence grant is asserted.
-[Recommended M2](knowledge/architecture/decisions.md) is synthetic target admission/load-plan design.
+[M2](knowledge/architecture/loader_pipeline.md) provides synthetic inspection, admission and immutable
+load-plan contracts; `cargo test -p astero-loader` exercises them. Real ELF/SELF parsing and runtime
+application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).

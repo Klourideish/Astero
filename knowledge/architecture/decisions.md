@@ -13,11 +13,16 @@ Project licence, MSRV/toolchain pin and supported host matrix remain unresolved.
 LICENSE remains empty pending approval. Windows has scoped validation; portability is not claimed.
 Git initialization and the baseline commit were authorized after M1 cleanup approval. No push is authorized.
 
-## Recommended M2: synthetic target admission and load-plan contract
+## M2: synthetic target admission and load-plan contracts
 
-Design a small read-only loader metadata/load-plan interface using synthetic fixtures only.
-Core owns target admission and exposes truthful metadata/diagnostics through the same inspection path.
-Test rejected/malformed inputs; admission must not imply execution or successful mapping.
-Establish evidence and ownership first; no prototype migration or decrypted binary execution.
-Decide whether host Ready remains distinct from target-admitted readiness before extending lifecycle.
-M2 is a recommendation only and has not started.
+[Loader contracts](loader_pipeline.md) now put admission in astero-loader, correcting the earlier
+recommendation that core own admission. Core owns future composition; its M1 session is unchanged.
+Inspection, admission and planning are distinct; acceptance implies neither mapping nor execution.
+M2 remains dependency-free and admits only synthetic descriptions. Real ELF/SELF is deferred.
+
+## Recommended bounded M3
+
+Bind synthetic metadata to immutable in-memory source bytes with explicit identity/size guarantees,
+and exercise the same admission/planning contract with adversarial byte-backed fixtures.
+No real ELF/SELF parsing, runtime application or prototype migration is implicitly authorized.
+The separate host Ready versus target-admitted lifecycle decision remains deferred until integration.

@@ -1,2 +1,3 @@
-//! Planned metadata ownership within astero-loader.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Metadata contracts; see the loader architecture record.
+mod regions;
+pub use regions::*;

@@ -8,7 +8,8 @@ exports and small wiring. Approximately 1,000-1,500 lines remains a review trigg
 The original structural pass declared 148 directory modules across 13 crates: the requested baseline plus the existing
 libs families and nids navigation homes. ABI and CLI already have small, suitable M1 structures;
 neither needs speculative directories. One mod.rs per home provides ownership documentation and
-child declarations. Only relocated M1 code uses additional implementation files.
+child declarations. At that stage only relocated M1 code used additional implementation files. M2 now adds focused
+loader contract files under existing roots; see [loader pipeline](loader_pipeline.md).
 
 The [final gap audit](structural_gap_audit.md) adds four documentation-only homes: kernel/objects,
 kernel/filesystem, libs/media and audio/codecs. The current inventory totals 152 modules.
@@ -83,5 +84,6 @@ such as renderer/vulkan/context.rs, remain allowed. This is a check of the expli
 ordinary out-of-line declarations, not a general Rust parser or an arbitrary source-file size limit.
 
 Run all Python checks with `python -m unittest discover -s tools -p "test_*.py" -v`.
-See [validation](validation.md) for exact results. M2 has not started; the six internal dependency
-edges and manifests/lockfile are unchanged. No guest APIs, parsing, execution or emulator behavior was added.
+See [validation](validation.md) for exact results. The structural pass preceded M2 and added no guest
+APIs, parsing, execution or emulator behavior. M2 uses the same 152 module homes and six actual internal
+dependency edges; its loader admission policy is documented separately.

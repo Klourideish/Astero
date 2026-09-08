@@ -1,2 +1,3 @@
-//! Planned exports ownership within astero-loader.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Exports contracts; see the loader architecture record.
+mod symbol;
+pub use symbol::*;

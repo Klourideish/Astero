@@ -1,2 +1,3 @@
-//! Planned imports ownership within astero-loader.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Imports contracts; see the loader architecture record.
+mod symbol;
+pub use symbol::*;

@@ -1,5 +1,5 @@
 //! Binary parsing, load plans, relocations and import metadata.
-//! M0 foundation; consult the crate README before extending ownership.
+//! M2 synthetic contracts; inspection/admission/planning never apply work to a runtime.
 pub mod admission;
 pub mod artifact;
 pub mod dependencies;

@@ -62,3 +62,7 @@ media and video-codec contracts, not decoding or playback services. Video decodi
 and platform-service mechanisms require a focused ownership decision before their implementation.
 libs/runtime is restricted to guest language-runtime initialization/finalization and unwind/exception
 ABI contracts. It must not absorb libc, TLS mechanisms, host execution or unrelated platform services.
+
+M2 admission and immutable load planning belong to astero-loader, not core. Its dependency-free
+synthetic contracts describe work only; memory application and runtime execution are deferred.
+See [loader pipeline](loader_pipeline.md).

@@ -1,1 +1,3 @@
-//! Owns loading within astero-loader; runtime implementation is planned.
+//! Load Plan contracts; see the loader architecture record.
+mod plan;
+pub use plan::*;

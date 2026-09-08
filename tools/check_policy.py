@@ -46,6 +46,12 @@ def check_dependencies(metadata, policy):
     require(set(allowed["astero-gui"]) <= {"astero-core", "astero-debug"}, "GUI must not allow runtime dependencies")
     require("astero-debug" not in allowed["astero-core"], "core cannot allow debug")
     require("astero-libs" not in allowed["astero-hle"], "HLE cannot allow libs")
+    dependency_free = policy.get("dependency_free_packages", [])
+    require(isinstance(dependency_free, list) and all(isinstance(name, str) and name in packages for name in dependency_free),
+            "invalid dependency-free package list")
+    for name in dependency_free:
+        require(not allowed[name], f"dependency-free package cannot allow internal edges: {name}")
+        require(not packages[name]["dependencies"], f"dependency-free package declares dependencies: {name}")
     graph = {name: set() for name in packages}
     for name, package in packages.items():
         for dep in package["dependencies"]:

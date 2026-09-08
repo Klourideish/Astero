@@ -5,10 +5,7 @@
     "astero-memory": [
       "astero-abi"
     ],
-    "astero-loader": [
-      "astero-abi",
-      "astero-memory"
-    ],
+    "astero-loader": [],
     "astero-kernel": [
       "astero-abi",
       "astero-memory"
@@ -93,5 +90,8 @@
     "glow",
     "glutin",
     "wgpu"
+  ],
+  "dependency_free_packages": [
+    "astero-loader"
   ]
 }

@@ -4,6 +4,7 @@
 - [Module structure](module_structure.md): physical homes, moves and bounded structural policy.
 - [Crate boundaries](crate_boundaries.md): ownership and forbidden responsibilities.
 - [Dependency policy](dependency_policy.json): explicit internal edge allowlist.
+- [Loader pipeline](loader_pipeline.md): M2 synthetic inspection, admission and immutable plans.
 - [Session contract](session_observation.md): ownership, lifecycle and snapshots.
 - [GUI/host graphics](gui_framework.md): Winit, ImGui and independent Ash/Vulkan.
 - [Debugger inventory](debugger_capabilities.md): ownership and capability status.

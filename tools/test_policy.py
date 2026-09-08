@@ -24,6 +24,20 @@ class PolicyTests(unittest.TestCase):
         package = next(p for p in self.metadata["packages"] if p["name"] == source)
         package["dependencies"].append({"name": destination, "path": str(ROOT / "crates" / destination), **extra})
 
+    def test_loader_cannot_gain_runtime_or_convenience_dependencies(self):
+        for dependency in ("astero-memory", "astero-core", "astero-debug", "thiserror"):
+            with self.subTest(dependency=dependency):
+                metadata = copy.deepcopy(self.metadata)
+                package = next(p for p in metadata["packages"] if p["name"] == "astero-loader")
+                package["dependencies"].append({"name": dependency, "kind": "dev", "target": "cfg(windows)"})
+                with self.assertRaisesRegex(ValueError, "dependency-free package declares dependencies"):
+                    check_dependencies(metadata, self.policy)
+
+    def test_loader_dependency_permission_requires_explicit_policy_change(self):
+        self.policy["allowed_internal_dependencies"]["astero-loader"].append("astero-memory")
+        with self.assertRaisesRegex(ValueError, "dependency-free package cannot allow"):
+            check_dependencies(self.metadata, self.policy)
+
     def test_valid(self):
         check_state(self.state)
         self.edge("astero-libs", "astero-hle")

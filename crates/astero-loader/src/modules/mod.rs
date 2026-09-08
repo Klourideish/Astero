@@ -1,2 +1,3 @@
-//! Planned modules ownership within astero-loader.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Modules contracts; see the loader architecture record.
+mod identity;
+pub use identity::*;

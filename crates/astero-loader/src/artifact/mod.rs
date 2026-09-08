@@ -1,2 +1,3 @@
-//! Planned artifact ownership within astero-loader.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Artifact contracts; see the loader architecture record.
+mod inspection;
+pub use inspection::*;
