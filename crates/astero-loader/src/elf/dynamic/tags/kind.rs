@@ -1,0 +1,47 @@
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum DynamicTag {
+    Null,
+    Needed,
+    PltRelSz,
+    StrTab,
+    SymTab,
+    Rela,
+    RelaSz,
+    RelaEnt,
+    StrSz,
+    SymEnt,
+    Init,
+    Fini,
+    PltRel,
+    JmpRel,
+    InitArray,
+    FiniArray,
+    InitArraySz,
+    FiniArraySz,
+    Unknown(i64),
+}
+impl DynamicTag {
+    pub fn from_raw(tag: i64) -> Self {
+        match tag {
+            0 => Self::Null,
+            1 => Self::Needed,
+            2 => Self::PltRelSz,
+            5 => Self::StrTab,
+            6 => Self::SymTab,
+            7 => Self::Rela,
+            8 => Self::RelaSz,
+            9 => Self::RelaEnt,
+            10 => Self::StrSz,
+            11 => Self::SymEnt,
+            12 => Self::Init,
+            13 => Self::Fini,
+            20 => Self::PltRel,
+            23 => Self::JmpRel,
+            25 => Self::InitArray,
+            26 => Self::FiniArray,
+            27 => Self::InitArraySz,
+            28 => Self::FiniArraySz,
+            _ => Self::Unknown(tag),
+        }
+    }
+}

@@ -1,5 +1,8 @@
 # M4: bounded ELF64 header and program-header inspection
 
+M5 adds a separate [dynamic observation and translation stage](dynamic_elf_observation.md).
+The M4 stage and its conservative admission requirements remain unchanged.
+
 SourceArtifact -> elf::inspect(source, module_context) -> ElfInspection.artifact() -> admit -> plan.
 Inspection describes observations; admission decides which descriptions Astero accepts. Acceptance
 here is an immutable work description, not proof of a valid PS5 image or ability to load/execute it.

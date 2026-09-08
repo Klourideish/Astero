@@ -12,6 +12,9 @@ Use artifact::inspect, admission::admit and load_plan::plan in order.
 M4 adds elf::inspect(source, module_context): bounded ELF64 little-endian header/program-header inspection.
 Use report.artifact() with existing admission/planning. Synthetic and generic ELF x86-64 descriptions
 may be admitted; no target is applied or executed. See [ELF scope](../../knowledge/architecture/elf_inspection.md).
+M5 adds elf::address_translation::AddressTranslator and elf::dynamic::observe(&report, limits).
+Dynamic reports retain source-bound descriptors; they neither interpret tables nor clear admission
+requirements. See [dynamic observation](../../knowledge/architecture/dynamic_elf_observation.md).
 See the [loader pipeline](../../knowledge/architecture/loader_pipeline.md) for invariants, errors and limits.
 
 ## Module ownership
@@ -19,7 +22,7 @@ See the [loader pipeline](../../knowledge/architecture/loader_pipeline.md) for i
 [admission/](src/admission/mod.rs), [artifact/](src/artifact/mod.rs), [dependencies/](src/dependencies/mod.rs), [elf/](src/elf/mod.rs), [exports/](src/exports/mod.rs), [imports/](src/imports/mod.rs), [load_plan/](src/load_plan/mod.rs), [metadata/](src/metadata/mod.rs), [modules/](src/modules/mod.rs), [relocations/](src/relocations/mod.rs), [self_format/](src/self_format/mod.rs).
 
 Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
-New functionality belongs in the narrowest declared owner. ELF has five narrow child owners; SELF remains an unused scaffold.
+New functionality belongs in the narrowest declared owner. ELF has dedicated header, translation and dynamic child owners; SELF remains an unused scaffold.
 Implementation lives in focused child files; module roots only declare/re-export contracts.
 
 Forbidden: Executing guest code or owning session lifecycle.

@@ -99,6 +99,46 @@
         "test:astero-loader/test:elf_inspection/executable_pipeline_preserves_identity_bytes_and_entry",
         "test:astero-loader/test:elf_inspection/multi_region_plan_preserves_permissions_bss_and_unused_headers"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::address_translation::translate::impl[< ' a > AddressTranslator < ' a >]::translate",
+      "tests": [
+        "test:astero-loader/test:dynamic_observation/translation_preserves_start_interior_end_and_source_identity",
+        "test:astero-loader/test:dynamic_observation/zero_fill_crossings_and_unmapped_ranges_never_manufacture_source_bytes",
+        "test:astero-loader/test:dynamic_observation/identical_and_partial_overlaps_are_ambiguous_including_mid_request",
+        "test:astero-loader/test:dynamic_observation/bounded_load_extent_sweep_matches_independent_interval_oracle"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::address_translation::translate::impl[< ' a > AddressTranslator < ' a >]::new",
+      "tests": [
+        "test:astero-loader/test:dynamic_observation/translator_rejects_malformed_load_extents_before_queries"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::observation::inspect::observe",
+      "tests": [
+        "test:astero-loader/test:dynamic_observation/null_termination_retains_source_lifetime_and_does_not_change_admission",
+        "test:astero-loader/test:dynamic_observation/dynamic_virtual_range_requires_actual_backing_and_agreeing_file_offset",
+        "test:astero-loader/test:dynamic_observation/caller_entry_budget_includes_terminator_without_count_based_allocation",
+        "test:astero-loader/test:dynamic_observation/multiple_tables_and_invalid_dynamic_extent_are_rejected_explicitly"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::observation::descriptors::collect",
+      "tests": [
+        "test:astero-loader/test:dynamic_observation/paired_descriptors_and_repeated_needed_offsets_are_observed_without_interpretation",
+        "test:astero-loader/test:dynamic_observation/incomplete_descriptor_groups_are_never_filled_with_invented_defaults",
+        "test:astero-loader/test:dynamic_observation/descriptor_entry_sizes_and_array_divisibility_are_checked",
+        "test:astero-loader/test:dynamic_observation/descriptor_pointers_retain_translation_error_context"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::entries::decode::decode",
+      "tests": [
+        "test:astero-loader/test:dynamic_observation/dynamic_entry_size_sweep_distinguishes_exhaustion_and_partial_entries",
+        "test:astero-loader/test:dynamic_observation/unknown_tags_preserve_signed_bits_order_duplicates_and_values"
+      ]
     }
   ],
   "reviews": [
@@ -250,6 +290,31 @@
       "description": "Bounded ELF byte-inspection failures, separate from admission; no frontend integration.",
       "evidence": [
         "knowledge/architecture/elf_inspection.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf.translation",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::address_translation::error::TranslationError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::observation::inspect::observe",
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::observation::descriptors::table"
+      ],
+      "surfaces": [],
+      "description": "Declared-image translation errors distinguish source-backed, BSS, crossing and ambiguous ranges; no runtime address attribution.",
+      "evidence": [
+        "knowledge/architecture/dynamic_elf_observation.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf.dynamic",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::error::failure::DynamicError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::observation::inspect::observe"
+      ],
+      "surfaces": [],
+      "description": "Structured dynamic observation and descriptor failures; linking deferred and no frontend integration.",
+      "evidence": [
+        "knowledge/architecture/dynamic_elf_observation.md"
       ]
     }
   ],

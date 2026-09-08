@@ -107,3 +107,7 @@ metadata checks remain a documented scaling pressure. Process-local identity als
 Recommended M4: bounded ELF header/program-header inspection into these contracts using generated
 in-memory fixtures and primary format evidence, keeping admission policy explicit. Supporting an ELF
 family must be a deliberate next decision; no SELF, real binaries or runtime application is implied.
+
+M5 retains this source API unchanged. The [ELF translator](dynamic_elf_observation.md) validates
+PT_LOAD source prefixes and returns existing BoundSourceRange tokens. Dynamic reports retain the
+same SourceArtifact owner; tokens never represent BSS as stored source bytes.

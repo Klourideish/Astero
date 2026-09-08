@@ -133,3 +133,11 @@ validated target/plan representation remain unchanged. PlatformSemantics and Uni
 requirements prevent ignored ABI flags or non-load descriptors from silently yielding a complete plan.
 This gate accepts bounded work descriptions, not PS5 platform support or fully conforming ELF images.
 See [ELF inspection](elf_inspection.md) for the conservative alignment and ET_DYN limitations.
+
+## M5 observation stage
+
+After elf::inspect, optional elf::dynamic::observe validates source-backed dynamic descriptors.
+It returns a separate format-specific report; it does not modify InspectedArtifact, admission,
+ValidatedTarget or LoadPlan. PT_DYNAMIC still carries UninspectedProgramSemantics: observing its
+descriptors does not complete their semantics. No dependencies/imports/exports/relocations are fabricated.
+See [dynamic ELF observation](dynamic_elf_observation.md) for independent translator and error ownership.

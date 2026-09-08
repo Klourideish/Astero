@@ -319,3 +319,54 @@ bounded byte inspection and synthetic contract behavior, not complete ELF/PS5 su
 correctness. GUI runtime launch was not repeated. See [ELF scope and pressures](elf_inspection.md).
 No SELF, dynamic parsing, filesystem adapter, memory application, migration, guest execution, commit
 or push occurred. Recommended M5 remains a proposal only.
+
+## M5: dynamic ELF observations and address translation — 2026-09-08
+
+Started from clean main at 557a7c1. Added dedicated loader/elf/address_translation and dynamic nested
+owners, generated fixtures/tests, focused architecture and regenerated indexes. Source binding,
+M4 header/program/adapter code, admission and load-plan implementations are unchanged. No Cargo
+manifest/lockfile/dependency-policy changes: 15 crates, six internal edges, dependency-free loader.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 79 executable tests + 8 compile-fail doctests passed; 0 failed/ignored |
+| python -m unittest discover -s tools -p "test_*.py" -v | 47 passed: 27 policy/structure + 20 index/extraction |
+| python tools/check_policy.py | passed: dependency/state/structure and index freshness |
+| python tools/check_structure.py | passed: 163 declared module homes |
+| python tools/check_whitespace.py | passed: 314 files |
+| git diff --check | passed |
+| python tools/generate_indexes.py --check | passed after each of two consecutive regeneration runs |
+
+All prior tests are preserved unchanged. Twenty-three new integration tests exercise translation
+source identity, start/interior/end, BSS/pure BSS, overflow, conflicting and adjacent maps, malformed
+load extents, absent/multiple/source-inconsistent dynamic tables, unknown tags and repeated NEEDED,
+termination/entry budgets, duplicate/incomplete groups, descriptor widths/extents, initialization
+observations, source lifetime and continued admission rejection. Sweep oracles cover 5,445 load/range
+combinations, 50 dynamic table sizes and 25 descriptor pointer/size combinations. No names, symbols
+or relocations are semantically parsed and no bytes/runtime state are patched or executed.
+
+Two consecutive generator executions and checks produced byte-identical output across 16 generated
+files. Aggregate SHA256 of sorted filename + NUL + raw bytes:
+85549063e05a27c567001ae4772e131ff94fcf3120f226fefb9e9f5e2523317d.
+Index counts before -> after: implementation 165 -> 198; subsystems 114 -> 115; modules 228 -> 244;
+diagnostics 6 -> 8; tests 111 -> 134; sources 225 -> 241; NIDs and ABI remain zero. Total 940 records.
+All 33 M5 symbols resolve to astero-loader/elf and their narrow module paths; the Markdown grep query
+found those 33 rows. Extraction notes remain empty. Reviewed links associate translator/observer/
+decoder/descriptor symbols with the new tests and expose separate translation/dynamic error records.
+Indexed declarations are not passing-test or runtime-validation claims.
+
+The first focused 23-test run passed; Clippy then flagged a collapsible conditional and the large
+present/absent report enum. The conditional was collapsed and Present now boxes its fixed-size report.
+The final workspace tests and all checks above passed after those changes; no warnings were suppressed.
+GUI still builds; GUI runtime launch was not repeated. Evidence proves generated-byte observation
+contracts, not ELF/PS5 linking completeness or emulator correctness. Existing alignment and quadratic
+admission pressures remain; dynamic scan budgets are explicit caller input. See
+[dynamic observation scope](dynamic_elf_observation.md).
+
+No new dependencies, linking, strings/symbols/relocations interpretation, NIDs, Sony tag interpretation,
+SELF, filesystem/mmap, guest memory, HLE, runtime application, PS5Rust migration, guest execution,
+commit or push occurred. M6 has not started.

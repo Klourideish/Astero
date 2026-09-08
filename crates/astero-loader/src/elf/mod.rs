@@ -7,3 +7,5 @@ pub mod inspect;
 pub mod program_headers;
 pub use error::ElfError;
 pub use inspect::{ElfInspection, inspect};
+pub mod address_translation;
+pub mod dynamic;
