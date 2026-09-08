@@ -9,7 +9,7 @@ cargo build --workspace --all-targets
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 python tools/check_policy.py
-python -m unittest discover -s tools -p test_policy.py -v
+python -m unittest discover -s tools -p "test_*.py" -v
 git diff --check
 # If Git is unavailable:
 python tools/check_whitespace.py
@@ -103,3 +103,33 @@ The active list is now empty; durable M0/M1 records remain. Policy negative test
 synthetic fixture independent of active work. All 16 policy tests, live state/dependency
 validation and supplemental whitespace checks passed. Git staged whitespace validation
 now passes for the baseline. Build outputs and Python caches are excluded.
+
+## Bounded structural scaffolding — 2026-09-08
+
+Started from clean main at baseline 304e600. Declared 148 directory module homes across 13 crates;
+ABI/CLI retain their small existing structure. Existing M1 code moved into narrower physical owners,
+with compatibility re-exports preserving public paths. See [module structure](module_structure.md)
+for the complete ownership/move inventory. No M2 work or emulator functionality was added.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including the real GUI executable |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 15 passed, 0 failed, 0 ignored; 0 doctests |
+| python tools/check_policy.py | passed: 15 members, 6 internal edges, 148 module homes, valid active state |
+| python -m unittest discover -s tools -p "test_*.py" -v | 25 passed: 16 existing policy tests + 9 structural tests |
+| python tools/check_whitespace.py | passed across tracked and new source/config/docs |
+| git diff --check | passed; supplemental check also covers untracked new files |
+
+The unchanged Rust tests comprise 6 core session, 3 debugger, 2 CLI, 2 GUI adapter integration tests,
+and 2 pure Vulkan extent unit tests. No new emulator tests or functionality were introduced.
+Source comparison of 14 relocated/split M1 implementation/type files matched the baseline after
+excluding imports, comments and whitespace. Cargo metadata dependency declarations match the
+pre-pass snapshot exactly. Manifests, Cargo.lock and the dependency allowlist are unchanged.
+
+No new GUI runtime launch was performed for this structural pass: GUI compilation and the unchanged
+M1 vertical-slice tests passed; the earlier visual runtime evidence remains scoped to the M1 run.
+No real binary parsing/execution, PS5Rust migration, admission, HLE, AGC, PM4, register, shader,
+VideoOut, audio or expanded debugger behavior was added. No commit or push was performed.

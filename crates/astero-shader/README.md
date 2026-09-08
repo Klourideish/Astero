@@ -8,7 +8,10 @@ M0 scaffold only. Module roots document future ownership; no runtime mechanisms 
 
 ## Module ownership
 
-decoding, ir. Modules belong to this crate's scope.
+[analysis/](src/analysis/mod.rs), [ir/](src/ir/mod.rs), [lowering/](src/lowering/mod.rs), [rdna2/](src/rdna2/mod.rs), [spirv/](src/spirv/mod.rs), [ssa/](src/ssa/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 Forbidden: GPU submission or presentation.
 

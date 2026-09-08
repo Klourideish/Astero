@@ -8,7 +8,10 @@ M0 scaffold only. Module roots document future ownership; no runtime mechanisms 
 
 ## Module ownership
 
-presentation. Modules belong to this crate's scope.
+[presentation/](src/presentation/mod.rs), [vblank/](src/vblank/mod.rs), [videoout/](src/videoout/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 Forbidden: Command decoding or GPU resource ownership.
 

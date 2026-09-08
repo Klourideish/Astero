@@ -26,3 +26,7 @@ Other guest operation APIs do not exist. No guessed threads, registers, maps, PC
 or breakpoints are present. HostFault records orchestration failure, not guest fault capture.
 Runtime services import neither core nor debug. See [session contract](session_observation.md)
 and [validation](validation.md).
+
+Physical scaffolding does not change this inventory. Existing session inspection is under src/session/;
+the new threads/context/memory/modules/symbols/nids/tracing/sampling/breakpoints/watchpoints/faults/gpu/
+snapshots roots contain ownership documentation and declarations only.

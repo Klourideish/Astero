@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import subprocess
+from check_structure import check_structure
 
 ROOT = Path(__file__).resolve().parents[1]
 STATUSES = {"planned", "investigating", "implementing", "testing", "blocked", "ready_for_cleanup"}
@@ -81,7 +82,10 @@ def main():
         ["cargo", "metadata", "--format-version", "1", "--no-deps", "--locked"], cwd=ROOT, text=True))
     edges = check_dependencies(metadata, json.loads(
         (ROOT / "knowledge/architecture/dependency_policy.json").read_text(encoding="utf-8")))
+    homes = check_structure(ROOT, json.loads(
+        (ROOT / "knowledge/architecture/module_structure.json").read_text(encoding="utf-8")))
     print(f"Policy passed: {len(metadata['workspace_members'])} workspace members, {edges} internal edges; active state valid.")
+    print(f"Structure policy passed: {homes} declared module homes.")
 
 
 if __name__ == "__main__":

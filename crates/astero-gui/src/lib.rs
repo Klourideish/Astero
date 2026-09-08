@@ -1,8 +1,9 @@
 //! Independent host GUI. Session APIs remain toolkit-independent.
-mod toolkit;
-pub mod view_model;
-mod windowing;
-// Ash exposes Vulkan's unsafe FFI. Only this private module may opt in.
-#[allow(unsafe_code)]
-mod vulkan;
-pub use windowing::run;
+mod app;
+pub mod model;
+mod renderer;
+mod ui;
+mod window;
+pub use app::run;
+// Preserve the existing M1 adapter path.
+pub use model as view_model;

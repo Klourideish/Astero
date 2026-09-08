@@ -8,7 +8,10 @@ M0 scaffold only. Re-exports the HLE `Provider` contract; exports and dispatch a
 
 ## Module ownership
 
-families, nids. Modules belong to this crate's scope.
+[agc/](src/agc/mod.rs), [audio/](src/audio/mod.rs), [families/](src/families/mod.rs), [filesystem/](src/filesystem/mod.rs), [kernel/](src/kernel/mod.rs), [libc/](src/libc/mod.rs), [network/](src/network/mod.rs), [nids/](src/nids/mod.rs), [pthread/](src/pthread/mod.rs), [runtime/](src/runtime/mod.rs), [sysmodule/](src/sysmodule/mod.rs), [videoout/](src/videoout/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 Forbidden: Owning mutex machinery, scheduling or memory mapping mechanisms.
 

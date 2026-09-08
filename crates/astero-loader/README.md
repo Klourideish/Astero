@@ -8,7 +8,10 @@ M0 scaffold only. Module roots document future ownership; no runtime mechanisms 
 
 ## Module ownership
 
-loading, relocations. Modules belong to this crate's scope.
+[admission/](src/admission/mod.rs), [artifact/](src/artifact/mod.rs), [dependencies/](src/dependencies/mod.rs), [elf/](src/elf/mod.rs), [exports/](src/exports/mod.rs), [imports/](src/imports/mod.rs), [load_plan/](src/load_plan/mod.rs), [metadata/](src/metadata/mod.rs), [modules/](src/modules/mod.rs), [relocations/](src/relocations/mod.rs), [self_format/](src/self_format/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 Forbidden: Executing guest code or owning session lifecycle.
 

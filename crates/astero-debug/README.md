@@ -4,7 +4,10 @@ Inspects core through ObserveSession; returns the common SessionSnapshot and cap
 
 ## Module ownership
 
-inspection: report; capabilities: discovery; control: pause rejection.
+[breakpoints/](src/breakpoints/mod.rs), [context/](src/context/mod.rs), [faults/](src/faults/mod.rs), [gpu/](src/gpu/mod.rs), [memory/](src/memory/mod.rs), [modules/](src/modules/mod.rs), [nids/](src/nids/mod.rs), [sampling/](src/sampling/mod.rs), [session/](src/session/mod.rs), [snapshots/](src/snapshots/mod.rs), [symbols/](src/symbols/mod.rs), [threads/](src/threads/mod.rs), [tracing/](src/tracing/mod.rs), [watchpoints/](src/watchpoints/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 No guest mechanisms, fabricated results or toolkit types may enter core/debug contracts.
 Integration tests live under this package's tests/. GUI also has pure swapchain-selection unit tests.

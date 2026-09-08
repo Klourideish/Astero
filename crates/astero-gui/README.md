@@ -4,7 +4,10 @@ Real Winit 0.30 / ImGui / Ash 0.38 Vulkan shell. main retains the core Session o
 
 ## Module ownership
 
-main: composition; windowing: lifecycle/input/repaint; toolkit: widgets; view_model: observation adapter; vulkan: private instance/device/swapchain/submission boundary.
+[app/](src/app/mod.rs), [model/](src/model/mod.rs), [renderer/](src/renderer/mod.rs), [ui/](src/ui/mod.rs), [window/](src/window/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 No guest mechanisms, fabricated results or toolkit types may enter core/debug contracts.
 Integration tests live under this package's tests/. GUI also has pure swapchain-selection unit tests.

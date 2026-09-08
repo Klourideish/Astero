@@ -4,7 +4,10 @@ Owns a real host Session, checked lifecycle and coherent detached snapshots. Ses
 
 ## Module ownership
 
-session: identity, owner and lifecycle; observation: snapshots and read-only interface.
+[session/](src/session/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 No guest mechanisms, fabricated results or toolkit types may enter core/debug contracts.
 Integration tests live under this package's tests/. GUI also has pure swapchain-selection unit tests.

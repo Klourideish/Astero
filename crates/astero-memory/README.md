@@ -8,7 +8,10 @@ M0 scaffold only. Module roots document future ownership; no runtime mechanisms 
 
 ## Module ownership
 
-mappings, access. Modules belong to this crate's scope.
+[access/](src/access/mod.rs), [address/](src/address/mod.rs), [allocation/](src/allocation/mod.rs), [mapping/](src/mapping/mod.rs), [protection/](src/protection/mod.rs), [regions/](src/regions/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 Forbidden: Process scheduling or library exports.
 

@@ -8,7 +8,10 @@ M0 scaffold only. Executable reports that no GPU validation has occurred.
 
 ## Module ownership
 
-main: executable entry point. Modules belong to this crate's scope.
+[capture/](src/capture/mod.rs), [fixtures/](src/fixtures/mod.rs), [replay/](src/replay/mod.rs), [scenarios/](src/scenarios/mod.rs), [validation/](src/validation/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 Forbidden: Session composition or reporting unperformed GPU validation.
 

@@ -47,3 +47,12 @@ versioning, target metadata provenance and execution-control authorization need 
 Toolkit types may not cross this boundary.
 
 Tests live under core/tests, debug/tests, cli/tests and gui/tests. See [validation](validation.md).
+
+## Physical homes after structural scaffolding
+
+The existing owner implementation lives at core/src/session/owner.rs; lifecycle vocabulary is in
+session/lifecycle/state.rs, observations in session/observation/snapshot.rs, and counters in
+session/statistics/counters.rs. Directory roots only declare modules/re-exports. The public
+astero_core::observation path is a compatibility re-export of session::observation.
+Debugger inspection/capabilities/control now live under debug/src/session/, with their original
+public module paths re-exported. No lifecycle transition, statistic or inspection operation was added.

@@ -58,18 +58,18 @@ All can consume external immutable state; that separation is an Astero contract.
 
 ## Implementation boundaries
 
-- windowing.rs: Winit ApplicationHandler, lifecycle, event forwarding and approximately 30 Hz repaint
+- window/events.rs: Winit ApplicationHandler, lifecycle, event forwarding and approximately 30 Hz repaint
   scheduling. Zero-size/occluded windows wait instead of drawing.
-- toolkit.rs: ImGui context, platform input adapter, inspection panes and collapsible diagnostics.
-- view_model.rs: toolkit-independent SessionObserver adapter returning the common debugger report.
-- vulkan/: independent GUI context, swapchain and submissions. No astero-gpu dependency.
+- ui/toolkit.rs: ImGui context, platform input adapter, inspection panes and collapsible diagnostics.
+- model/session_view.rs: toolkit-independent SessionObserver adapter returning the common debugger report.
+- renderer/vulkan/: independent GUI context, swapchain and submissions. No astero-gpu dependency.
 
 The Vulkan path uses one graphics/present queue, FIFO swapchain and one frame in flight. Resize and
 out-of-date recreate size-dependent resources; suspend/resume recreates the context. Acquire has a finite
 timeout. A fence protects command/renderer reuse; present semaphores are per swapchain image.
 Device idle precedes resize/destruction. Failures return errors, without graphics API fallback.
 
-Unsafe remains forbidden in other crates. GUI denies it except in the private vulkan module because Ash
+Unsafe remains forbidden in other crates. GUI denies it except in the private renderer::vulkan module because Ash
 requires unsafe FFI. Window lifetime exceeds surface/context lifetime; renderer/swapchain/sync objects
 are destroyed before pool/device/instance. Partial initialization retains ownership guards for cleanup.
 Runtime smoke validation is not Vulkan conformance or a driver-loss test.
@@ -81,3 +81,6 @@ No external dependency was added to core, debug or CLI.
 Future question: should GUI and emulated-GPU rendering share a Vulkan instance/device abstraction?
 Do not create it before resource ownership, synchronization, failure isolation and presentation requirements
 justify it. M1 GUI starts without a guest GPU; no emulator GPU implementation exists.
+
+Structural follow-up: app/ wires the unchanged run entry; ui/ reserves named pane homes.
+M1 public view_model remains a re-export of model; no rendering or lifecycle behavior changed.

@@ -38,3 +38,17 @@ The machine-readable allowlist covers normal, dev, build and target-specific dep
 Allowed edges do not mandate manifest dependencies. Every actual edge must be necessary and acyclic.
 
 See [session ownership](session_observation.md) and [GUI/host graphics decisions](gui_framework.md).
+
+## Physical growth boundaries
+
+Known high-growth subsystem roots are created before implementation. New functionality must go into
+the narrowest existing owner. Creating a loose top-level Rust file for an already-known growth area
+requires explicit architectural justification. See [module structure](module_structure.md) and its
+[machine-readable inventory](module_structure.json). The directories are ownership homes, not implemented capabilities.
+
+AGC stays split: astero-libs::agc owns guest exports, HLE registration and ABI translation;
+astero-gpu::agc owns graphics command/state/resource/submission mechanisms and translation into PM4,
+registers and GPU services. The service/interface between them is future work, not an API invented by scaffolding.
+Pthread exports remain in libs while synchronization machinery remains in kernel.
+PM4, registers, shader processing, loader stages, kernel synchronization, debugger and GUI each have
+explicit nested homes. GUI rendering remains independent of astero-gpu and toolkit types stay in GUI.

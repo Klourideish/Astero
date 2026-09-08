@@ -8,7 +8,10 @@ M0 scaffold only. Module roots document future ownership; no runtime mechanisms 
 
 ## Module ownership
 
-execution, synchronization. Modules belong to this crate's scope. Native execution starts in `src/execution/`; host-specific backends must be nested below it when implemented.
+[errno/](src/errno/mod.rs), [execution/](src/execution/mod.rs), [process/](src/process/mod.rs), [signals/](src/signals/mod.rs), [synchronization/](src/synchronization/mod.rs), [threading/](src/threading/mod.rs), [timing/](src/timing/mod.rs).
+
+Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).
+New functionality belongs in the narrowest declared owner; these roots do not add capabilities.
 
 Forbidden: Guest library export contracts or application composition.
 
