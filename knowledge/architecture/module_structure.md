@@ -5,10 +5,13 @@ the narrowest existing owner. Creating a loose top-level Rust file for an alread
 requires explicit architectural justification. lib.rs and mod.rs stay focused on declarations,
 exports and small wiring. Approximately 1,000-1,500 lines remains a review trigger, not a target.
 
-This pass declares 148 directory modules across 13 crates: the requested baseline plus the existing
+The original structural pass declared 148 directory modules across 13 crates: the requested baseline plus the existing
 libs families and nids navigation homes. ABI and CLI already have small, suitable M1 structures;
 neither needs speculative directories. One mod.rs per home provides ownership documentation and
 child declarations. Only relocated M1 code uses additional implementation files.
+
+The [final gap audit](structural_gap_audit.md) adds four documentation-only homes: kernel/objects,
+kernel/filesystem, libs/media and audio/codecs. The current inventory totals 152 modules.
 
 ## Inventory and ownership
 
@@ -20,13 +23,13 @@ links navigate each root. These names do not imply implemented capabilities.
 | [astero-core](../../crates/astero-core/README.md) | 4 | session/lifecycle, observation, statistics |
 | [astero-loader](../../crates/astero-loader/README.md) | 11 | artifact, admission, load_plan, ELF/SELF and metadata/import/export/relocation/dependency stages |
 | [astero-memory](../../crates/astero-memory/README.md) | 6 | address, mapping, protection, allocation, access, regions |
-| [astero-kernel](../../crates/astero-kernel/README.md) | 16 | execution/host, threading/thread/tls/context, synchronization/mutex/condvar/rwlock/semaphore/event_flag, process/timing/signals/errno |
+| [astero-kernel](../../crates/astero-kernel/README.md) | 18 | objects, filesystem, execution/host, threading/thread/tls/context, synchronization/mutex/condvar/rwlock/semaphore/event_flag, process/timing/signals/errno |
 | [astero-hle](../../crates/astero-hle/README.md) | 6 | dispatch, providers, registration, resolution, calls, nids |
-| [astero-libs](../../crates/astero-libs/README.md) | 23 | named guest library families; pthread export families; agc/api/resources/submission/registration |
+| [astero-libs](../../crates/astero-libs/README.md) | 24 | media contracts; named guest library families; pthread export families; agc/api/resources/submission/registration |
 | [astero-gpu](../../crates/astero-gpu/README.md) | 28 | AGC mechanisms; PM4 packet/decode/dispatch/draw/write/wait/synchronization; register classes; resource types; Vulkan backend |
 | [astero-shader](../../crates/astero-shader/README.md) | 9 | rdna2/decode/instructions/operands, IR, SSA, analysis, lowering, SPIR-V |
 | [astero-video](../../crates/astero-video/README.md) | 7 | videoout/buffers/flip/status/registration, presentation, vblank |
-| [astero-audio](../../crates/astero-audio/README.md) | 5 | devices, buffers, mixing, timing, output |
+| [astero-audio](../../crates/astero-audio/README.md) | 6 | codecs, devices, buffers, mixing, timing, output |
 | [astero-debug](../../crates/astero-debug/README.md) | 14 | session, threads/context/memory, attribution, tracing/sampling, breakpoints/watchpoints/faults/GPU/snapshots |
 | [astero-gui](../../crates/astero-gui/README.md) | 14 | app, window, renderer/vulkan, model, ui/session/debugger/threads/memory/modules/gpu/logs/diagnostics |
 | [astero-gpu-smoke](../../crates/astero-gpu-smoke/README.md) | 5 | scenarios, fixtures, capture, replay, validation |

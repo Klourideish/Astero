@@ -8,6 +8,8 @@ M0 scaffold only. Module roots document future ownership; no runtime mechanisms 
 
 ## Module ownership
 
+[codecs/](src/codecs/mod.rs).
+
 [buffers/](src/buffers/mod.rs), [devices/](src/devices/mod.rs), [mixing/](src/mixing/mod.rs), [output/](src/output/mod.rs), [timing/](src/timing/mod.rs).
 
 Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).

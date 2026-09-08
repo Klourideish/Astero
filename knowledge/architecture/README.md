@@ -1,5 +1,6 @@
 # Architecture navigation
 
+- [Final structural gap audit](structural_gap_audit.md): evidence-backed additions and deferred ownership decisions.
 - [Module structure](module_structure.md): physical homes, moves and bounded structural policy.
 - [Crate boundaries](crate_boundaries.md): ownership and forbidden responsibilities.
 - [Dependency policy](dependency_policy.json): explicit internal edge allowlist.

@@ -5,7 +5,7 @@
 | astero-abi | Guest ABI layouts, identifiers and constants. | Host-side application types or service mechanisms. |
 | astero-memory | Guest mappings, protections, allocation and checked access. | Process scheduling or library exports. |
 | astero-loader | Binary parsing, load plans, relocations and import metadata. | Executing guest code or owning session lifecycle. |
-| astero-kernel | Processes, threads, synchronization, clocks and execution. | Guest library export contracts or application composition. |
+| astero-kernel | Processes, threads, synchronization, clocks, execution, kernel object lifetimes and filesystem mechanisms. | Guest library export contracts or application composition. |
 | astero-hle | Provider interfaces, registration, resolution and dispatch. | Depending on libs or implementing guest library families. |
 | astero-libs | Guest library exports and delegation to owning services. | Owning mutex machinery, scheduling or memory mapping mechanisms. |
 | astero-shader | Shader decoding, IR, transformations and host generation. | GPU submission or presentation. |
@@ -52,3 +52,13 @@ registers and GPU services. The service/interface between them is future work, n
 Pthread exports remain in libs while synchronization machinery remains in kernel.
 PM4, registers, shader processing, loader stages, kernel synchronization, debugger and GUI each have
 explicit nested homes. GUI rendering remains independent of astero-gpu and toolkit types stay in GUI.
+
+## Gap audit clarifications
+
+See the [pre-M2 audit](structural_gap_audit.md) for coverage and open ownership decisions.
+Kernel objects owns handle identity/lifetime, while filesystem owns VFS/descriptor/host I/O mechanisms;
+libs/filesystem owns guest contracts. Audio codecs owns codec mechanisms; libs/media owns guest
+media and video-codec contracts, not decoding or playback services. Video decoding, network transport
+and platform-service mechanisms require a focused ownership decision before their implementation.
+libs/runtime is restricted to guest language-runtime initialization/finalization and unwind/exception
+ABI contracts. It must not absorb libc, TLS mechanisms, host execution or unrelated platform services.

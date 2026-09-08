@@ -6,6 +6,7 @@ pub mod families;
 pub mod filesystem;
 pub mod kernel;
 pub mod libc;
+pub mod media;
 pub mod network;
 pub mod nids;
 pub mod pthread;

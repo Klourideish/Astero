@@ -8,6 +8,10 @@ M0 scaffold only. Module roots document future ownership; no runtime mechanisms 
 
 ## Module ownership
 
+[filesystem/](src/filesystem/mod.rs).
+
+[objects/](src/objects/mod.rs).
+
 [errno/](src/errno/mod.rs), [execution/](src/execution/mod.rs), [process/](src/process/mod.rs), [signals/](src/signals/mod.rs), [synchronization/](src/synchronization/mod.rs), [threading/](src/threading/mod.rs), [timing/](src/timing/mod.rs).
 
 Nested child ownership follows the [module inventory](../../knowledge/architecture/module_structure.md).

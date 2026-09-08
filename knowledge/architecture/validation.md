@@ -133,3 +133,21 @@ No new GUI runtime launch was performed for this structural pass: GUI compilatio
 M1 vertical-slice tests passed; the earlier visual runtime evidence remains scoped to the M1 run.
 No real binary parsing/execution, PS5Rust migration, admission, HLE, AGC, PM4, register, shader,
 VideoOut, audio or expanded debugger behavior was added. No commit or push was performed.
+
+## Final structural gap audit (2026-09-08)
+
+Against d60f7d5: four documentation-only module roots, declarations, bounded ownership notes and
+inventory/tracking changes. No M1 implementation changes or new tests were needed for these empty roots.
+
+- cargo fmt --all -- --check: passed after formatting the new declaration order.
+- cargo check --workspace --all-targets: passed, including GUI targets.
+- cargo clippy --workspace --all-targets -- -D warnings: passed.
+- cargo test --workspace: 15 passed, 0 failed (core 6, debug 3, CLI 2, GUI 4); 0 doctests.
+- python tools/check_policy.py: passed; 15 crates, 6 internal edges, 152 module homes, valid active state.
+- python -m unittest discover -s tools -p "test_*.py" -v: 25 passed (16 policy, 9 structure).
+- python tools/check_whitespace.py and git diff --check: passed. Git emitted only line-ending conversion notices.
+
+Manifests, lockfile and dependency policy are unchanged. No guest implementation, parsing, execution
+or migration was introduced; these results do not establish emulator correctness. GUI compilation and
+its four tests passed; GUI runtime launch was not repeated for this structural-only audit. No commit or push.
+See [audit classifications and evidence](structural_gap_audit.md).
