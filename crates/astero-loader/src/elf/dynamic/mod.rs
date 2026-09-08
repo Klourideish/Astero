@@ -1,4 +1,4 @@
-//! Bounded dynamic metadata observations; no strings, symbols, relocations or linking are interpreted.
+//! Bounded dynamic metadata with narrow string/symbol observation owners; no linking.
 pub mod entries;
 pub mod error;
 pub mod observation;
@@ -8,3 +8,4 @@ pub use observation::{
 };
 pub mod dependencies;
 pub mod string_table;
+pub mod symbol_table;

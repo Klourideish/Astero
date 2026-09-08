@@ -422,3 +422,30 @@ No dependencies, Cargo manifests/lockfile or internal edges changed: dependency-
 six internal edges. No dependency loading/search, HLE/provider/sysmodule lookup, NIDs, SONAME/search-path
 interpretation, symbol/relocation parsing, GOT/PLT behavior, SELF, filesystem/mmap, guest memory, runtime
 modules, PS5Rust migration, guest execution, commit or push occurred. M7 has not started.
+
+## M7 validation: bounded dynamic symbol candidates (2026-09-08)
+
+All requested Cargo checks passed: fmt --all -- --check, check/build --workspace --all-targets,
+clippy --workspace --all-targets -- -D warnings, and test --workspace. Build includes GUI; no GUI
+runtime launch occurred. Exact results: 106 executable tests and 9 compile-fail doctests passed,
+zero failed/ignored. Nine new generated-fixture tests; previous 97 tests and all doctests retained.
+
+Python unittest discovery passed 47 tests: 27 policy/structure plus 20 index/extraction. Policy/state
+validation passed: 15 crates, six internal edges, 166 module homes. Supplemental whitespace passed
+330 files; git diff --check passed. No manifest, lockfile, dependency or edge changes.
+
+Two consecutive index generation/check cycles passed with 16 byte-identical generated files.
+Aggregate SHA256 (sorted filename + NUL + raw bytes):
+1263e24bc6189eb040c506d784388a4fe13794c48ddb4c4f0f13d54f367a07e3.
+Counts before -> after: implementation 228 -> 239; subsystems 115 -> 115; modules 255 -> 261;
+diagnostics 11 -> 12; tests 153 -> 162; sources 250 -> 255; NIDs and ABI zero. Total 1,044 records.
+All 11 symbol_table implementation rows appear under loader/ELF; reviewed diagnostic/test links
+connect candidate access and count refusal. Initial generic-impl link spelling was rejected by the
+generator, then corrected to the discovered ID before successful validation.
+
+Sweeps cover 1,024 binding/type/other combinations, five special section designations and 26 source
+extents. Tests establish bounded candidate/name contracts, not table membership, linking or emulator
+correctness. Source/translation/admission/load-plan mechanisms remain unchanged.
+No hash-table interpretation, relocation parsing/application, import/export derivation, NIDs, HLE,
+SELF, guest memory, runtime linking, migration or execution occurred. M8 has not started. See
+[dynamic symbols](dynamic_symbols.md) for count dependency and scope.

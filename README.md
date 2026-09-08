@@ -26,4 +26,7 @@ source bytes and checked ranges; `cargo test -p astero-loader` exercises both. [
 using generated fixtures. [M5](knowledge/architecture/dynamic_elf_observation.md) adds bounded dynamic
 observations and source-backed address translation. [M6](knowledge/architecture/dynamic_strings.md)
 interprets bounded dynamic strings into byte-preserving dependency declarations. Dependency resolution,
-symbol/relocation parsing, linking, SELF and runtime application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).
+relocation parsing, linking, SELF and runtime application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).
+
+[M7](knowledge/architecture/dynamic_symbols.md) observes individual dynamic symbol candidates and names;
+no symbol count is inferred and enumeration remains unavailable.

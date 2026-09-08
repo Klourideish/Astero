@@ -19,6 +19,7 @@
       "elf/dynamic/error",
       "elf/dynamic/observation",
       "elf/dynamic/string_table",
+      "elf/dynamic/symbol_table",
       "elf/dynamic/tags",
       "elf/error",
       "elf/header",

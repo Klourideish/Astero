@@ -35,3 +35,6 @@ for synthetic invariant tests and immutable-boundary compile-fail doctests.
 See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),
 and [repository contract](../../AGENTS.md).
+
+M7 adds elf::dynamic::symbol_table::SymbolTable for bounded candidate reads and byte names.
+Enumeration requires future trusted count evidence; see [dynamic symbols](../../knowledge/architecture/dynamic_symbols.md).

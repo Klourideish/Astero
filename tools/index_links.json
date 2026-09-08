@@ -170,6 +170,21 @@
       "tests": [
         "test:astero-loader/test:dynamic_strings/named_declarations_pass_through_generic_admission_and_planning_without_resolution"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::read::impl[< ' a > SymbolTable < ' a >]::read_candidate",
+      "tests": [
+        "test:astero-loader/test:dynamic_symbols/fields_names_and_repeated_observation_preserve_source",
+        "test:astero-loader/test:dynamic_symbols/name_failures_are_string_errors_with_symbol_index",
+        "test:astero-loader/test:dynamic_symbols/translation_and_truncation_are_not_fabricated_symbols",
+        "test:astero-loader/test:dynamic_symbols/binding_type_visibility_and_sections_preserve_extensions"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::read::impl[< ' a > SymbolTable < ' a >]::symbol_count",
+      "tests": [
+        "test:astero-loader/test:dynamic_symbols/null_entry_and_unknown_count_do_not_enable_enumeration"
+      ]
     }
   ],
   "reviews": [
@@ -382,6 +397,18 @@
       "description": "Generic byte-name invariants reject empty and embedded NUL; UTF-8 is optional explicit validation.",
       "evidence": [
         "knowledge/architecture/dynamic_strings.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf.symbol_table",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::error::SymbolError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::read::impl[< ' a > SymbolTable < ' a >]::read_candidate"
+      ],
+      "surfaces": [],
+      "description": "Bounded symbol candidate and name failures; count unavailable explicitly gates enumeration. No linker or frontend integration.",
+      "evidence": [
+        "knowledge/architecture/dynamic_symbols.md"
       ]
     }
   ],
