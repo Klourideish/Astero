@@ -139,6 +139,37 @@
         "test:astero-loader/test:dynamic_observation/dynamic_entry_size_sweep_distinguishes_exhaustion_and_partial_entries",
         "test:astero-loader/test:dynamic_observation/unknown_tags_preserve_signed_bits_order_duplicates_and_values"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::string_table::view::impl[DynamicStringTable]::lookup",
+      "tests": [
+        "test:astero-loader/test:dynamic_strings/bounded_views_handle_empty_suffix_and_exact_final_nul",
+        "test:astero-loader/test:dynamic_strings/every_offset_and_budget_matches_bounded_nul_oracle",
+        "test:astero-loader/test:dynamic_strings/missing_nul_never_scans_past_declared_strsz",
+        "test:astero-loader/test:dynamic_strings/scan_budgets_include_terminators_and_repeated_offsets"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::dependencies::inspect::observe",
+      "tests": [
+        "test:astero-loader/test:dynamic_strings/needed_order_and_duplicates_survive_in_generic_metadata",
+        "test:astero-loader/test:dynamic_strings/dependency_names_preserve_non_utf8_identity_without_lossy_conversion",
+        "test:astero-loader/test:dynamic_strings/source_views_and_owned_names_survive_original_report_lifetimes",
+        "test:astero-loader/test:dynamic_strings/missing_descriptor_groups_fail_during_dynamic_observation"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/dependencies::name::impl[DependencyName]::new",
+      "tests": [
+        "test:astero-loader/test:dynamic_strings/generic_name_constructor_preserves_bytes_and_rejects_empty_or_interior_nul",
+        "test:astero-loader/test:dynamic_strings/empty_string_is_valid_lookup_but_invalid_dependency_declaration"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/dependencies::requirement::Dependency",
+      "tests": [
+        "test:astero-loader/test:dynamic_strings/named_declarations_pass_through_generic_admission_and_planning_without_resolution"
+      ]
     }
   ],
   "reviews": [
@@ -315,6 +346,42 @@
       "description": "Structured dynamic observation and descriptor failures; linking deferred and no frontend integration.",
       "evidence": [
         "knowledge/architecture/dynamic_elf_observation.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf.string_table",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::string_table::error::StringTableError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::dependencies::inspect::observe"
+      ],
+      "surfaces": [],
+      "description": "Bounded string-reference failures carry source-table token, offset and scan context.",
+      "evidence": [
+        "knowledge/architecture/dynamic_strings.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf.dependency_strings",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::dependencies::error::DependencyObservationError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::dependencies::inspect::observe"
+      ],
+      "surfaces": [],
+      "description": "Dynamic dependency interpretation failures with original entry context; no resolution or frontend integration.",
+      "evidence": [
+        "knowledge/architecture/dynamic_strings.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.dependency_name",
+      "implementation": "impl:astero-loader/lib:astero_loader/dependencies::name::DependencyNameError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::dependencies::inspect::observe"
+      ],
+      "surfaces": [],
+      "description": "Generic byte-name invariants reject empty and embedded NUL; UTF-8 is optional explicit validation.",
+      "evidence": [
+        "knowledge/architecture/dynamic_strings.md"
       ]
     }
   ],

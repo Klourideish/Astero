@@ -72,7 +72,8 @@ need not be aligned. This is intentionally not ELF congruence or host-page mappi
 extents are allowed, including offset at actual EOF, and produce pure zero fill. Virtual/source end
 overflow is rejected, including an otherwise tempting extent ending at 2^64.
 
-Dependencies are unique and cannot refer to the current module. Imports require a nonblank symbol,
+Explicit Module dependencies are unique and cannot refer to the current module. M6 Named declarations
+preserve order and repeats and do not enter the module-ID set. Imports require a nonblank symbol,
 a declared dependency and a unique dependency/symbol pair. Exports have unique nonblank names and
 nonzero extents contained within one admitted region; function exports require executable permission.
 Export metadata is not proof of a callable implementation. No dependency availability, transitive
@@ -141,3 +142,12 @@ It returns a separate format-specific report; it does not modify InspectedArtifa
 ValidatedTarget or LoadPlan. PT_DYNAMIC still carries UninspectedProgramSemantics: observing its
 descriptors does not complete their semantics. No dependencies/imports/exports/relocations are fabricated.
 See [dynamic ELF observation](dynamic_elf_observation.md) for independent translator and error ownership.
+
+## M6 dependency contract correction
+
+Dependency is now an enum: Module(ModuleId) retains explicit synthetic graph requirements;
+Named(DependencyName) is an unresolved nonempty NUL-free byte name. No arbitrary module IDs are minted
+from parsed names. Names preserve duplicates and remain in the existing dependencies vectors throughout
+InspectedArtifact, TargetMetadata and LoadPlan. Imports still require an explicit Module declaration;
+a name never satisfies an import or implies resolution. See [dynamic strings](dynamic_strings.md).
+The ELF string adapter enriches the description but leaves every deferred requirement in place.

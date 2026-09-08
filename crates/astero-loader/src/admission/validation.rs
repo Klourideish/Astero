@@ -4,6 +4,7 @@ use super::{
 };
 use crate::{
     artifact::{Architecture, ArtifactFamily, InspectedArtifact},
+    dependencies::Dependency,
     exports::ExportKind,
     metadata::{AddressRange, RegionObservation},
     modules::{ArtifactRole, TargetRole},
@@ -103,14 +104,18 @@ pub fn admit(inspected: &InspectedArtifact) -> Result<ValidatedTarget, Rejection
     }
     let mut dependencies = BTreeSet::new();
     for (i, dependency) in d.dependencies.iter().enumerate() {
-        if dependency.module == module.id {
+        let Dependency::Module(required_module) = dependency else {
+            // Named declarations have constructor-validated bytes; preserve repetitions without resolution.
+            continue;
+        };
+        if *required_module == module.id {
             return Err(metadata(
                 DescriptorKind::Dependency,
                 i,
                 MetadataProblem::SelfDependency,
             ));
         }
-        if !dependencies.insert(dependency.module) {
+        if !dependencies.insert(*required_module) {
             return Err(metadata(
                 DescriptorKind::Dependency,
                 i,

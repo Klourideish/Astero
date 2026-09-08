@@ -325,9 +325,9 @@ fn entry_must_be_present_for_executable_and_source_backed_executable() {
 #[test]
 fn dependency_and_import_metadata_is_consistent() {
     let mut raw = linked();
-    raw.description.dependencies.push(Dependency {
-        module: ModuleId(1),
-    });
+    raw.description
+        .dependencies
+        .push(Dependency::Module(ModuleId(1)));
     assert_eq!(
         reject(raw),
         malformed(

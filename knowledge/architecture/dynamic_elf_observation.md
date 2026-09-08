@@ -1,5 +1,8 @@
 # M5: dynamic ELF observation and address translation
 
+M6 adds [bounded string and dependency interpretation](dynamic_strings.md) after this unchanged stage.
+The statements below describe M5 descriptor observation, not the added M6 interpretation API.
+
 > Observing a dynamic-table descriptor does not mean Astero has resolved or applied it.
 
 SourceArtifact -> elf::inspect -> elf::dynamic::observe(report, ObservationLimits) -> dynamic report.

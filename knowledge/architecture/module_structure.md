@@ -12,7 +12,7 @@ child declarations. At that stage only relocated M1 code used additional impleme
 loader contract files under existing roots; see [loader pipeline](loader_pipeline.md).
 
 The [final gap audit](structural_gap_audit.md) adds four documentation-only homes: kernel/objects,
-kernel/filesystem, libs/media and audio/codecs. M4 adds five focused ELF child homes; M5 adds six dynamic/translation homes; the current inventory totals 163 modules.
+kernel/filesystem, libs/media and audio/codecs. M4 adds five focused ELF child homes; M5 adds six dynamic/translation homes; M6 adds two dynamic string/dependency homes; the current inventory totals 165 modules.
 
 ## Inventory and ownership
 
@@ -22,7 +22,7 @@ links navigate each root. These names do not imply implemented capabilities.
 | Crate | Directory module homes | Deliberate nested areas |
 |---|---:|---|
 | [astero-core](../../crates/astero-core/README.md) | 4 | session/lifecycle, observation, statistics |
-| [astero-loader](../../crates/astero-loader/README.md) | 22 | artifact, admission, load_plan, ELF/SELF and metadata/import/export/relocation/dependency stages |
+| [astero-loader](../../crates/astero-loader/README.md) | 24 | artifact, admission, load_plan, ELF/SELF and metadata/import/export/relocation/dependency stages |
 | [astero-memory](../../crates/astero-memory/README.md) | 6 | address, mapping, protection, allocation, access, regions |
 | [astero-kernel](../../crates/astero-kernel/README.md) | 18 | objects, filesystem, execution/host, threading/thread/tls/context, synchronization/mutex/condvar/rwlock/semaphore/event_flag, process/timing/signals/errno |
 | [astero-hle](../../crates/astero-hle/README.md) | 6 | dispatch, providers, registration, resolution, calls, nids |
@@ -96,3 +96,6 @@ M5 adds loader/elf/address_translation and dynamic/{entries,tags,observation,err
 Translation owns only declared-image virtual ranges and checked source backing. Dynamic observation
 owns tag decoding and descriptor consistency, not future string/symbol/relocation interpretation.
 See [dynamic observations](dynamic_elf_observation.md).
+
+M6 nests dynamic/string_table and dynamic/dependencies beneath loader/elf. Generic byte-name and
+dependency declaration types remain under loader/dependencies. See [dynamic strings](dynamic_strings.md).

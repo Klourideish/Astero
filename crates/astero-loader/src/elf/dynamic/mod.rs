@@ -6,3 +6,5 @@ pub mod tags;
 pub use observation::{
     DynamicDescriptors, DynamicObservation, DynamicTable, ObservationLimits, observe,
 };
+pub mod dependencies;
+pub mod string_table;

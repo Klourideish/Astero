@@ -1,6 +1,10 @@
+use super::DependencyName;
 use crate::modules::ModuleId;
-/// Required external module identity. This does not assert availability or load order.
+/// Required dependency declaration, never evidence of availability or resolution.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Dependency {
-    pub module: ModuleId,
+pub enum Dependency {
+    /// Explicit caller graph identity; subject to the original unique/non-self module rules.
+    Module(ModuleId),
+    /// Unresolved byte name. Ordering and repeated declarations are significant observations.
+    Named(DependencyName),
 }

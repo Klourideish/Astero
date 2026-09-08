@@ -24,5 +24,6 @@ Project licensing remains unresolved: LICENSE is empty and no licence grant is a
 load-plan contracts. [M3](knowledge/architecture/source_binding.md) binds them to immutable in-memory
 source bytes and checked ranges; `cargo test -p astero-loader` exercises both. [M4](knowledge/architecture/elf_inspection.md) adds bounded ELF64 header/program-header inspection
 using generated fixtures. [M5](knowledge/architecture/dynamic_elf_observation.md) adds bounded dynamic
-observations and source-backed address translation. Semantic table parsing, linking, SELF and runtime
-application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).
+observations and source-backed address translation. [M6](knowledge/architecture/dynamic_strings.md)
+interprets bounded dynamic strings into byte-preserving dependency declarations. Dependency resolution,
+symbol/relocation parsing, linking, SELF and runtime application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).

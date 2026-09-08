@@ -111,3 +111,7 @@ family must be a deliberate next decision; no SELF, real binaries or runtime app
 M5 retains this source API unchanged. The [ELF translator](dynamic_elf_observation.md) validates
 PT_LOAD source prefixes and returns existing BoundSourceRange tokens. Dynamic reports retain the
 same SourceArtifact owner; tokens never represent BSS as stored source bytes.
+
+M6 string views also retain this unchanged byte owner. Bounded substring tokens exclude the verified
+NUL terminator; generic dependency names own only their small byte sequences. No whole table is copied.
+See [dynamic strings](dynamic_strings.md).

@@ -15,6 +15,9 @@ may be admitted; no target is applied or executed. See [ELF scope](../../knowled
 M5 adds elf::address_translation::AddressTranslator and elf::dynamic::observe(&report, limits).
 Dynamic reports retain source-bound descriptors; they neither interpret tables nor clear admission
 requirements. See [dynamic observation](../../knowledge/architecture/dynamic_elf_observation.md).
+M6 adds elf::dynamic::dependencies::observe and reusable string_table views. DT_NEEDED becomes
+Dependency::Named with exact owned bytes; original module-ID declarations use Dependency::Module.
+No names are resolved and no ELF admission guard is cleared. See [dynamic strings](../../knowledge/architecture/dynamic_strings.md).
 See the [loader pipeline](../../knowledge/architecture/loader_pipeline.md) for invariants, errors and limits.
 
 ## Module ownership

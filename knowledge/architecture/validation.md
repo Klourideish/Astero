@@ -370,3 +370,55 @@ admission pressures remain; dynamic scan budgets are explicit caller input. See
 No new dependencies, linking, strings/symbols/relocations interpretation, NIDs, Sony tag interpretation,
 SELF, filesystem/mmap, guest memory, HLE, runtime application, PS5Rust migration, guest execution,
 commit or push occurred. M6 has not started.
+
+## M6: dynamic strings and dependency declarations — 2026-09-08
+
+Started from clean main at e102a2f. Added loader/elf/dynamic/string_table and dependencies owners,
+generic DependencyName, corrected Dependency variants, generated tests and focused architecture/index
+records. Existing source binding, address translation, M5 descriptor observation and load-plan code
+are unchanged. Admission retains the module-ID checks and permits ordered/repeated constructor-valid
+Named declarations; no ELF admission requirement is removed. M2 fixtures use the new Module spelling.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 97 executable tests + 9 compile-fail doctests passed; 0 failed/ignored |
+| python -m unittest discover -s tools -p "test_*.py" -v | 47 passed: 27 policy/structure + 20 index/extraction |
+| python tools/check_policy.py | passed: dependency/state/structure and index freshness |
+| python tools/check_structure.py | passed: 165 declared module homes |
+| python tools/check_whitespace.py | passed: 324 files |
+| git diff --check | passed |
+| python tools/generate_indexes.py --check | passed after each of two consecutive regeneration runs |
+
+Eighteen new integration tests and one name-immutability doctest cover absent/empty/NUL-only tables,
+bounded suffixes, exact terminal NUL, non-UTF-8 identity, duplicate/order/provenance preservation,
+missing termination beyond DT_STRSZ, empty-name rejection, descriptor conflicts and prior M5 failures,
+scan budgets including repeated references, lifetime and generic admission/plan metadata preservation.
+Sweeps exercise 146 offset/budget combinations across six tables, 13 repeated dependency counts and
+12 source-boundary pointer/size pairs. All prior tests remain; only three M2 fixture constructions were
+adapted from the old struct to Dependency::Module. The generic pipeline test uses a separate synthetic
+fixture and confirms named declarations cannot satisfy ModuleId imports; ELF guards stay intact.
+
+Two consecutive generator/check cycles produced byte-identical output across 16 generated files.
+Aggregate SHA256 of sorted filename + NUL + raw bytes:
+2f0e1832388d5b0d59472d676275ca1c477d905f2bb58300f62c41f8c8c5ec61.
+Index counts before -> after: implementation 198 -> 228; subsystems 115 -> 115; modules 244 -> 255;
+diagnostics 8 -> 11; tests 134 -> 153; sources 241 -> 250; NIDs and ABI remain zero. Total 1,012 records.
+All 30 added implementation symbols resolve to astero-loader and the ELF/dependencies owners. The
+string_table/dynamic::dependencies/dependencies::name Markdown search returned those 30 rows.
+Extraction notes remain empty. Reviewed test/diagnostic links locate byte names, string lookup and
+NEEDED adaptation without hand-maintained spans. No new runtime-validation claim is made.
+
+The initial focused 18-test run passed with two unused test imports; Clippy correctly rejected those
+imports under -D warnings. They were removed without lint suppression, and the final full validation
+above passed. GUI runtime launch was not repeated. Tests establish generated-byte/name contracts, not
+ELF linking completeness, dependency availability or emulator correctness. No full-table conformance
+claim is made for unreferenced strings. See [string/name scope](dynamic_strings.md).
+
+No dependencies, Cargo manifests/lockfile or internal edges changed: dependency-free loader, 15 crates,
+six internal edges. No dependency loading/search, HLE/provider/sysmodule lookup, NIDs, SONAME/search-path
+interpretation, symbol/relocation parsing, GOT/PLT behavior, SELF, filesystem/mmap, guest memory, runtime
+modules, PS5Rust migration, guest execution, commit or push occurred. M7 has not started.

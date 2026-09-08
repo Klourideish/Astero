@@ -57,12 +57,8 @@ pub fn linked() -> InputArtifact {
     // Deliberately out of address order, with an initialized data prefix and BSS-like tail.
     d.regions.insert(0, region(0x2000, 16, 8, 32, false));
     d.dependencies = vec![
-        Dependency {
-            module: ModuleId(2),
-        },
-        Dependency {
-            module: ModuleId(3),
-        },
+        Dependency::Module(ModuleId(2)),
+        Dependency::Module(ModuleId(3)),
     ];
     d.imports = vec![Import {
         dependency: ModuleId(3),

@@ -5,6 +5,7 @@
 - [Module structure](module_structure.md): physical homes, moves and bounded structural policy.
 - [Crate boundaries](crate_boundaries.md): ownership and forbidden responsibilities.
 - [Dependency policy](dependency_policy.json): explicit internal edge allowlist.
+- [Dynamic strings and dependency declarations](dynamic_strings.md): M6 bounded byte names, duplicate preservation and generic metadata boundary.
 - [Dynamic ELF observations](dynamic_elf_observation.md): M5 virtual-to-source translation, descriptor pairing and explicit linking deferral.
 - [ELF64 inspection](elf_inspection.md): bounded M4 header/program-header adaptation and explicit deferred semantics.
 - [Loader pipeline](loader_pipeline.md): synthetic inspection, admission and immutable plans.
