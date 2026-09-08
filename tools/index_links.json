@@ -185,6 +185,38 @@
       "tests": [
         "test:astero-loader/test:dynamic_symbols/null_entry_and_unknown_count_do_not_enable_enumeration"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::sysv::inspect::inspect",
+      "tests": [
+        "test:astero-loader/test:hash_extents/sysv_count_provenance_and_lazy_enumeration_preserve_names",
+        "test:astero-loader/test:hash_extents/sysv_reference_and_cycle_failures_are_structured",
+        "test:astero-loader/test:hash_extents/widened_sysv_counts_never_wrap_into_short_arrays",
+        "test:astero-loader/test:hash_extents/sysv_count_source_and_symbol_extent_sweep"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::gnu::inspect::inspect",
+      "tests": [
+        "test:astero-loader/test:hash_extents/gnu_terminated_suffix_and_bloom_are_source_bound",
+        "test:astero-loader/test:hash_extents/gnu_missing_termination_and_work_limit_are_separate",
+        "test:astero-loader/test:hash_extents/gnu_termination_and_prefix_boundary_sweep",
+        "test:astero-loader/test:hash_extents/absent_and_empty_gnu_evidence_never_guesses_count"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::extent::derive::derive",
+      "tests": [
+        "test:astero-loader/test:hash_extents/two_evidence_sources_must_agree_including_partial_lower_bound",
+        "test:astero-loader/test:hash_extents/trusted_count_still_requires_full_symbol_source_extent"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::enumeration::impl[< ' e > SymbolTable < ' e >]::enumerate",
+      "tests": [
+        "test:astero-loader/test:hash_extents/enumeration_budgets_and_name_errors_stop_without_fabricated_success",
+        "test:astero-loader/test:hash_extents/absent_and_empty_gnu_evidence_never_guesses_count"
+      ]
     }
   ],
   "reviews": [
@@ -409,6 +441,19 @@
       "description": "Bounded symbol candidate and name failures; count unavailable explicitly gates enumeration. No linker or frontend integration.",
       "evidence": [
         "knowledge/architecture/dynamic_symbols.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf.hash_extent",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::error::HashError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::observation::inspect::observe",
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::enumeration::impl[< ' e > SymbolTable < ' e >]::with_hash"
+      ],
+      "surfaces": [],
+      "description": "Source-bound hash structure, work limit, conflicting evidence and full-symbol extent failures; no lookup or linking.",
+      "evidence": [
+        "knowledge/architecture/elf_hash_extents.md"
       ]
     }
   ],

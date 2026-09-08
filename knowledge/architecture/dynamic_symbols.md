@@ -87,3 +87,5 @@ See [validation](validation.md) for executed results. No runtime linking, reloca
 GOT/PLT, HLE, NIDs, SELF, guest memory, filesystem input, PS5Rust migration or execution is introduced.
 Existing alignment/overlap and future load-bias pressures remain open. Recommended M8: bounded hash
 metadata and trustworthy symbol-count/extent evidence, before enumeration or import/export derivation.
+
+M8 now adds optional [hash-derived extents](elf_hash_extents.md). M7 refusal above still applies to SymbolTable::new and unproven cases.

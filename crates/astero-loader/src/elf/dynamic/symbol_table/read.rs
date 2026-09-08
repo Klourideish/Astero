@@ -7,12 +7,13 @@ use crate::{
     },
     metadata::VirtualAddress,
 };
-/// Tied to the original immutable inspection. No guessed count, iterator or caller-supplied extent.
+/// Tied to the original immutable inspection. Enumeration requires internally derived hash evidence.
 pub struct SymbolTable<'a> {
     elf: &'a ElfInspection,
     translator: AddressTranslator<'a>,
     address: u64,
     strings: Option<DynamicStringTable>,
+    pub(super) extent: Option<crate::elf::dynamic::hash::extent::TrustedSymbolExtent>,
 }
 impl<'a> SymbolTable<'a> {
     pub fn new(elf: &'a ElfInspection, limits: ObservationLimits) -> Result<Self, SymbolError> {
@@ -34,11 +35,15 @@ impl<'a> SymbolTable<'a> {
             translator,
             address: descriptor.address.0,
             strings,
+            extent: None,
         })
     }
-    /// Enumeration requires future trusted count evidence (hash metadata); EOF is not a count.
+    /// Exact count is available only after with_hash validates evidence and the entire source extent.
     pub fn symbol_count(&self) -> Result<u64, SymbolError> {
-        Err(SymbolError::CountUnavailable)
+        self.extent
+            .as_ref()
+            .map(|e| e.symbol_count())
+            .ok_or(SymbolError::CountUnavailable)
     }
     /// Reads one caller-requested candidate. Success proves byte backing, not table membership.
     /// st_name == 0 denotes no name without dereferencing string offset zero.

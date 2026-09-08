@@ -58,3 +58,9 @@ relocations and runtime application. This is a recommendation only; M7 has not s
 M7 implements [bounded individual symbol candidates](dynamic_symbols.md), preserving byte names and
 source identity. CountUnavailable explicitly gates enumeration. M8 should establish bounded hash
 metadata/count evidence; no hash implementation, linking or M8 work is part of M7.
+
+## M8 boundary and proposed M9
+
+[Hash extents](elf_hash_extents.md) permit bounded observation enumeration only with exact evidence.
+M9 should consider bounded relocation records and symbol-index validation without application/linking.
+GNU empty-bucket exact-count inference, hash lookup and broader count sources remain deferred.

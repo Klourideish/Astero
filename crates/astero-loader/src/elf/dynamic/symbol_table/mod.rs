@@ -5,3 +5,5 @@ mod read;
 pub use error::SymbolError;
 pub use model::{Binding, DynamicSymbolObservation, Section, SymbolType, Visibility};
 pub use read::SymbolTable;
+mod enumeration;
+pub use enumeration::{EnumerationLimits, SymbolEnumeration};

@@ -7,5 +7,6 @@ pub use observation::{
     DynamicDescriptors, DynamicObservation, DynamicTable, ObservationLimits, observe,
 };
 pub mod dependencies;
+pub mod hash;
 pub mod string_table;
 pub mod symbol_table;

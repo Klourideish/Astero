@@ -449,3 +449,44 @@ correctness. Source/translation/admission/load-plan mechanisms remain unchanged.
 No hash-table interpretation, relocation parsing/application, import/export derivation, NIDs, HLE,
 SELF, guest memory, runtime linking, migration or execution occurred. M8 has not started. See
 [dynamic symbols](dynamic_symbols.md) for count dependency and scope.
+
+## M8 validation: hash metadata and trusted symbol extents (2026-09-08)
+
+Scope: nested hash observation/sysv/gnu/extent/error owners, optional M7 enumeration integration,
+tags, generated fixtures, architecture and indexes. No manifests, Cargo.lock, dependency policy
+or internal edges changed: 15 packages, six edges, dependency-free loader.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 122 executable tests + 10 compile-fail doctests passed; zero failed/ignored |
+| python -m unittest discover -s tools -p "test_*.py" | 47 passed: 27 policy/structure + 20 index/extraction |
+| python tools/check_policy.py | passed, active state valid, fresh indexes |
+| python tools/check_structure.py | passed, 172 module homes |
+| python tools/check_whitespace.py | passed, 348 files |
+| git diff --check | passed |
+| two generate_indexes.py / --check cycles | passed; 16 files byte-identical |
+
+New coverage: 16 executable tests and one extent-privacy doctest. Prior M2-M7 tests remain intact.
+Sweeps include 64 SysV count pairs, 32 GNU termination/source-boundary cases and exact-end/one-byte
+short symbol and hash boundaries. Maximum u32 counts are widened rather than wrapped; actual source
+bounds reject oversized arrays. Fixtures cover source identity, absent/partial/agreed/conflicting
+evidence, cycle/termination failures, budgets and fused iteration errors. An initial test punctuation
+error was fixed before successful compilation; no lint or validation rule was weakened.
+
+Index counts before -> after: implementation 239 -> 282; subsystems 115 -> 115; modules 261 -> 279;
+diagnostics 12 -> 13; tests 162 -> 179; sources 255 -> 272. NIDs/ABI remain zero. Total 1,140 records.
+All 43 hash/enumeration implementation rows are searchable under loader/ELF; reviewed test and
+diagnostic relationships are recorded without manual spans. Aggregate SHA256 of sorted filename +
+NUL + raw bytes for the 16 generated files:
+a9d0b672ec2f37a23bfcbd39f637565c02689af9f8b069f0fdd74dc798a73b9b.
+
+No GUI runtime launch was performed; this evidence is generated-input contract validation, not
+linker/hash-name correctness or emulator correctness. Empty GNU buckets remain partial evidence,
+and the original M7 constructor retains enumeration refusal. Source bounds, admission guards and
+immutable planning are preserved. No import/export derivation, dependency resolution, symbol lookup,
+NIDs, relocations, PLT/GOT, HLE, SELF, guest memory, migration or execution occurred. M9 not started.
+See [hash contract](elf_hash_extents.md) for conservative support and remaining resource pressure.

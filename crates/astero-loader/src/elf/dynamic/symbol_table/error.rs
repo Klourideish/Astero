@@ -10,6 +10,8 @@ pub enum SymbolError {
     Dynamic(DynamicError),
     TableUnavailable,
     CountUnavailable,
+    Hash(crate::elf::dynamic::hash::error::HashError),
+    EnumerationLimit { count: u64, limit: u64 },
     IndexOverflow { index: u64 },
     Translation { index: u64, error: TranslationError },
     Source(SourceError),

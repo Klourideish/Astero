@@ -38,3 +38,5 @@ and [repository contract](../../AGENTS.md).
 
 M7 adds elf::dynamic::symbol_table::SymbolTable for bounded candidate reads and byte names.
 Enumeration requires future trusted count evidence; see [dynamic symbols](../../knowledge/architecture/dynamic_symbols.md).
+
+M8 adds hash::observe and SymbolTable::with_hash/enumerate; see [hash extents](../../knowledge/architecture/elf_hash_extents.md).

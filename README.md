@@ -29,4 +29,6 @@ interprets bounded dynamic strings into byte-preserving dependency declarations.
 relocation parsing, linking, SELF and runtime application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).
 
 [M7](knowledge/architecture/dynamic_symbols.md) observes individual dynamic symbol candidates and names;
-no symbol count is inferred and enumeration remains unavailable.
+no symbol count is guessed; the original candidate-only API still refuses enumeration.
+
+[M8](knowledge/architecture/elf_hash_extents.md) adds source-bound hash evidence and gated symbol enumeration.

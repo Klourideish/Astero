@@ -12,7 +12,7 @@ child declarations. At that stage only relocated M1 code used additional impleme
 loader contract files under existing roots; see [loader pipeline](loader_pipeline.md).
 
 The [final gap audit](structural_gap_audit.md) adds four documentation-only homes: kernel/objects,
-kernel/filesystem, libs/media and audio/codecs. M4 adds five focused ELF child homes; M5 adds six dynamic/translation homes; M6 adds two dynamic string/dependency homes; the M7 adds one symbol-table home; the current inventory totals 166 modules.
+kernel/filesystem, libs/media and audio/codecs. M4 adds five focused ELF child homes; M5 adds six dynamic/translation homes; M6 adds two dynamic string/dependency homes; M7 adds one symbol-table home; the M8 adds six hash homes; the current inventory totals 172 modules.
 
 ## Inventory and ownership
 
@@ -22,7 +22,7 @@ links navigate each root. These names do not imply implemented capabilities.
 | Crate | Directory module homes | Deliberate nested areas |
 |---|---:|---|
 | [astero-core](../../crates/astero-core/README.md) | 4 | session/lifecycle, observation, statistics |
-| [astero-loader](../../crates/astero-loader/README.md) | 25 | artifact, admission, load_plan, ELF/SELF and metadata/import/export/relocation/dependency stages |
+| [astero-loader](../../crates/astero-loader/README.md) | 31 | artifact, admission, load_plan, ELF/SELF and metadata/import/export/relocation/dependency stages |
 | [astero-memory](../../crates/astero-memory/README.md) | 6 | address, mapping, protection, allocation, access, regions |
 | [astero-kernel](../../crates/astero-kernel/README.md) | 18 | objects, filesystem, execution/host, threading/thread/tls/context, synchronization/mutex/condvar/rwlock/semaphore/event_flag, process/timing/signals/errno |
 | [astero-hle](../../crates/astero-hle/README.md) | 6 | dispatch, providers, registration, resolution, calls, nids |
