@@ -6,3 +6,4 @@ __pycache__/
 /AGENTS.md
 /PROJECT_STATE.json
 /knowledge/indexes/*.json
+/LOCAL_TEST_CORPUS.json
