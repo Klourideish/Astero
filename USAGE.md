@@ -50,6 +50,32 @@ cargo run -p astero-cli -- --linkage --details
 These last two commands report unavailable evidence for an empty session. Acquisition and linkage
 are separate modes; running acquisition does not supply evidence to a later command.
 
+### Explicit inspection (opt-in)
+
+The separate inspect command acquires bytes, then observes ELF64 file/program headers only.
+It requires the same two acquisition limits plus --max-program-headers (all header types).
+Zero permits a header-only file; exceeding the budget fails without a partial report.
+Successful inspection does not admit, load, execute or produce linkage.
+
+For a repeatable synthetic input, create this small fixture once (existing files are not overwritten):
+
+~~~powershell
+cargo run -p astero-loader --example inspection_fixture -- .\target\m16-header.elf
+cargo run -p astero-cli -- inspect --path ".\target\m16-header.elf" --max-bytes 1024 --max-read-calls 4 --max-program-headers 1
+~~~
+
+Expect Acquired (272 bytes), then Inspection: Complete and one observed program header.
+On subsequent runs, reuse the fixture or choose a new output path for the generator.
+For real input, replace the quoted path and explicitly choose suitable limits.
+
+These two inspection commands deliberately fail with exit code 1: a header-budget refusal and
+invalid ELF magic respectively. Acquisition itself still succeeds.
+
+~~~powershell
+cargo run -p astero-cli -- inspect --path ".\target\m16-header.elf" --max-bytes 1024 --max-read-calls 4 --max-program-headers 0
+cargo run -p astero-cli -- inspect --path ".\README.md" --max-bytes 1048576 --max-read-calls 64 --max-program-headers 8
+~~~
+
 ## GUI
 
 Open the Winit/Vulkan/ImGui session inspector without evidence:

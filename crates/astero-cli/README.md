@@ -26,3 +26,5 @@ No file input is supported. See [composition](../../knowledge/architecture/evide
 M13 moves the shared demo generator to loader and composition to core; CLI calls core and its direct loader edge is dev-only again. No file input or resolution is added.
 
 M15 acquisition/ owns native argument selection, Ready/Acquired/Failed state and human presentation. Both --max-bytes and --max-read-calls are mandatory. It delegates through core input, without session creation or parsing. See [input selection](../../knowledge/architecture/acquisition_frontend.md).
+
+M16 inspect requires all acquisition arguments plus --max-program-headers. It prints acquisition separately from immutable header-only inspection. acquire and synthetic linkage remain separate. See [usage](../../USAGE.md) and [inspection](../../knowledge/architecture/explicit_inspection.md).

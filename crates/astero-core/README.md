@@ -24,3 +24,5 @@ that report/identity contract; it never derives evidence. See [composition](../.
 M13 session/inputs/synthetic composes loader-generated demonstration reports and records typed synthetic provenance. It performs no parsing/classification itself; normal inputs remain explicitly unspecified in origin.
 
 M15 input/acquisition is a thin application entry point to the unchanged loader acquisition API. It exposes immutable sources and structured failures without reading bytes itself, creating sessions or invoking parsing. See [frontend acquisition](../../knowledge/architecture/acquisition_frontend.md).
+
+M16 input/inspection delegates an explicit source/budget request to loader header inspection without acquiring a file, attaching evidence or creating a session.

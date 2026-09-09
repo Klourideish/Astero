@@ -32,3 +32,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Filesystem input](filesystem_input.md): M14 bounded host file acquisition into SourceArtifact; no automatic interpretation.
 
 - [Frontend acquisition](acquisition_frontend.md): M15 CLI native-path selection and explicit budgets; stop at SourceArtifact.
+
+- [Explicit bounded inspection](explicit_inspection.md): M16 opt-in header evidence, program-header budget and CLI boundary.

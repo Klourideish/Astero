@@ -39,3 +39,5 @@ pub fn render(report: &Inspection) -> String {
 pub mod linkage;
 
 pub mod acquisition;
+
+pub mod inspection;

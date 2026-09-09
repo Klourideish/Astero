@@ -8,3 +8,5 @@ pub use selection::{Request, Selection, State};
 
 pub const USAGE: &str =
     "Usage: astero-cli acquire --path <native-path> --max-bytes <u64> --max-read-calls <u64>";
+
+pub(crate) use arguments::limit;

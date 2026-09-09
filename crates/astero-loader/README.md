@@ -56,3 +56,5 @@ No loader dependency was added. See [composition](../../knowledge/architecture/e
 M13 elf/dynamic/candidates/report/synthetic owns the small generated demonstration consumed through core by CLI/GUI. It reuses existing evidence generation and adds no parser or linkage semantics.
 
 M14 artifact::filesystem::acquire(path, limits) freezes bounded regular-file bytes into SourceArtifact and stops. No format detection or downstream call occurs. See [filesystem input](../../knowledge/architecture/filesystem_input.md).
+
+M16 elf/inspect/bounded composes the existing raw header decoders under an explicit program-header budget; it does not invoke the M4 artifact adapter or dynamic/linkage operations. Shared generated M4 fixtures live in elf/inspect/synthetic. See [inspection boundary](../../knowledge/architecture/explicit_inspection.md).

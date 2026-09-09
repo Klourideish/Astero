@@ -782,3 +782,72 @@ See [frontend boundary](acquisition_frontend.md). M14 synchronous I/O/namespace/
 remain unchanged. No M16 work has begun.
 
 M15 cleanup was approved and its active item removed. All durable records remain; M16 has not begun.
+
+## M16 results — 2026-09-09
+
+Started at 85f2f5a with only the user's intentional AGENTS.md catalogue-path edit; preserved unchanged.
+Explicit CLI header inspection only. No new parser logic, loading, admission, dynamic/linkage calls,
+NIDs, ABI, GPU work or execution. No commit/push. See [inspection boundary](explicit_inspection.md).
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI and fixture example |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 192 executable tests + 15 compile-fail doctests; zero failures/ignored |
+| CLI integration coverage | 17 passed: 4 inspection + 6 acquisition + 5 linkage + 2 presentation |
+| policy/state | passed: 15 crates, 9 unique internal edges |
+| structure policy | passed: 201 declared homes |
+| Python discovery | 49 passed: 20 dependency/state + 9 structure + 20 index/extraction |
+| index regeneration twice / --check | byte-identical across 17 files; fresh |
+| git diff --check | passed |
+| supplemental whitespace | passed: 428 files |
+
+17 executable CLI tests (4 inspection + 6 acquisition + 5 linkage +
+2 presentation). The workspace executable count above includes all owning crates. Eight new
+executable tests (four loader, four CLI) plus one immutability compile-fail doctest. Tests cover
+a 56-case header-count/budget sweep, zero/exact/excess budgets, reused decoder equivalence,
+immutable shared source identity/bytes/provenance, malformed/unsupported forms, uninterpreted
+dynamic/section pointers, explicit opt-in, unchanged acquisition state, native non-UTF-8 process
+arguments, acquisition versus inspection errors and deterministic repeated inspection.
+Existing synthetic linkage/default session modes still pass.
+
+The indexer rejected initial cross-file #[path] fixture imports. The established M4 generated fixture
+helpers were moved unchanged into loader elf/inspect/synthetic and re-exported by their old test home.
+CLI tests and the small create-new-only example share that generator. No indexer workaround, copied
+parser or production-decoder change was introduced. No external catalogue was consulted.
+
+### Manual smoke evidence
+
+Run from repository root in PowerShell. The example refuses overwrites; reuse an existing generated
+fixture or choose a fresh output path.
+
+~~~powershell
+cargo run -p astero-loader --example inspection_fixture -- .\target\m16-header.elf
+cargo run -p astero-cli -- inspect --path ".\target\m16-header.elf" --max-bytes 1024 --max-read-calls 4 --max-program-headers 1
+cargo run -p astero-cli -- inspect --path ".\target\m16-header.elf" --max-bytes 1024 --max-read-calls 4 --max-program-headers 0
+cargo run -p astero-cli -- inspect --path ".\README.md" --max-bytes 1048576 --max-read-calls 64 --max-program-headers 8
+~~~
+
+| Input / operation | Expected and actual result | Exit |
+|---|---|---|
+| Generated M4 fixture writer | Wrote 272 bytes, no real binary used | 0 |
+| Generated file, one-header budget | Acquired 272 bytes; Complete (header scope only); one program header | 0 |
+| Same file, zero-header budget | Acquired; Failed HeaderBudget, declared 1 / maximum 0 | 1 |
+| Repository README text | Acquired; Failed Header(InvalidMagic) | 1 |
+
+Every inspection result printed the source ID/provenance, explicit parser budget and no guest loaded,
+execution or linkage. Acquisition status was printed separately. GUI was unchanged and not relaunched.
+USAGE.md includes these exact commands and separates real acquisition, explicit inspection and synthetic
+linkage. The fixture is ignored under target; no binary payload is added to Git.
+
+No dependencies/manifests/lock changes. Nine edges remain seven normal/two dev-only; loader remains
+dependency-free. Counts: implementation 459 (+31), subsystems 119 (+1), modules 354 (+13), sources
+343 (+12), diagnostics 21 (+2), tests 257 (+9), NID 0, ABI 0; total 1,553 (+68). Test inventory includes
+doctests/platform branches. Reviewed links connect inspection budgets/failures and frontend consumers
+to tests. Generated locations were never hand-edited.
+
+Remaining pressure: Complete describes headers, not payload/admission validity. Future optional
+inspection scopes require distinct explicit budgets; M14 I/O/namespace limitations remain. M17 has
+not begun. M16 cleanup was approved and its active item removed. Durable records are preserved.

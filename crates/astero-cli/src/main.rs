@@ -11,6 +11,30 @@ fn main() -> std::process::ExitCode {
 }
 fn run() -> Result<(), String> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.first().is_some_and(|a| a == "inspect") {
+        let request = astero_cli::inspection::parse(args.into_iter().skip(1))
+            .map_err(|e| format!("{e}\n{}", astero_cli::inspection::USAGE))?;
+        let mut selection = astero_cli::acquisition::Selection::new(request.acquisition);
+        selection.acquire();
+        let acquired = astero_cli::acquisition::render(&selection);
+        if matches!(selection.state(), astero_cli::acquisition::State::Failed(_)) {
+            return Err(acquired);
+        }
+        let report = astero_cli::inspection::inspect_acquired(&selection, request.limits)
+            .map_err(|e| format!("Inspection request: {e:?}"))?;
+        let text = format!(
+            "Acquisition stage:\n{acquired}\n{}",
+            astero_cli::inspection::render(&report)
+        );
+        if matches!(
+            report.outcome(),
+            astero_core::input::inspection::InspectionOutcome::Failed(_)
+        ) {
+            return Err(text);
+        }
+        print!("{text}");
+        return Ok(());
+    }
     if args.first().is_some_and(|a| a == "acquire") {
         let request = astero_cli::acquisition::parse(args.into_iter().skip(1))
             .map_err(|e| format!("{e}\n{}", astero_cli::acquisition::USAGE))?;
@@ -52,8 +76,9 @@ fn run() -> Result<(), String> {
     }
     if !args.is_empty() {
         return Err(format!(
-            "Usage: astero-cli [--linkage [--synthetic] [--details]]\n{}",
-            astero_cli::acquisition::USAGE
+            "Usage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}",
+            astero_cli::acquisition::USAGE,
+            astero_cli::inspection::USAGE
         ));
     }
     let mut session = Session::new().map_err(|e| format!("Create session: {e:?}"))?;

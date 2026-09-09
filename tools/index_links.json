@@ -470,6 +470,41 @@
         "test:astero-cli/test:acquisition/limits_propagate_without_frontend_revalidation_or_silent_defaults",
         "test:astero-cli/test:acquisition/native_non_utf8_selection_reaches_acquisition_including_process_arguments"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::inspect::bounded::collect::inspect",
+      "tests": [
+        "test:astero-loader/test:bounded_inspection/count_budget_sweep_refuses_before_observing_any_prefix",
+        "test:astero-loader/test:bounded_inspection/existing_decoders_supply_identical_evidence_and_source_stays_immutable",
+        "test:astero-loader/test:bounded_inspection/malformed_and_unsupported_input_preserves_existing_structured_errors",
+        "test:astero-loader/test:bounded_inspection/dynamic_and_section_pointers_remain_uninterpreted_and_no_admission_occurs"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/inspection::request::inspect_acquired",
+      "tests": [
+        "test:astero-cli/test:inspection/acquisition_does_not_inspect_until_explicit_request_and_never_changes_selection",
+        "test:astero-cli/test:inspection/native_path_and_header_only_zero_budget_work_through_real_executable"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/input::inspection::inspect",
+      "tests": [
+        "test:astero-cli/test:inspection/explicit_limits_exact_boundary_and_exhaustion_survive_frontend_layers"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/inspection::arguments::parse",
+      "tests": [
+        "test:astero-cli/test:inspection/syntax_acquisition_failures_and_inspection_failures_are_distinct"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/inspection::presentation::render",
+      "tests": [
+        "test:astero-cli/test:inspection/explicit_limits_exact_boundary_and_exhaustion_survive_frontend_layers",
+        "test:astero-cli/test:inspection/syntax_acquisition_failures_and_inspection_failures_are_distinct"
+      ]
     }
   ],
   "reviews": [
@@ -785,12 +820,41 @@
       "id": "diagnostic:cli.acquisition_arguments",
       "implementation": "impl:astero-cli/lib:astero_cli/acquisition::arguments::ArgumentError",
       "consumers": [
-        "impl:astero-cli/lib:astero_cli/acquisition::arguments::parse"
+        "impl:astero-cli/lib:astero_cli/acquisition::arguments::parse",
+        "impl:astero-cli/lib:astero_cli/inspection::arguments::parse"
       ],
       "surfaces": [],
       "description": "Missing/duplicate/unknown selection flags and invalid explicit limits. Native path values stay opaque.",
       "evidence": [
-        "knowledge/architecture/acquisition_frontend.md"
+        "knowledge/architecture/acquisition_frontend.md",
+        "knowledge/architecture/explicit_inspection.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.bounded_inspection",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::inspect::bounded::model::InspectionFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::inspect::bounded::collect::inspect",
+        "impl:astero-core/lib:astero_core/input::inspection::inspect"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/inspection::presentation::render"
+      ],
+      "description": "Immutable source-bound header budget or existing ELF failure; complete means header scope only.",
+      "evidence": [
+        "knowledge/architecture/explicit_inspection.md"
+      ]
+    },
+    {
+      "id": "diagnostic:cli.inspection_request",
+      "implementation": "impl:astero-cli/lib:astero_cli/inspection::request::RequestError",
+      "consumers": [
+        "impl:astero-cli/lib:astero_cli/inspection::request::inspect_acquired"
+      ],
+      "surfaces": [],
+      "description": "Explicit inspection requires an acquired source; Ready/Failed acquisition is not inspected.",
+      "evidence": [
+        "knowledge/architecture/explicit_inspection.md"
       ]
     }
   ],

@@ -60,7 +60,7 @@ pub fn parse(args: impl IntoIterator<Item = OsString>) -> Result<Request, Argume
         },
     })
 }
-fn limit(option: &'static str, value: OsString) -> Result<u64, ArgumentError> {
+pub(crate) fn limit(option: &'static str, value: OsString) -> Result<u64, ArgumentError> {
     value
         .to_str()
         .filter(|s| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()))
