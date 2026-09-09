@@ -1,4 +1,4 @@
-use astero_debug::snapshots::linkage::{Completeness, inspect_linkage};
+use astero_debug::snapshots::linkage::{Completeness, inspect_standalone_report};
 use astero_loader::{
     artifact::SourceArtifact,
     elf::{
@@ -101,7 +101,7 @@ fn report(max_symbols: u64, trusted: bool, bad_name: bool) -> LinkageEvidenceRep
 fn snapshot_pins_the_same_owned_report_without_reclassification() {
     let report = Arc::new(report(3, true, false));
     let pointer = Arc::as_ptr(&report);
-    let snapshot = inspect_linkage(Some(Arc::clone(&report)));
+    let snapshot = inspect_standalone_report(Some(Arc::clone(&report)));
     assert!(std::ptr::eq(snapshot.report().unwrap(), pointer));
     assert_eq!(
         snapshot.report().unwrap().completeness(),
@@ -116,15 +116,54 @@ fn snapshot_pins_the_same_owned_report_without_reclassification() {
 }
 #[test]
 fn snapshot_preserves_partial_unavailable_failed_and_absent_states() {
-    assert!(inspect_linkage(None).report().is_none());
+    assert!(inspect_standalone_report(None).report().is_none());
     for r in [
         report(1, true, false),
         report(3, false, false),
         report(3, true, true),
     ] {
         let expected = r.completeness().clone();
-        let snapshot = inspect_linkage(Some(Arc::new(r)));
+        let snapshot = inspect_standalone_report(Some(Arc::new(r)));
         assert_eq!(snapshot.report().unwrap().completeness(), &expected);
         assert!(!matches!(expected, Completeness::Complete));
+    }
+}
+
+#[test]
+fn session_linkage_inspection_captures_lifecycle_and_report_together() {
+    use astero_core::{
+        observation::{ObservationError, ObserveSession},
+        session::{
+            Session,
+            inputs::{EvidenceTarget, SessionInputs},
+        },
+    };
+    use astero_debug::snapshots::linkage::inspect_linkage;
+    for r in [
+        report(3, true, false),
+        report(1, true, false),
+        report(3, false, false),
+        report(3, true, true),
+    ] {
+        let r = Arc::new(r);
+        let target = EvidenceTarget {
+            source: r.source(),
+            module: r.module(),
+        };
+        let mut session =
+            Session::with_inputs(SessionInputs::new(Some(target), Some(Arc::clone(&r))).unwrap())
+                .unwrap();
+        session.initialize().unwrap();
+        let observer = session.observer();
+        let s = inspect_linkage(&observer).unwrap();
+        assert_eq!(s.session().unwrap(), &observer.snapshot().unwrap());
+        assert!(std::ptr::eq(s.report().unwrap(), Arc::as_ptr(&r)));
+        assert_eq!(s.report().unwrap().completeness(), r.completeness());
+        assert!(inspect_standalone_report(Some(r)).session().is_none());
+        drop(session);
+        assert_eq!(
+            inspect_linkage(&observer),
+            Err(ObservationError::SessionClosed)
+        );
     }
 }

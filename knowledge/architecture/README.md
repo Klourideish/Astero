@@ -24,3 +24,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Linkage candidates](linkage_candidates.md): M10 trusted classification, byte names and relocation evidence; no resolution.
 
 - [Linkage reporting](linkage_reporting.md): M11 bounded coherent reports through debugger and CLI.
+
+- [Evidence composition](evidence_composition.md): M12 dependency decision, checked inputs and coherent session transport.

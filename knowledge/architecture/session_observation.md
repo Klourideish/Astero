@@ -56,3 +56,6 @@ session/statistics/counters.rs. Directory roots only declare modules/re-exports.
 astero_core::observation path is a compatibility re-export of session::observation.
 Debugger inspection/capabilities/control now live under debug/src/session/, with their original
 public module paths re-exported. No lifecycle transition, statistic or inspection operation was added.
+
+M12 adds immutable typed SessionInputs to the same locked observation. Evidence never sets
+LoadedTarget. See [composition and dependency decision](evidence_composition.md).

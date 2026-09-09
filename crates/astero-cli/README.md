@@ -18,3 +18,7 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 M11 linkage::render consumes debugger linkage snapshots. --linkage [--details] reports absence
 until an input adapter exists; tests exercise nonempty generated reports. The loader edge is
 dev-only. See [report contract](../../knowledge/architecture/linkage_reporting.md).
+
+M12 --linkage --synthetic [--details] composes generated loader evidence into a real host session.
+The loader edge now supports that production demo; rendering still consumes debug snapshots.
+No file input is supported. See [composition](../../knowledge/architecture/evidence_composition.md).

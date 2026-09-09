@@ -20,3 +20,6 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 
 M11 snapshots/linkage consumes an Arc of the loader-owned linkage report without classification.
 The new loader dependency serves read-only reporting; see [report contract](../../knowledge/architecture/linkage_reporting.md).
+
+M12 inspect_linkage takes a session observer; offline access is inspect_standalone_report.
+Production imports core contracts; direct loader use is dev-only. See [composition](../../knowledge/architecture/evidence_composition.md).

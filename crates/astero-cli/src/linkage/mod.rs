@@ -2,8 +2,24 @@
 use astero_debug::snapshots::linkage::{Completeness, LinkageSnapshot};
 use std::fmt::Write;
 pub fn render(snapshot: &LinkageSnapshot, details: bool) -> String {
+    let context = snapshot.session().map_or_else(
+        || "Standalone report (no session claim)\n".to_owned(),
+        |s| {
+            format!(
+                "Session {} | lifecycle {:?} | {}\n",
+                s.id,
+                s.lifecycle,
+                if s.loaded_target.is_none() {
+                    "no guest loaded"
+                } else {
+                    "target metadata present"
+                }
+            )
+        },
+    );
     let Some(report) = snapshot.report() else {
-        return "Linkage evidence: unavailable (no report supplied)\nNo candidate totals available.\n".into();
+        return context
+            + "Linkage evidence: unavailable (no report supplied)\nNo candidate totals available.\n";
     };
     let mut text = format!(
         "Linkage evidence | source {:?} | module {:?} (inspection context)\n",
@@ -66,5 +82,7 @@ pub fn render(snapshot: &LinkageSnapshot, details: bool) -> String {
             writeln!(text,"Symbol {}: {:?} | name {:?} {:?} | binding {:?} type {:?} visibility {:?} section {:?} | raw info {:#x} other {:#x} value {:#x} size {} | source {:?} name source {:?} | references {:?}",row.index,row.classification,row.name_state,name,row.binding,row.symbol_type,row.visibility,row.section,row.info,row.other,row.value,row.size,row.source,row.name_source,row.relocations).expect("String write");
         }
     }
-    text
+    context + &text
 }
+
+pub mod synthetic;

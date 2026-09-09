@@ -38,14 +38,22 @@ class PolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "dependency-free package cannot allow"):
             check_dependencies(self.metadata, self.policy)
 
-    def test_cli_loader_fixture_edge_is_dev_only(self):
-        self.edge("astero-cli", "astero-loader", kind="dev")
+    def test_debug_loader_fixture_edge_is_dev_only(self):
+        self.edge("astero-debug", "astero-loader", kind="dev")
         self.assertEqual(check_dependencies(self.metadata, self.policy), 1)
-        package = next(p for p in self.metadata["packages"] if p["name"] == "astero-cli")
+        package = next(p for p in self.metadata["packages"] if p["name"] == "astero-debug")
         for kind in (None, "build"):
             package["dependencies"][0]["kind"] = kind
             with self.assertRaisesRegex(ValueError, "test-only internal dependency"):
                 check_dependencies(self.metadata, self.policy)
+
+    def test_composition_edges_remain_downward(self):
+        self.edge("astero-core", "astero-loader")
+        self.edge("astero-cli", "astero-loader")
+        self.assertEqual(check_dependencies(self.metadata, self.policy), 2)
+        self.edge("astero-loader", "astero-core")
+        with self.assertRaisesRegex(ValueError, "dependency-free package declares dependencies"):
+            check_dependencies(self.metadata, self.policy)
 
     def test_valid(self):
         check_state(self.state)

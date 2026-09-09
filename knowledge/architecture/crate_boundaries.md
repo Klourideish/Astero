@@ -74,3 +74,7 @@ see [candidate policy](linkage_candidates.md). No dependency edges change.
 M11 adds debug -> loader for read-only evidence reporting. CLI -> loader is dev-only for fixtures,
 with production presentation consuming debug. Semantic classification remains loader-owned.
 See [reporting](linkage_reporting.md); core and GUI state are unchanged.
+
+M12 deliberately activates core -> loader solely for immutable report inputs/identity checks, after
+evaluating a neutral crate. Debug production consumes core; its loader edge is dev-only. CLI loader
+use is explicit generated input composition, not classification. See [decision](evidence_composition.md).

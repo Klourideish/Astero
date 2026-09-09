@@ -3,6 +3,7 @@
   "required_module_roots": {
     "astero-core": [
       "session",
+      "session/inputs",
       "session/lifecycle",
       "session/observation",
       "session/statistics"
@@ -215,7 +216,8 @@
       "validation"
     ],
     "astero-cli": [
-      "linkage"
+      "linkage",
+      "linkage/synthetic"
     ]
   },
   "forbidden_top_level_filenames": [

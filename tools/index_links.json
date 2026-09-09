@@ -337,7 +337,7 @@
       ]
     },
     {
-      "implementation": "impl:astero-debug/lib:astero_debug/snapshots::linkage::inspect_linkage",
+      "implementation": "impl:astero-debug/lib:astero_debug/snapshots::linkage::inspect_standalone_report",
       "tests": [
         "test:astero-debug/test:linkage/snapshot_pins_the_same_owned_report_without_reclassification",
         "test:astero-debug/test:linkage/snapshot_preserves_partial_unavailable_failed_and_absent_states"
@@ -348,6 +348,39 @@
       "tests": [
         "test:astero-cli/test:linkage/cli_uses_candidate_labels_and_byte_faithful_details",
         "test:astero-cli/test:linkage/cli_preserves_completeness_and_never_prints_partial_totals"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/session::inputs::composition::impl[SessionInputs]::new",
+      "tests": [
+        "test:astero-core/test:evidence_composition/inputs_reject_missing_target_and_source_or_module_mismatch",
+        "test:astero-core/test:evidence_composition/absent_evidence_and_declared_target_without_report_are_explicit"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/session::owner::impl[Session]::with_inputs",
+      "tests": [
+        "test:astero-core/test:evidence_composition/all_completeness_states_and_owned_details_survive_composition",
+        "test:astero-core/test:evidence_composition/observers_share_evidence_but_do_not_keep_session_alive"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/session::inputs::composition::SessionInputs",
+      "tests": [
+        "test:astero-core/test:evidence_composition/all_completeness_states_and_owned_details_survive_composition"
+      ]
+    },
+    {
+      "implementation": "impl:astero-debug/lib:astero_debug/snapshots::linkage::inspect_linkage",
+      "tests": [
+        "test:astero-debug/test:linkage/session_linkage_inspection_captures_lifecycle_and_report_together"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/linkage::synthetic::session",
+      "tests": [
+        "test:astero-cli/test:linkage/live_synthetic_command_uses_composed_evidence_and_labels_its_origin",
+        "test:astero-cli/test:linkage/session_path_preserves_partial_counts_without_frontend_classification"
       ]
     }
   ],
@@ -626,6 +659,19 @@
       "description": "Structured source/evidence report failures retained through an immutable debugger snapshot; CLI preserves completeness and observed-count labels.",
       "evidence": [
         "knowledge/architecture/linkage_reporting.md"
+      ]
+    },
+    {
+      "id": "diagnostic:core.evidence_input",
+      "implementation": "impl:astero-core/lib:astero_core/session::inputs::composition::InputError",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/session::inputs::composition::impl[SessionInputs]::new",
+        "impl:astero-cli/lib:astero_cli/linkage::synthetic::session"
+      ],
+      "surfaces": [],
+      "description": "Typed evidence target/source/module mismatch at immutable session composition; no target loading or report reclassification.",
+      "evidence": [
+        "knowledge/architecture/evidence_composition.md"
       ]
     }
   ],

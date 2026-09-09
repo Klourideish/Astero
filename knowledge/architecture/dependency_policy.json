@@ -96,7 +96,7 @@
     "astero-loader"
   ],
   "dev_only_internal_dependencies": {
-    "astero-cli": [
+    "astero-debug": [
       "astero-loader"
     ]
   }

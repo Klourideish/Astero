@@ -49,3 +49,6 @@ See [candidate policy](../../knowledge/architecture/linkage_candidates.md); no r
 
 M11 adds candidates::report::collect with owned bounded evidence and explicit completeness.
 See [linkage reporting](../../knowledge/architecture/linkage_reporting.md).
+
+M12 leaves report generation here and lets core share the immutable result as session input.
+No loader dependency was added. See [composition](../../knowledge/architecture/evidence_composition.md).

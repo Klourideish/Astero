@@ -29,6 +29,7 @@ pub struct SessionSnapshot {
     pub id: SessionId,
     pub lifecycle: Lifecycle,
     pub loaded_target: Option<LoadedTarget>,
+    pub inputs: crate::session::inputs::SessionInputs,
     pub statistics: Statistics,
     pub subsystems: Vec<SubsystemStatus>,
     pub diagnostics: Vec<Diagnostic>,

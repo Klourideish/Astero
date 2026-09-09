@@ -43,6 +43,11 @@ pub struct SessionObserver {
 
 impl Session {
     pub fn new() -> Result<Self, SessionError> {
+        Self::with_inputs(super::inputs::SessionInputs::default())
+    }
+
+    /// Accept already checked immutable observational inputs; loaded_target remains None.
+    pub fn with_inputs(inputs: super::inputs::SessionInputs) -> Result<Self, SessionError> {
         let id = NEXT_ID
             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |n| n.checked_add(1))
             .map_err(|_| SessionError::IdentityExhausted)?;
@@ -51,6 +56,7 @@ impl Session {
                 id: SessionId(id),
                 lifecycle: Lifecycle::Created,
                 loaded_target: None,
+                inputs,
                 statistics: Statistics::default(),
                 subsystems: [
                     "memory",

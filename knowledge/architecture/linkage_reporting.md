@@ -109,3 +109,7 @@ Recommended M12: a bounded **in-memory** report composition/request interface th
 reports to frontends with explicit missing-input/preparation errors. Decide how an application
 supplies inspected evidence before adding filesystem adapters. Keep NID/PS5 interpretation,
 resolution, relocation application, HLE registration, runtime modules and execution separate.
+
+M12 supersedes the standalone entry-point/dependency discussion above: live CLI synthetic evidence
+now passes through SessionInputs, and offline inspection is explicitly named inspect_standalone_report.
+See [composition](evidence_composition.md). Report construction and completeness semantics are unchanged.

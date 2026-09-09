@@ -35,3 +35,7 @@ M11: LinkageEvidence is implemented and tested for offline immutable report insp
 snapshots/linkage (loader owns semantics). Tests cover identity, ownership and all completeness states.
 This does not enable guest module/NID attribution, resolution, relocation application or guest snapshots.
 The snapshots root is now implemented for this bounded host report; other scaffold status is unchanged.
+
+M12 LinkageEvidence inspection obtains the report from one session snapshot. Standalone reports
+have an explicit separate helper and no session claim. Composition/CLI tests validate this path;
+no guest inspection/control capability is added.

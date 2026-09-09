@@ -5,3 +5,4 @@ mod owner;
 pub mod statistics;
 pub use lifecycle::Lifecycle;
 pub use owner::{Session, SessionError, SessionId, SessionObserver};
+pub mod inputs;

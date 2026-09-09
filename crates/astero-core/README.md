@@ -17,3 +17,6 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),
 [GUI decisions](../../knowledge/architecture/gui_framework.md) and
 [validation](../../knowledge/architecture/validation.md).
+
+M12 session/inputs carries checked immutable linkage evidence. Core depends on loader only for
+that report/identity contract; it never derives evidence. See [composition](../../knowledge/architecture/evidence_composition.md).

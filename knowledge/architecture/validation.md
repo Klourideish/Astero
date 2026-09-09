@@ -607,3 +607,47 @@ CLI -> loader (dev-only fixture edge, explicitly enforced by policy). Cargo.lock
 internal edges. Loader remains dependency-free. Scope is reporting/consumers/tests/docs/policy/indexes;
 core and GUI source code remain unchanged. See [report architecture](linkage_reporting.md).
 M11 cleanup was approved and its active item removed; durable evidence remains here. M12 has not begun.
+
+## M12 results — 2026-09-09
+
+In-memory composition only. Started clean at 05d0111. Loader report generation/classification is
+unchanged; no neutral crate, file input, linking, NIDs, runtime-loaded module, guest memory or
+execution was added. No commit or push. See [dependency/composition decision](evidence_composition.md).
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including unchanged GUI source |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 164 executable tests and 14 compile-fail doctests passed; zero failures/ignored |
+| python tools/check_policy.py | passed: 15 crates, 9 internal edges, active state valid |
+| structure policy | passed: 190 declared module homes |
+| python -m unittest discover -s tools -p "test_*.py" | 49 passed: 20 dependency/state + 9 structure + 20 index/extraction |
+| index regeneration twice and --check | byte-identical across 17 index-directory files; fresh |
+| git diff --check | passed |
+| supplemental whitespace | passed: 391 files |
+| cargo run -p astero-cli -- --linkage --synthetic | passed: synthetic banner, Ready session, no guest loaded, one import candidate, one export candidate |
+
+Added seven executable tests (four core composition, one debugger session path, two CLI live/path)
+and one compile-fail input-immutability doctest. Existing standalone report tests now use the
+explicitly renamed standalone helper; they remain independent of session claims. A new policy test
+checks composition direction, and the previous dev-only fixture-edge test now protects debug rather
+than CLI. Tests cover all completeness states, mismatch, identity, Arc sharing, deterministic
+observations, dropped-session behavior and partial frontend labels. No GUI runtime validation or
+emulator correctness claim is made.
+
+Actual graph changes: core -> loader added; debug -> loader becomes dev-only; CLI -> loader becomes
+normal for explicit synthetic input composition. Nine unique declared edges include one dev-only
+edge (eight production edges). No external package/version changes; Cargo.lock adds core's loader
+edge. Loader remains dependency-free and GUI/core do not gain debugger-facing runtime mechanisms.
+
+Index records: implementation 382 (+11), subsystems 116 (+0), modules 321 (+4), source files 311 (+4),
+diagnostics 17 (+1), tests 227 (+9), NIDs 0, ABI 0; total 1,374 (+29). Reviewed links cover input
+validation, session construction, session-bound/standalone debugger routes and the CLI synthetic
+composition path. No manual source-range edits. Test inventory includes Python/doctest records.
+
+Scope: core typed input/session observation, debugger transport, CLI synthetic composition/rendering,
+corresponding tests, manifests/lock, policy, documentation and generated indexes. No loader parser,
+classification, relocation or evidence-generation implementation changed. M12 cleanup was approved and its active item removed; durable evidence remains here.
+M13 has not begun.

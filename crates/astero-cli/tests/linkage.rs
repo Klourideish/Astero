@@ -1,4 +1,4 @@
-use astero_debug::snapshots::linkage::{Completeness, inspect_linkage};
+use astero_debug::snapshots::linkage::{Completeness, inspect_standalone_report};
 use astero_loader::{
     artifact::SourceArtifact,
     elf::{
@@ -99,7 +99,7 @@ fn report(max_symbols: u64, trusted: bool, bad_name: bool) -> LinkageEvidenceRep
 
 #[test]
 fn cli_uses_candidate_labels_and_byte_faithful_details() {
-    let snapshot = inspect_linkage(Some(Arc::new(report(3, true, false))));
+    let snapshot = inspect_standalone_report(Some(Arc::new(report(3, true, false))));
     assert_eq!(
         snapshot.report().unwrap().completeness(),
         &Completeness::Complete
@@ -121,13 +121,13 @@ fn cli_preserves_completeness_and_never_prints_partial_totals() {
         (report(3, false, false), "unavailable"),
         (report(3, true, true), "failed"),
     ] {
-        let snapshot = inspect_linkage(Some(Arc::new(r)));
+        let snapshot = inspect_standalone_report(Some(Arc::new(r)));
         let text = astero_cli::linkage::render(&snapshot, true);
         assert!(text.contains(&format!("Enumeration: {label}")));
         assert!(text.contains("Import candidates observed:"));
         assert!(!text.contains("Import candidates:"));
     }
-    let text = astero_cli::linkage::render(&inspect_linkage(None), false);
+    let text = astero_cli::linkage::render(&inspect_standalone_report(None), false);
     assert!(text.contains("unavailable"));
     assert!(!text.contains("candidates: 0"));
 }
@@ -145,4 +145,39 @@ fn executable_linkage_command_reports_absence_honestly() {
                 .contains("unavailable (no report supplied)")
         );
     }
+}
+
+#[test]
+fn live_synthetic_command_uses_composed_evidence_and_labels_its_origin() {
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_astero-cli"))
+        .args(["--linkage", "--synthetic", "--details"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let text = String::from_utf8(output.stdout).unwrap();
+    assert!(text.contains("Synthetic in-memory ELF evidence demo"));
+    assert!(text.contains("Session session-"));
+    assert!(text.contains("lifecycle Ready"));
+    assert!(text.contains("no guest loaded"));
+    assert!(text.contains("Import candidates: 1"));
+    assert!(text.contains("Export candidates: 1"));
+    assert!(text.contains("Symbol 2:"));
+    assert!(!text.contains("Standalone report"));
+}
+#[test]
+fn session_path_preserves_partial_counts_without_frontend_classification() {
+    use astero_core::observation::ObserveSession;
+    use astero_debug::snapshots::linkage::inspect_linkage;
+    let session = astero_cli::linkage::synthetic::session(2).unwrap();
+    let observer = session.observer();
+    let observed = observer.snapshot().unwrap();
+    let snapshot = inspect_linkage(&observer).unwrap();
+    assert!(std::ptr::eq(
+        snapshot.report().unwrap(),
+        Arc::as_ptr(observed.inputs.linkage().unwrap())
+    ));
+    let text = astero_cli::linkage::render(&snapshot, true);
+    assert!(text.contains("Enumeration: partial"));
+    assert!(text.contains("Import candidates observed: 1"));
+    assert!(!text.contains("Import candidates: 1"));
 }

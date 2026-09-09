@@ -105,3 +105,6 @@ M10 nests candidate classification, evidence, imports, exports and errors under
 
 M11 report ownership nests under loader elf/dynamic/candidates/report, debugger snapshots/linkage
 and CLI linkage. Counts and classification must never move into frontend modules.
+
+M12 adds core session/inputs and CLI linkage/synthetic. Report/parser mechanics stay in loader;
+no neutral/shared-types crate or attachment registry is introduced.

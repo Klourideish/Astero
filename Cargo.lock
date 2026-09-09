@@ -114,6 +114,9 @@ dependencies = [
 [[package]]
 name = "astero-core"
 version = "0.1.0"
+dependencies = [
+ "astero-loader",
+]
 
 [[package]]
 name = "astero-debug"
