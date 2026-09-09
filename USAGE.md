@@ -301,3 +301,42 @@ maximum: 2 } (exit 1). Special/3 retains reserved section and unknown attributes
 (exit 0). The two ordinary named symbols are both GLOBAL/FUNC; only section state changes the role.
 Undefined does not mean resolved import; defined/global does not mean export. No dependency
 resolution, linkage, NID resolution or guest loading/execution occurs.
+
+## Real ELF linkage evidence
+
+`linkage-evidence` is one explicit capability request over acquired bytes: trusted symbols,
+structural roles, RELA references and DT_NEEDED names. Prior commands never invoke it automatically.
+It is separate from the existing synthetic session `--linkage` demonstration. No providers are
+resolved, no NIDs interpreted, no relocations applied, and no guest is loaded or executed.
+
+The ignored local configuration selects real input without embedding a machine path. Run from the
+repository root; the following limits were validated on the configured small PS5Util sample:
+
+```powershell
+$corpus = Get-Content -LiteralPath .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$sample = $corpus.artifacts.linkage_sample.path
+cargo run -p astero-cli -- linkage-evidence --path "$sample" --max-bytes 1048576 --max-read-calls 64 --max-program-headers 64 --max-dynamic-entries 256 --max-hash-words 4096 --max-descriptors 2 --max-symbols 1024 --max-name-lookups 1024 --max-name-scan-bytes 256 --max-total-name-scan-bytes 262144 --max-relocations 1024
+cargo run -p astero-cli -- linkage-evidence --path "$sample" --max-bytes 1048576 --max-read-calls 64 --max-program-headers 64 --max-dynamic-entries 256 --max-hash-words 4096 --max-descriptors 2 --max-symbols 1024 --max-name-lookups 1024 --max-name-scan-bytes 256 --max-total-name-scan-bytes 262144 --max-relocations 10
+```
+
+The selected build reports 14 symbols, 11 relocations, 9 non-null symbol-associated records,
+8 external-reference candidates, 5 definition candidates, and libkernel.prx/libc.prx declarations
+(exit 0). The second command refuses 11 records against budget 10 (exit 1). Other builds may differ.
+Definition candidates are not exports; external references are not resolved imports. Raw SCE tags
+and NID-looking names remain uninterpreted. All relocation application semantics remain unsupported.
+
+All limits are mandatory. `--max-relocations` bounds canonical records and one association per
+record; aliases are counted once. Symbol limits bound candidate/use records. Name lookup and scan
+budgets cover symbol names followed by dependency names, including terminators/repeated names.
+Failures do not present a successful linkage prefix. Unavailable trusted symbols are explicit.
+
+For a portable generated input (no local corpus required):
+
+```powershell
+cargo run -p astero-loader --example linkage_fixture -- .\target\m23-synthetic.elf
+cargo run -p astero-cli -- linkage-evidence --path .\target\m23-synthetic.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 16 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 4 --max-name-scan-bytes 6 --max-total-name-scan-bytes 24 --max-relocations 4
+```
+
+The writer creates 1536 bytes and refuses overwrites. Reuse its output or choose a fresh filename.
+The generated report has 3 symbols, 4 relocations, 1 external-reference candidate, 1 definition and
+two duplicate alpha dependency declarations; both commands exit 0. This is synthetic evidence.

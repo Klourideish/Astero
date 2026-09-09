@@ -53,3 +53,5 @@ pub mod hash_metadata;
 pub mod symbols;
 
 pub mod classification;
+
+pub mod linkage_evidence;

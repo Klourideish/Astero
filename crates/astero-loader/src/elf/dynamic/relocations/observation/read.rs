@@ -25,6 +25,18 @@ impl RelocationTables {
             alias,
         })
     }
+    /// Reuses M9 trusted descriptor and alias policy after independently bounded discovery.
+    pub(in crate::elf::dynamic) fn from_dynamic(
+        table: &crate::elf::dynamic::DynamicTable,
+    ) -> Result<Self, RelocationError> {
+        let tables = descriptor::discover(table);
+        let alias = plt::classify(&tables)?;
+        Ok(Self {
+            source: table.source().clone(),
+            tables,
+            alias,
+        })
+    }
     pub fn read_raw(
         &self,
         extent: &TrustedRelocationExtent,

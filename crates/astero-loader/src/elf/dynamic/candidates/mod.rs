@@ -9,3 +9,5 @@ pub use enumerate::{CandidateEnumeration, CandidateLimits, enumerate};
 pub mod report;
 
 pub mod structural;
+
+pub mod workload;

@@ -10,3 +10,5 @@ pub use model::{
 
 pub(in crate::elf::dynamic) mod raw;
 pub use raw::RawTable;
+
+pub(in crate::elf::dynamic) use inspect::from_raw;

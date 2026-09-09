@@ -19,14 +19,22 @@ pub fn observe(
     let Some(raw) = observe_raw(source, &programs, limits)? else {
         return Ok(DynamicObservation::Absent);
     };
-    let translator = AddressTranslator::new(elf)
-        .map_err(|error| DynamicError::Translation { tag: None, error })?;
+    from_raw(source, &programs, raw).map(|table| DynamicObservation::Present(Box::new(table)))
+}
+pub(in crate::elf::dynamic) fn from_raw(
+    source: &crate::artifact::SourceArtifact,
+    programs: &[crate::elf::program_headers::ProgramHeader],
+    raw: super::RawTable,
+) -> Result<DynamicTable, DynamicError> {
+    let translator =
+        AddressTranslator::from_program_headers(source, programs.iter().cloned().map(Ok))
+            .map_err(|error| DynamicError::Translation { tag: None, error })?;
     let descriptors = descriptors::collect(&raw.entries, &translator)?;
-    Ok(DynamicObservation::Present(Box::new(DynamicTable {
+    Ok(DynamicTable {
         source: source.clone(),
         source_range: raw.source_range,
         program_index: raw.program_index,
         entries: raw.entries,
         descriptors,
-    })))
+    })
 }

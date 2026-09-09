@@ -16,7 +16,8 @@
       "input/string_references",
       "input/hash_metadata",
       "input/symbols",
-      "input/classification"
+      "input/classification",
+      "input/linkage_evidence"
     ],
     "astero-loader": [
       "admission",
@@ -76,7 +77,9 @@
       "elf/dynamic/hash/synthetic",
       "elf/dynamic/symbol_table/bounded",
       "elf/dynamic/symbol_table/synthetic",
-      "elf/dynamic/candidates/structural"
+      "elf/dynamic/candidates/structural",
+      "elf/dynamic/candidates/workload",
+      "elf/dynamic/candidates/workload/synthetic"
     ],
     "astero-memory": [
       "access",
@@ -249,7 +252,8 @@
       "string_references",
       "hash_metadata",
       "symbols",
-      "classification"
+      "classification",
+      "linkage_evidence"
     ]
   },
   "forbidden_top_level_filenames": [

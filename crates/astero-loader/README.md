@@ -70,3 +70,5 @@ M20 elf/dynamic/hash/bounded reuses M8 hash proofs through M17 bounded discovery
 M21 symbol_table/bounded explicitly consumes M20 proof with entry/name budgets, reusing the extracted M7 decoder and M6 lookup. See [boundary](../../knowledge/architecture/explicit_symbols.md).
 
 M22 [structural classification](../../knowledge/architecture/explicit_symbol_classification.md) consumes a complete M21 report with an explicit budget; no import/export or resolution claim.
+
+M23 candidates/workload composes existing bounded symbols, structural roles, M9 relocations and M6 names into real linkage evidence; no provider binding or application. See [M23](../../knowledge/architecture/real_linkage_evidence.md).

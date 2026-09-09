@@ -46,3 +46,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Explicit symbols](explicit_symbols.md): exact M20 proof consumption, bounded entries/names, no linkage classification.
 
 - [Explicit structural symbol classification](explicit_symbol_classification.md) — report-only roles and budgets.
+
+- [Real ELF linkage evidence](real_linkage_evidence.md): bounded symbols, relocation references and dependency-name evidence from selected real input.

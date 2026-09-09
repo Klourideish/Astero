@@ -126,3 +126,5 @@ M20 hash/bounded owns independent hash/count reports; hash/synthetic owns small 
 M21 symbol_table/bounded owns complete proof-gated reports; symbol_table/decode is the sole field decoder shared with M7. symbol_table/synthetic owns fixtures. Core input/symbols and CLI symbols delegate/present only.
 
 M22 adds candidates/structural under loader ELF dynamic ownership, core input/classification and CLI classification. Rules and ownership: [M22](explicit_symbol_classification.md).
+
+M23 owns capability composition in loader elf/dynamic/candidates/workload (synthetic child for generated tests), core input/linkage_evidence and CLI linkage_evidence. M9 observation/raw is the shared canonical raw iterator. See [M23](real_linkage_evidence.md).

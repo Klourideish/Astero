@@ -11,6 +11,37 @@ fn main() -> std::process::ExitCode {
 }
 fn run() -> Result<(), String> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.first().is_some_and(|a| a == "linkage-evidence") {
+        let request = astero_cli::linkage_evidence::parse(args.into_iter().skip(1))
+            .map_err(|e| format!("{e}\n{}", astero_cli::linkage_evidence::USAGE))?;
+        let mut selection = astero_cli::acquisition::Selection::new(request.symbols.acquisition);
+        selection.acquire();
+        let acquired = astero_cli::acquisition::render(&selection);
+        if matches!(selection.state(), astero_cli::acquisition::State::Failed(_)) {
+            return Err(acquired);
+        }
+        let report = astero_cli::linkage_evidence::observe_acquired(
+            &selection,
+            astero_core::input::linkage_evidence::LinkageLimits {
+                hash: request.symbols.hash,
+                symbols: request.symbols.symbols,
+                max_relocations: request.max_relocations,
+            },
+        )
+        .map_err(|e| format!("Linkage evidence request: {e:?}"))?;
+        let text = format!(
+            "Acquisition stage:\n{acquired}\n{}",
+            astero_cli::linkage_evidence::render(&report)
+        );
+        if matches!(
+            report.outcome(),
+            astero_core::input::linkage_evidence::LinkageOutcome::Failed(_)
+        ) {
+            return Err(text);
+        }
+        print!("{text}");
+        return Ok(());
+    }
     if args.first().is_some_and(|a| a == "classify-symbols") {
         let request = astero_cli::classification::parse(args.into_iter().skip(1))
             .map_err(|e| format!("{e}\n{}", astero_cli::classification::USAGE))?;

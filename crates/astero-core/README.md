@@ -38,3 +38,5 @@ M20 input/hash_metadata delegates immutable source/count evidence requests; no s
 M21 input/symbols delegates explicit same-source hash-proof consumption; no session or classification is created.
 
 `input/classification` delegates immutable M21 report classification to loader; it creates no session or guest state.
+
+M23 input/linkage_evidence delegates the loader capability over immutable source input; no session/guest state is created.

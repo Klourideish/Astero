@@ -40,3 +40,5 @@ M20 hash-metadata requires acquisition/header/dynamic limits plus --max-hash-wor
 M21 symbols explicitly requests count proof then bounded symbol/name observations. All entry/lookup/scan limits are required; see [usage](../../USAGE.md).
 
 `classify-symbols` explicitly composes bounded symbol observations and structural roles. All budgets are required; see [USAGE](../../USAGE.md).
+
+M23 `linkage-evidence` explicitly observes selected real or synthetic ELF input with visible budgets. Existing synthetic `--linkage` modes remain separate; see [USAGE](../../USAGE.md).

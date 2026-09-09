@@ -608,6 +608,21 @@
         "test:astero-loader/test:structural_classification/prerequisites_remain_unavailable_or_structured_failure",
         "test:astero-loader/test:structural_classification/bounded_attribute_sweep_uses_only_section_role_and_preserves_unknowns"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::workload::collect::observe",
+      "tests": [
+        "test:astero-loader/test:real_linkage/complete_capability_preserves_raw_relocations_candidates_and_names",
+        "test:astero-loader/test:real_linkage/source_and_reports_are_immutable_and_repeated_runs_deterministic",
+        "test:astero-loader/test:real_linkage/undefined_without_relocations_is_not_promoted",
+        "test:astero-loader/test:real_linkage/ambiguous_attributes_and_names_keep_references_without_resolution",
+        "test:astero-loader/test:real_linkage/invalid_symbol_reference_preserves_raw_failure_without_prefix",
+        "test:astero-loader/test:real_linkage/exact_relocation_budget_and_refusals",
+        "test:astero-loader/test:real_linkage/symbol_and_needed_names_share_lookup_and_scan_limits",
+        "test:astero-loader/test:real_linkage/aliases_are_canonical_and_conflicts_are_structured",
+        "test:astero-loader/test:real_linkage/malformed_descriptors_and_deferred_formats_do_not_become_complete",
+        "test:astero-loader/test:real_linkage/missing_extent_failed_symbols_and_special_definitions_remain_explicit"
+      ]
     }
   ],
   "reviews": [
@@ -1048,6 +1063,21 @@
       "description": "Complete M21 prerequisite, classification count and allocation refusal; shared input retains source and nested failures. No resolution.",
       "evidence": [
         "knowledge/architecture/explicit_symbol_classification.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.real_linkage",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::workload::model::LinkageFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::workload::collect::observe",
+        "impl:astero-core/lib:astero_core/input::linkage_evidence::observe"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/linkage_evidence::presentation::render"
+      ],
+      "description": "Bounded source/proof, relocation-index and shared name-budget failures. Candidate evidence only; no resolution.",
+      "evidence": [
+        "knowledge/architecture/real_linkage_evidence.md"
       ]
     }
   ],
