@@ -559,6 +559,26 @@
       "tests": [
         "test:astero-loader/test:bounded_string_references/m18_descriptor_remains_payload_free_and_m6_bridge_checks_identity"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::bounded::collect::observe",
+      "tests": [
+        "test:astero-loader/test:bounded_hash_metadata/exact_shared_budgets_and_source_proof_without_reading_symbols",
+        "test:astero-loader/test:bounded_hash_metadata/trusted_report_does_not_mutate_candidate_only_symbol_table"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/hash_metadata::request::observe_acquired",
+      "tests": [
+        "test:astero-cli/test:hash_metadata/earlier_commands_do_not_follow_a_bad_hash_pointer",
+        "test:astero-cli/test:hash_metadata/live_count_refusal_absence_and_raw_proof_match_shared_model"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::observation::inspect::collect",
+      "tests": [
+        "test:astero-loader/test:bounded_hash_metadata/absence_lower_bound_and_corroboration_remain_distinct"
+      ]
     }
   ],
   "reviews": [
@@ -954,6 +974,21 @@
       "description": "Explicit reference/per-scan/total-scan limits, M18 prerequisite evidence and M6 bounded lookup failures; no dependency state.",
       "evidence": [
         "knowledge/architecture/explicit_string_references.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.hash_metadata",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::bounded::model::HashMetadataFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::hash::bounded::collect::observe",
+        "impl:astero-core/lib:astero_core/input::hash_metadata::observe"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/hash_metadata::presentation::render"
+      ],
+      "description": "Independent bounded hash metadata, exact/lower-bound source evidence, nested discovery/hash/refusal failures; no symbol enumeration.",
+      "evidence": [
+        "knowledge/architecture/explicit_hash_metadata.md"
       ]
     }
   ],

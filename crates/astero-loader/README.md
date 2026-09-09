@@ -64,3 +64,5 @@ M17 elf/dynamic/bounded exposes independently requested raw PT_DYNAMIC evidence 
 M18 elf/dynamic/descriptors explicitly observes only STRTAB/STRSZ and SYMTAB/SYMENT metadata through existing pairing rules. No payload traversal. See [descriptor boundary](../../knowledge/architecture/explicit_descriptor_observation.md).
 
 M19 elf/dynamic/string_references composes M18 metadata and M6 lookup for DT_NEEDED byte evidence only, with explicit reference/per-scan/total-scan budgets. See [boundary](../../knowledge/architecture/explicit_string_references.md).
+
+M20 elf/dynamic/hash/bounded reuses M8 hash proofs through M17 bounded discovery, without symbol enumeration. See [boundary](../../knowledge/architecture/explicit_hash_metadata.md).

@@ -1066,3 +1066,80 @@ M19 is ready_for_cleanup pending approval; its local active item remains. M20 ha
 Remaining pressure: new reference kinds or payload scopes need independent decisions and explicit
 budgets. A possible M20 is explicit bounded hash-metadata/trusted-symbol-extent evidence using
 existing contracts, stopping before symbol enumeration or linkage. No such work was performed here.
+
+## M20: explicit bounded hash metadata — 2026-09-09
+
+M20 adds an independent loader/core/CLI request; shared M8 decoders/proof rules remain unchanged.
+No symbol enumeration, names, strings, relocations, linkage, NID/ABI or runtime work is called by
+this request. M16-M19 retain their own boundaries. No dependencies, manifests or lockfile changed.
+
+| Check | Actual result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI and examples |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 231 executable tests + 19 compile-fail doctests; no failures/ignored |
+| CLI integration tests included above | 33 passed; 4 new, earlier commands/synthetic paths retained |
+| dependency/state/structure policy | passed: 15 crates, 9 unique internal edges, 215 module homes |
+| Python tests | 49 passed: 20 dependency/state, 9 structure, 20 index/extraction |
+| index regeneration twice | byte-identical across 17 index-directory files |
+| freshness | passed: 1,808 navigation records |
+| whitespace / git diff --check | passed; supplemental scan covers 480 files |
+
+Ten new executable tests (six loader, four CLI) and one immutable-report compile-fail doctest.
+Coverage includes 16 SysV count combinations, 25 header/array source-end boundaries, eight GNU
+terminator/count boundaries, every insufficient budget below exact SysV/GNU/both work, zero budgets,
+positive/zero/maximum fields, invalid bloom/buckets, absent/duplicate/conflicting descriptors,
+GNU lower-bound-only evidence, corroboration, inadequate symbol backing, immutable source identity,
+M7 candidate-only refusal after independent proof and native Windows non-UTF-8 paths. Invalid symbol
+bytes and unrelated malformed Needed/Rela metadata remain unread. Old hash/enumeration tests pass.
+An initial sweep expected a valid two-bucket layout to fail; the test expectation was corrected,
+then focused tests and full validation passed. No production semantic workaround was made.
+Unix-only behavior is not claimed validated. Allocation failure was not injected. GUI remains
+unchanged, builds, and was not relaunched. These checks are not evidence of guest correctness.
+
+### Manual CLI smoke tests
+
+All inputs below are generated 1536-byte synthetic fixtures; writers refuse overwrites. Reuse
+existing files or choose fresh names when repeating. Exact commands are also in USAGE.md.
+
+~~~powershell
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-sysv.elf sysv
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-both.elf both
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-conflict.elf conflict
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-none.elf none
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-lower.elf lower
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 9
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-both.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 18
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 8
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-none.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 0
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-conflict.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 18
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-lower.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 7
+~~~
+
+| Observation | Expected and actual result | Exit |
+|---|---|---|
+| five fixture writers | 1536 bytes created each | 0 each |
+| SysV, 9 words | Complete, nchain=3, trusted count 3, 72 symbol backing bytes | 0 |
+| Both, 18 words | Complete, SysV/GNU exact 3 corroborated, both proof ranges retained | 0 |
+| SysV, 8 words | Failed WorkLimit, no trusted count | 1 |
+| None, 0 words | Unavailable / no supported hash descriptor | 0 |
+| Conflict, 18 words | Failed ConflictingEvidence, SysV 3 vs GNU 2 | 1 |
+| Lower-bound GNU, 7 words | Complete metadata, LowerBound(1), exact count Unavailable | 0 |
+
+Output labels acquisition separately from explicit hash observation, original selected tag indices
+and values, budgets, source identity/provenance, raw hash fields, proof/range and the no-enumeration /
+no-names / no-linkage / no-guest stop boundary. No catalogue was consulted: existing M8 contracts
+were sufficient. No real guest binaries were used or executed.
+
+Indexes: implementation 567 (+22), subsystems 123 (+1), modules 402 (+12), sources 391 (+12),
+diagnostics 25 (+1), tests 300 (+11), NID 0, ABI 0; total 1,808 (+59). Generated JSON remains ignored.
+New homes: loader hash/bounded and hash/synthetic, core input/hash_metadata and CLI hash_metadata.
+Only the M8 collector was extracted for reuse; SysV/GNU decoding and extent rules are unchanged.
+
+M20 is ready_for_cleanup pending approval; the local active item remains. No commit/push/history
+change occurred; HEAD and origin/main remain 6950e014965f55c2d6bd9634b77a48811520a448. M21 has not started.
+Remaining pressure: M8's conservative GNU layout support and budgeted repeated SysV paths remain
+explicit. A possible M21 is separately requested bounded symbol observation from trusted extents,
+with explicit entry/name budgets and no classification/linking. No such consumer was added here.

@@ -34,3 +34,5 @@ M17 dynamic requires acquisition limits, --max-program-headers and --max-dynamic
 M18 descriptors requires all dynamic/acquisition limits plus --max-descriptors. It reports selected structural metadata, never payload contents. See [usage](../../USAGE.md).
 
 M19 string-references requires all descriptor limits plus explicit reference/per-scan/total-scan budgets. It presents referenced bytes only. See [usage](../../USAGE.md).
+
+M20 hash-metadata requires acquisition/header/dynamic limits plus --max-hash-words. It prints counts/proof only; see [usage](../../USAGE.md).

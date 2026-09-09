@@ -120,3 +120,5 @@ M17 adds loader elf/dynamic/bounded and shared synthetic fixtures, core input/dy
 M18 adds loader elf/dynamic/descriptors, core input/descriptors and CLI descriptors. Shared M5 pairing stays under observation/descriptors; payload owners remain separate.
 
 M19 adds loader elf/dynamic/string_references, core input/string_references and CLI string_references. M6 string_table remains the sole byte lookup owner.
+
+M20 hash/bounded owns independent hash/count reports; hash/synthetic owns small generated fixtures. Core input/hash_metadata and CLI hash_metadata delegate/present only. Existing hash decoders remain authoritative.

@@ -32,3 +32,5 @@ M17 input/dynamic delegates raw table observation with explicit budgets; no acqu
 M18 input/descriptors delegates selected descriptor metadata observation; it creates no session and performs no payload interpretation.
 
 M19 input/string_references delegates explicit reference lookup without creating dependency/session state.
+
+M20 input/hash_metadata delegates immutable source/count evidence requests; no session or symbol consumer is created.

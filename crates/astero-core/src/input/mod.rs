@@ -7,3 +7,5 @@ pub mod dynamic;
 pub mod descriptors;
 
 pub mod string_references;
+
+pub mod hash_metadata;

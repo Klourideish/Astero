@@ -18,26 +18,47 @@ pub fn observe(
 ) -> Result<HashObservation, HashError> {
     let dynamic = dynamic::observe(elf, dynamic_limits).map_err(HashError::Dynamic)?;
     let source = elf.artifact().source();
+    let DynamicObservation::Present(table) = dynamic else {
+        return Ok(HashObservation {
+            source: source.clone(),
+            sysv: None,
+            gnu: None,
+            extent: None,
+        });
+    };
+    let translator = AddressTranslator::new(elf).map_err(HashError::Mapping)?;
+    collect(
+        source,
+        table.entries(),
+        table.descriptors().symbols.as_ref(),
+        &translator,
+        limits,
+    )
+}
+/// Shared M8 decoders and proof rules; no symbol entry or name consumer is called.
+pub(in crate::elf::dynamic::hash) fn collect(
+    source: &crate::artifact::SourceArtifact,
+    entries: &[crate::elf::dynamic::entries::DynamicEntry],
+    symbols: Option<&crate::elf::dynamic::observation::SymbolTableDescriptor>,
+    translator: &AddressTranslator<'_>,
+    limits: HashLimits,
+) -> Result<HashObservation, HashError> {
     let mut result = HashObservation {
         source: source.clone(),
         sysv: None,
         gnu: None,
         extent: None,
     };
-    let DynamicObservation::Present(table) = dynamic else {
-        return Ok(result);
-    };
-    let translator = AddressTranslator::new(elf).map_err(HashError::Mapping)?;
     let mut remaining = limits.max_words;
     // Stable SysV then GNU order, independent of dynamic tag ordering.
     for (tag, kind) in [
         (DynamicTag::Hash, HashKind::SysV),
         (DynamicTag::GnuHash, HashKind::Gnu),
     ] {
-        if let Some(entry) = table.entries().iter().find(|e| e.tag == tag) {
+        if let Some(entry) = entries.iter().find(|e| e.tag == tag) {
             let mut reader = HashReader {
                 source,
-                translator: &translator,
+                translator,
                 base: entry.value,
                 kind,
                 remaining: &mut remaining,
@@ -51,8 +72,8 @@ pub fn observe(
     result.extent = extent::derive(
         result.sysv.as_ref(),
         result.gnu.as_ref(),
-        table.descriptors().symbols.as_ref(),
-        &translator,
+        symbols,
+        translator,
     )?;
     Ok(result)
 }

@@ -177,6 +177,37 @@ Expect ScanLimit (exit 1), ReferenceBudget (exit 1), and Unavailable (exit 0). N
 returned. Empty referenced strings display <empty>; absence is Unavailable. No dependency resolution,
 linkage, guest loading or execution occurs. Earlier commands never trigger this operation.
 
+### Explicit hash metadata (opt-in)
+
+hash-metadata observes SysV/GNU hash structures and establishes trusted symbol counts where proven.
+It does not enumerate symbols, resolve names, derive linkage or load/execute a guest. All acquisition,
+header and dynamic limits are mandatory, plus --max-hash-words: shared 32-bit word work across both
+hash families (including repeated visits and bloom extent). No descriptor budget is needed for the
+fixed selected hash/symbol-descriptor set. Exact budget succeeds; exhaustion fails without a count.
+
+Create the small synthetic fixtures once (existing outputs are refused), then run these commands:
+
+~~~powershell
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-sysv.elf sysv
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-both.elf both
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-conflict.elf conflict
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-none.elf none
+cargo run -p astero-loader --example hash_metadata_fixture -- .\target\m20-lower.elf lower
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 9
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-both.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 18
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 8
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-none.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 0
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-conflict.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 18
+cargo run -p astero-cli -- hash-metadata --path .\target\m20-lower.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 7
+~~~
+
+The five writers succeed with 1536 bytes each. The six observations respectively produce:
+trusted count 3 (SysV, exit 0); corroborated count 3 (both, exit 0); WorkLimit (exit 1);
+Unavailable/no hash (exit 0); ConflictingEvidence (exit 1); Complete GNU metadata with exact count
+Unavailable/lower-bound-only (exit 0). Reuse files on later runs or choose fresh fixture paths.
+For real input, replace the path and deliberately choose every limit. Count evidence is not a
+runnable/loaded guest, symbol validation or linkage. Earlier commands never invoke this request.
+
 ## GUI
 
 Open the Winit/Vulkan/ImGui session inspector without evidence:

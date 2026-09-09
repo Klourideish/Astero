@@ -5,3 +5,7 @@ pub mod gnu;
 pub mod observation;
 pub mod sysv;
 pub use observation::{HashLimits, HashObservation, observe};
+
+pub mod bounded;
+
+pub mod synthetic;
