@@ -115,3 +115,5 @@ same SourceArtifact owner; tokens never represent BSS as stored source bytes.
 M6 string views also retain this unchanged byte owner. Bounded substring tokens exclude the verified
 NUL terminator; generic dependency names own only their small byte sequences. No whole table is copied.
 See [dynamic strings](dynamic_strings.md).
+
+M14 adds a separate [filesystem adapter](filesystem_input.md). SourceArtifact ownership and constructors remain unchanged; filesystem metadata never replaces actual byte-derived source length.

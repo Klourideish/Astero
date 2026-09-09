@@ -54,3 +54,5 @@ M12 leaves report generation here and lets core share the immutable result as se
 No loader dependency was added. See [composition](../../knowledge/architecture/evidence_composition.md).
 
 M13 elf/dynamic/candidates/report/synthetic owns the small generated demonstration consumed through core by CLI/GUI. It reuses existing evidence generation and adds no parser or linkage semantics.
+
+M14 artifact::filesystem::acquire(path, limits) freezes bounded regular-file bytes into SourceArtifact and stops. No format detection or downstream call occurs. See [filesystem input](../../knowledge/architecture/filesystem_input.md).

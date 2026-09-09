@@ -12,6 +12,7 @@
     "astero-loader": [
       "admission",
       "artifact",
+      "artifact/filesystem",
       "dependencies",
       "elf",
       "elf/address_translation",

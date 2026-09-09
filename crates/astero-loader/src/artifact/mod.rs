@@ -3,3 +3,5 @@ mod inspection;
 pub use inspection::*;
 mod source;
 pub use source::{BoundSourceRange, SourceArtifact, SourceError, SourceId};
+
+pub mod filesystem;

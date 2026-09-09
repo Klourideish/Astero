@@ -697,3 +697,46 @@ names/status/selection and shared synthetic composition with tests; the existing
 now includes the GUI surface. Generated locations were not hand-edited.
 
 See [GUI evidence architecture](gui_linkage_evidence.md). M13 cleanup was approved and its active item removed. Durable evidence remains here; M14 has not begun.
+
+## M14 results — 2026-09-09
+
+Started clean at f4ce32b. Host file acquisition only; existing SourceArtifact and all M13 runtime
+code unchanged. No parsing, admission, loading, linkage, NIDs, guest mechanisms or GUI/CLI wiring.
+No commit or push. See [filesystem boundary](filesystem_input.md).
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including existing GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 178 executable tests + 14 compile-fail doctests passed; zero failures/ignored |
+| policy/state | passed: 15 crates, 9 unique internal edges |
+| structure policy | passed: 194 declared module homes |
+| Python unittest discovery | 49 passed: 20 dependency/state + 9 structure + 20 index/extraction |
+| index generation twice and --check | byte-identical across 17 files; fresh |
+| git diff --check | passed |
+| supplemental whitespace | passed: 406 files |
+
+Nine newly executed tests: four Windows integration tests and five private-reader unit tests.
+Coverage includes arbitrary non-ELF bytes, empty and exact-limit input, excess size, missing/invalid/
+directory paths, exclusive Windows open failure, non-UTF-8 Windows path, immutable retention,
+new object identity per acquisition, 256 extent combinations, fragmented/interrupted reads,
+call budgets, I/O error source, unrepresentable length, bounded chunks and final size changes.
+A tenth new indexed test is Unix-only symlink rejection; not executed or claimed validated here.
+Injected reader/final-size tests are deterministic race evidence, not a concurrent filesystem stress test.
+No real input corpus or downstream parser was invoked.
+
+No dependency/manifests/lock changes; loader remains dependency-free. Nine existing internal edges
+remain seven normal and two dev-only. New home: loader artifact/filesystem. No M13 reinterpretation.
+No GUI runtime revalidation was needed because no GUI/runtime code changed.
+
+Indexes: implementation 413 (+12), subsystems 116 (+0), modules 334 (+6), sources 324 (+6),
+diagnostics 18 (+1), tests 242 (+10), NID 0, ABI 0; total 1,447 (+35).
+Reviewed links connect acquisition, bounded reads, resource/race fixtures and structured errors.
+Locations are generated. Test index includes inactive platform branches and is not an execution count.
+
+M14 cleanup was approved and its active item removed; durable records remain. Durable pressure: synchronous I/O latency, adversarial namespace
+replacement and atomic snapshot guarantees need explicit platform work if required; this adapter
+claims none of them. A future milestone may expose acquisition-only selection/size policy through
+a frontend, retaining the STOP boundary. No M15 work has begun.

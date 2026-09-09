@@ -108,3 +108,5 @@ and CLI linkage. Counts and classification must never move into frontend modules
 
 M12 adds core session/inputs and CLI linkage/synthetic. Report/parser mechanics stay in loader;
 no neutral/shared-types crate or attachment registry is introduced.
+
+M14 adds loader artifact/filesystem for host acquisition, with separate acquisition orchestration, bounded reads and structured errors. It does not overlap guest kernel/filesystem ownership.

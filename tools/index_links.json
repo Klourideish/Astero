@@ -419,6 +419,29 @@
       "tests": [
         "test:astero-gui/test:linkage_view/retained_selection_keeps_duplicates_unknowns_and_relocation_labels"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::filesystem::acquire::acquire",
+      "tests": [
+        "test:astero-loader/test:filesystem_input/empty_and_arbitrary_files_stop_at_immutable_source_with_new_object_identity",
+        "test:astero-loader/test:filesystem_input/over_limit_missing_invalid_and_directory_inputs_are_structured",
+        "test:astero-loader/test:filesystem_input/native_non_utf8_filename_does_not_require_text_conversion"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::filesystem::read::read_exact_extent",
+      "tests": [
+        "test:astero-loader/lib:astero_loader/artifact::filesystem::read::tests::extent_sweep_distinguishes_exact_short_and_growing_reads",
+        "test:astero-loader/lib:astero_loader/artifact::filesystem::read::tests::byte_limits_and_unrepresentable_lengths_fail_before_reading",
+        "test:astero-loader/lib:astero_loader/artifact::filesystem::read::tests::read_requests_are_chunk_bounded_and_final_size_changes_reject"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::filesystem::read::bounded_read",
+      "tests": [
+        "test:astero-loader/lib:astero_loader/artifact::filesystem::read::tests::short_reads_and_interruptions_are_bounded_including_eof_probe",
+        "test:astero-loader/lib:astero_loader/artifact::filesystem::read::tests::io_failure_keeps_path_operation_and_underlying_error"
+      ]
     }
   ],
   "reviews": [
@@ -711,6 +734,18 @@
       "description": "Typed evidence target/source/module mismatch at immutable session composition; no target loading or report reclassification.",
       "evidence": [
         "knowledge/architecture/evidence_composition.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.filesystem_input",
+      "implementation": "impl:astero-loader/lib:astero_loader/artifact::filesystem::error::AcquisitionError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/artifact::filesystem::acquire::acquire"
+      ],
+      "surfaces": [],
+      "description": "Native requested path, acquisition operation, size/read limits and nested I/O failure; no parser or loading action.",
+      "evidence": [
+        "knowledge/architecture/filesystem_input.md"
       ]
     }
   ],
