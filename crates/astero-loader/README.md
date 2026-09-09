@@ -62,3 +62,5 @@ M16 elf/inspect/bounded composes the existing raw header decoders under an expli
 M17 elf/dynamic/bounded exposes independently requested raw PT_DYNAMIC evidence with header/entry budgets. Existing M5 descriptor semantics remain separate. See [raw boundary](../../knowledge/architecture/explicit_dynamic_observation.md).
 
 M18 elf/dynamic/descriptors explicitly observes only STRTAB/STRSZ and SYMTAB/SYMENT metadata through existing pairing rules. No payload traversal. See [descriptor boundary](../../knowledge/architecture/explicit_descriptor_observation.md).
+
+M19 elf/dynamic/string_references composes M18 metadata and M6 lookup for DT_NEEDED byte evidence only, with explicit reference/per-scan/total-scan budgets. See [boundary](../../knowledge/architecture/explicit_string_references.md).

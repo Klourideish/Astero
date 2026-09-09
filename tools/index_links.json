@@ -537,6 +537,28 @@
         "test:astero-cli/test:descriptors/limits_and_complete_failed_unavailable_status_survive_real_cli",
         "test:astero-cli/test:descriptors/native_path_and_repeated_evidence_remain_immutable"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::string_references::collect::observe",
+      "tests": [
+        "test:astero-loader/test:bounded_string_references/bytes_identity_order_duplicates_and_unreferenced_data_are_preserved",
+        "test:astero-loader/test:bounded_string_references/reference_and_scan_budgets_charge_duplicates_empty_and_nul",
+        "test:astero-loader/test:bounded_string_references/lookup_sweep_matches_m6_bounds_without_truncated_success"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/string_references::request::observe_acquired",
+      "tests": [
+        "test:astero-cli/test:string_references/earlier_frontend_commands_never_lookup_strings",
+        "test:astero-cli/test:string_references/real_cli_preserves_utf8_empty_raw_duplicates_and_explicit_limits",
+        "test:astero-cli/test:string_references/native_path_is_preserved_through_reference_request"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::string_table::view::impl[DynamicStringTable]::from_descriptor",
+      "tests": [
+        "test:astero-loader/test:bounded_string_references/m18_descriptor_remains_payload_free_and_m6_bridge_checks_identity"
+      ]
     }
   ],
   "reviews": [
@@ -917,6 +939,21 @@
       "description": "Independent source-bound selected descriptor report; explicit family budget, raw audit evidence and nested pairing/translation failures.",
       "evidence": [
         "knowledge/architecture/explicit_descriptor_observation.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.string_references",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::string_references::error::StringReferenceFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::string_references::collect::observe",
+        "impl:astero-core/lib:astero_core/input::string_references::observe"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/string_references::presentation::render"
+      ],
+      "description": "Explicit reference/per-scan/total-scan limits, M18 prerequisite evidence and M6 bounded lookup failures; no dependency state.",
+      "evidence": [
+        "knowledge/architecture/explicit_string_references.md"
       ]
     }
   ],

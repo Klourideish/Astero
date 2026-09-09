@@ -143,6 +143,40 @@ Expect Failed Budget (exit 1), Unavailable NoSupportedDescriptors (exit 0), and 
 enumerate symbols, walk hashes, decode relocations, derive linkage, load a guest or execute code.
 Earlier acquire, inspect and dynamic commands never trigger this separate operation.
 
+### Explicit string references (opt-in)
+
+string-references observes DT_NEEDED bytes only. It does not enumerate the string table or create
+resolved dependencies. All descriptor/acquisition limits plus three lookup limits are mandatory:
+--max-string-references, --max-scan-bytes-per-reference and --max-total-scan-bytes.
+NUL counts toward both scan limits; duplicates and empty strings consume reference budget normally.
+
+Create small synthetic fixtures once (existing outputs are refused):
+
+~~~powershell
+cargo run -p astero-loader --example string_reference_fixture -- .\target\m19-valid.elf valid
+cargo run -p astero-loader --example string_reference_fixture -- .\target\m19-raw.elf raw
+cargo run -p astero-loader --example string_reference_fixture -- .\target\m19-none.elf none
+~~~
+
+Successful UTF-8 and non-UTF-8 observations (exit 0), showing "libdemo.so" and <non-UTF8: FF>:
+
+~~~powershell
+cargo run -p astero-cli -- string-references --path ".\target\m19-valid.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1 --max-string-references 1 --max-scan-bytes-per-reference 11 --max-total-scan-bytes 11
+cargo run -p astero-cli -- string-references --path ".\target\m19-raw.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1 --max-string-references 1 --max-scan-bytes-per-reference 2 --max-total-scan-bytes 2
+~~~
+
+Insufficient scan bytes, insufficient reference count, and no supported references:
+
+~~~powershell
+cargo run -p astero-cli -- string-references --path ".\target\m19-valid.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1 --max-string-references 1 --max-scan-bytes-per-reference 10 --max-total-scan-bytes 11
+cargo run -p astero-cli -- string-references --path ".\target\m19-valid.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1 --max-string-references 0 --max-scan-bytes-per-reference 11 --max-total-scan-bytes 11
+cargo run -p astero-cli -- string-references --path ".\target\m19-none.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 4 --max-descriptors 1 --max-string-references 0 --max-scan-bytes-per-reference 0 --max-total-scan-bytes 0
+~~~
+
+Expect ScanLimit (exit 1), ReferenceBudget (exit 1), and Unavailable (exit 0). No partial string is
+returned. Empty referenced strings display <empty>; absence is Unavailable. No dependency resolution,
+linkage, guest loading or execution occurs. Earlier commands never trigger this operation.
+
 ## GUI
 
 Open the Winit/Vulkan/ImGui session inspector without evidence:

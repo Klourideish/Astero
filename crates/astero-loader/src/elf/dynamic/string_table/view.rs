@@ -3,7 +3,7 @@ use crate::{
     artifact::{BoundSourceRange, SourceArtifact},
     elf::dynamic::DynamicTable,
 };
-/// Owns a shared source handle, never a copied string table. Constructed only from M5 observations.
+/// Owns a shared source handle, never a copied string table. Constructed only from validated M5/M18 observations.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DynamicStringTable {
     source: SourceArtifact,
@@ -35,15 +35,28 @@ impl DynamicStringTable {
         let Some(descriptor) = dynamic.descriptors().strings.as_ref() else {
             return Ok(None);
         };
-        // Descriptor storage is private/read-only in DynamicTable. M5 already translated its whole extent.
-        dynamic
-            .source()
-            .read(&descriptor.source)
-            .map_err(StringTableError::Source)?;
-        Ok(Some(Self {
-            source: dynamic.source().clone(),
-            range: descriptor.source,
-        }))
+        Self::from_range(dynamic.source(), descriptor.source).map(Some)
+    }
+    /// Accept only a privately constructed M18 record; tokens are checked against the supplied source.
+    pub fn from_descriptor(
+        source: &SourceArtifact,
+        record: &crate::elf::dynamic::descriptors::DescriptorRecord,
+    ) -> Result<Option<Self>, StringTableError> {
+        let crate::elf::dynamic::descriptors::DescriptorValue::Strings(descriptor) = record.value()
+        else {
+            return Ok(None);
+        };
+        Self::from_range(source, descriptor.source).map(Some)
+    }
+    fn from_range(
+        source: &SourceArtifact,
+        range: BoundSourceRange,
+    ) -> Result<Self, StringTableError> {
+        source.read(&range).map_err(StringTableError::Source)?;
+        Ok(Self {
+            source: source.clone(),
+            range,
+        })
     }
     pub fn source(&self) -> &SourceArtifact {
         &self.source

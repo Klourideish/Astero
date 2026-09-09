@@ -45,3 +45,5 @@ pub mod inspection;
 pub mod dynamic;
 
 pub mod descriptors;
+
+pub mod string_references;

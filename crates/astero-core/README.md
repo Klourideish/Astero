@@ -30,3 +30,5 @@ M16 input/inspection delegates an explicit source/budget request to loader heade
 M17 input/dynamic delegates raw table observation with explicit budgets; no acquisition, session composition or linkage occurs.
 
 M18 input/descriptors delegates selected descriptor metadata observation; it creates no session and performs no payload interpretation.
+
+M19 input/string_references delegates explicit reference lookup without creating dependency/session state.

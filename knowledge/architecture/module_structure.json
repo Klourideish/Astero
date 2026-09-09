@@ -12,7 +12,8 @@
       "input/acquisition",
       "input/inspection",
       "input/dynamic",
-      "input/descriptors"
+      "input/descriptors",
+      "input/string_references"
     ],
     "astero-loader": [
       "admission",
@@ -66,7 +67,8 @@
       "elf/inspect/synthetic",
       "elf/dynamic/bounded",
       "elf/dynamic/synthetic",
-      "elf/dynamic/descriptors"
+      "elf/dynamic/descriptors",
+      "elf/dynamic/string_references"
     ],
     "astero-memory": [
       "access",
@@ -235,7 +237,8 @@
       "acquisition",
       "inspection",
       "dynamic",
-      "descriptors"
+      "descriptors",
+      "string_references"
     ]
   },
   "forbidden_top_level_filenames": [

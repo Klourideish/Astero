@@ -991,3 +991,78 @@ navigation remains tracked. Source locations are regenerated, not manually repai
 M18 cleanup was approved and its active item removed; durable records remain. M19 has not started.
 Remaining pressure: Complete certifies only selected metadata; future payload observation needs
 separate caller-visible budgets and must not automatically become dependency resolution/linking.
+
+## M19 results — 2026-09-09
+
+Started clean on main at 7148724; HEAD and origin/main remain unchanged. No commit/push/history
+operation. Explicit DT_NEEDED byte references only, using M18 descriptors and unchanged M6 lookup.
+See [capability contract](explicit_string_references.md). The only M6 implementation change is a
+source-checked constructor for private M18 descriptor records, sharing existing initialization.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI and fixture examples |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 221 executable Rust tests + 18 compile-fail doctests; no failures/ignored |
+| CLI integration tests within workspace run | 29 passed, including 4 new reference tests; earlier commands and synthetic linkage retained |
+| policy/state/structure | passed: 15 crates, 9 unique edges, 211 module homes |
+| Python tests | 49 passed: 20 dependency/state, 9 structure, 20 index/extraction |
+| index generation twice | byte-identical across 17 index-directory files |
+| index freshness | passed: 1,749 navigation records |
+| whitespace / git diff --check | passed; supplemental scan covers 467 files |
+
+Nine new executable tests: five loader and four CLI; one immutable-report compile-fail doctest.
+Coverage: 170 offset/scan-window combinations, 24 per/aggregate-budget combinations, reference
+budget zero/exact/excess, repeated offsets, empty/UTF-8/raw byte distinctions, final NUL boundaries,
+unterminated and out-of-range references, absent/malformed prerequisites, no unreferenced scanning,
+shared-source determinism, mismatched descriptor/source rejection and native Windows non-UTF-8 paths.
+Earlier frontend commands succeed even when M19 lookup fails. Existing synthetic linkage tests pass.
+Unix-specific behavior is not claimed validated; allocator exhaustion was not induced. GUI unchanged
+and not relaunched. These are bounded structural/byte contract tests, not guest correctness evidence.
+
+### Manual CLI evidence
+
+Exact commands also appear in USAGE.md. Three synthetic 1536-byte files contain valid, raw and
+unsupported-only reference cases; no external input. Writers refuse overwrites. Reuse generated
+files or choose fresh output names to repeat the checks.
+
+~~~powershell
+cargo run -p astero-loader --example string_reference_fixture -- .\target\m19-valid.elf valid
+cargo run -p astero-loader --example string_reference_fixture -- .\target\m19-raw.elf raw
+cargo run -p astero-loader --example string_reference_fixture -- .\target\m19-none.elf none
+cargo run -p astero-cli -- string-references --path .\target\m19-valid.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1 --max-string-references 1 --max-scan-bytes-per-reference 11 --max-total-scan-bytes 11
+cargo run -p astero-cli -- string-references --path .\target\m19-raw.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1 --max-string-references 1 --max-scan-bytes-per-reference 2 --max-total-scan-bytes 2
+cargo run -p astero-cli -- string-references --path .\target\m19-valid.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1 --max-string-references 1 --max-scan-bytes-per-reference 10 --max-total-scan-bytes 11
+cargo run -p astero-cli -- string-references --path .\target\m19-valid.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1 --max-string-references 0 --max-scan-bytes-per-reference 11 --max-total-scan-bytes 11
+cargo run -p astero-cli -- string-references --path .\target\m19-none.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 4 --max-descriptors 1 --max-string-references 0 --max-scan-bytes-per-reference 0 --max-total-scan-bytes 0
+~~~
+
+| Operation | Expected and actual result | Exit |
+|---|---|---|
+| valid/raw/none fixture writers | Each created 1536 synthetic bytes | 0 each |
+| Valid reference, scan/total 11 | Complete; UTF-8 "libdemo.so", content 10 bytes, charged 11 including NUL | 0 |
+| Raw reference, scan/total 2 | Complete; <non-UTF8: FF>, exact byte FF retained | 0 |
+| Valid reference, per scan 10 | Failed ScanLimit; no truncated prefix | 1 |
+| Valid reference, reference budget 0 | Failed ReferenceBudget { observed_references: 1, maximum: 0 } | 1 |
+| No supported references, zero lookup limits | Unavailable; unterminated unreferenced contents not scanned | 0 |
+
+Every invocation labels acquisition separately, explicit reference observation, source/provenance,
+all budgets and no enumeration/dependency resolution/linkage/guest execution. No external catalogue
+was needed. No SONAME/RPATH/RUNPATH support, symbol names/counts, hash walks, relocation decoding,
+import/export/NID/ABI semantics, dependency declarations, admission or guest runtime was introduced.
+
+No dependency/manifests/lock changes; loader remains dependency-free. Existing 9 edges remain 7 normal
+and 2 dev-only. M6 StringLimits is reused as a pure value contract; dependencies::observe is not called.
+New homes: loader elf/dynamic/string_references, core input/string_references, CLI string_references.
+
+Indexes: implementation 545 (+28), subsystems 122 (+1), modules 390 (+12), sources 379 (+12),
+diagnostics 24 (+1), tests 289 (+10), NID 0, ABI 0; total 1,749 (+64). Reviewed relationships connect
+M6/M18 proof reuse, lookup budgets, CLI presentation and tests. Generated JSON remains ignored;
+Markdown navigation remains tracked. Source locations are regenerated rather than hand-maintained.
+
+M19 is ready_for_cleanup pending approval; its local active item remains. M20 has not started.
+Remaining pressure: new reference kinds or payload scopes need independent decisions and explicit
+budgets. A possible M20 is explicit bounded hash-metadata/trusted-symbol-extent evidence using
+existing contracts, stopping before symbol enumeration or linkage. No such work was performed here.

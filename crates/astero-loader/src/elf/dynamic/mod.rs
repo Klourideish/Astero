@@ -18,3 +18,5 @@ pub mod bounded;
 pub mod synthetic;
 
 pub mod descriptors;
+
+pub mod string_references;
