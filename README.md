@@ -1,5 +1,7 @@
 # Astero
 
+**[Run Astero: CLI and GUI usage](USAGE.md)**
+
 Astero is a Rust PS5 emulator workspace informed by lessons from PS5Rust.
 M1 implements a real host session â†’ read-only observation â†’ debugger â†’ CLI/GUI slice.
 No emulator implementation has been migrated. There is no guest loading, execution or emulated GPU.
