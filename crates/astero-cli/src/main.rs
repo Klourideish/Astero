@@ -11,6 +11,18 @@ fn main() -> std::process::ExitCode {
 }
 fn run() -> Result<(), String> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.first().is_some_and(|a| a == "load-plan") {
+        let request = astero_cli::load_plan::parse(args.into_iter().skip(1))
+            .map_err(|e| format!("{e}\n{}", astero_cli::load_plan::USAGE))?;
+        let plan =
+            astero_cli::load_plan::execute(&request).map_err(|e| format!("Load plan: {e:?}"))?;
+        let text = astero_cli::load_plan::render(&plan);
+        if plan.readiness() == astero_core::input::load_plan::Readiness::Blocked {
+            return Err(text);
+        }
+        print!("{text}");
+        return Ok(());
+    }
     if args.first().is_some_and(|a| a == "ps5-identity") {
         let request = astero_cli::ps5_identity::parse(args.into_iter().skip(1))
             .map_err(|e| format!("{e}\n{}", astero_cli::ps5_identity::USAGE))?;
@@ -295,7 +307,7 @@ fn run() -> Result<(), String> {
     }
     if !args.is_empty() {
         return Err(format!(
-            "Usage: astero-cli ps5-identity <linkage-evidence budgets> --max-identity-records <u64>\nUsage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "Usage: astero-cli load-plan <ps5-identity arguments> --image-bias <u64> --max-providers <u64> --max-plan-records <u64> [--provider <path>]\nUsage: astero-cli ps5-identity <linkage-evidence budgets> --max-identity-records <u64>\nUsage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             astero_cli::acquisition::USAGE,
             astero_cli::inspection::USAGE,
             astero_cli::dynamic::USAGE,

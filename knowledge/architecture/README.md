@@ -52,3 +52,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [PS5 identity evidence](ps5_identity_evidence.md): M24 bounded descriptor hypotheses and encoded NID correlation, without provider binding.
 
 - [Asynchronous timing](asynchronous_timing.md): M25 host/manual clocks, bounded worker, completion tickets and explicit session ownership.
+
+- [Guest load/link planning](guest_load_link_plan.md): M26 explicit provider evidence, mappings, relocation values and readiness blockers; no runtime mutation.

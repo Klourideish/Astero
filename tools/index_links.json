@@ -673,6 +673,24 @@
         "test:astero-core/test:timing/session_timing_is_explicit_owned_and_stops_with_session",
         "test:astero-core/test:timing/dropping_session_releases_future_consumer_waits"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/load_plan::link::collect::plan",
+      "tests": [
+        "test:astero-loader/test:guest_load_plan/exact_context_and_nid_select_provider_without_runtime_binding",
+        "test:astero-loader/test:guest_load_plan/two_compatible_providers_are_ambiguous_not_first_wins",
+        "test:astero-loader/test:guest_load_plan/mapping_copy_zero_fill_permissions_and_entry_preserve_proof",
+        "test:astero-loader/test:guest_load_plan/relative_absolute_pc32_and_symbol_writes_have_checked_formulas",
+        "test:astero-loader/test:guest_load_plan/budgets_refuse_whole_plan_at_zero_and_exact_boundary_succeeds",
+        "test:astero-loader/test:guest_load_plan/repeated_planning_retains_input_and_deterministic_order",
+        "test:astero-loader/test:guest_load_plan/ready_is_only_for_closed_supported_image_and_unknown_identity_is_experimental"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/load_plan::link::model::catalogue_correlation",
+      "tests": [
+        "test:astero-loader/test:guest_load_plan/known_catalogue_nid_stays_unimplemented_without_provider"
+      ]
     }
   ],
   "reviews": [
@@ -1154,6 +1172,20 @@
       "description": "Bounded pending events, explicit omissions, terminal outcome, lateness and counters; no guest-time or precision claim.",
       "evidence": [
         "knowledge/architecture/asynchronous_timing.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.guest_load_plan",
+      "implementation": "impl:astero-loader/lib:astero_loader/load_plan::link::model::Blocker",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/load_plan::link::collect::plan"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/load_plan::presentation::render"
+      ],
+      "description": "Immutable planning blockers for provider/dependency ambiguity, segments, bootstrap and relocation values; not runtime errors.",
+      "evidence": [
+        "knowledge/architecture/guest_load_link_plan.md"
       ]
     }
   ],

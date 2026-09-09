@@ -1456,3 +1456,57 @@ tickets; per-ticket Arc allocation follows the process allocator's ordinary fail
 
 M25 remains active ready_for_cleanup pending user approval. No commit/push/history changes:
 HEAD and origin/main remain 332b39e8a1ff518c1f3e4807666a9512b6b3e05b. M26 has not started.
+
+
+## M26 results - 2026-09-09
+
+[Guest load/link planning](guest_load_link_plan.md) records catalogue evidence, provider rules,
+real experiments and explicit blockers. No guest binary was executed; files were data inputs only.
+
+| Validation | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 313 executable tests and 23 compile-fail doctests passed |
+| CLI integration tests | 48 included above, passed |
+| Python unittest discovery | 51 passed: 21 policy/state, 9 structure, 21 index/extraction |
+| dependency/state/structure | 16 crates, 10 internal edges, 238 declared homes; passed |
+| deterministic indexes | two byte-identical generations, 16 files; freshness passed |
+| whitespace | git diff --check and supplemental scan passed |
+
+New executed coverage: 18 loader tests, 3 CLI tests and 1 compile-fail doctest. An additional Unix
+native-path test is indexed but was not executed on Windows. Tests cover positive/mismatched/ambiguous
+provider matching, alias independence, catalogue-known/unregistered distinction, segment/protection/
+zero-fill/source proof, action arithmetic, TLS-value refusal, empty TLS, budgets and immutable order.
+Earlier CLI and synthetic linkage paths passed unchanged. Clippy found three style warnings during
+implementation; they were fixed before the final full validation. Logs: ignored target/m26-validation.
+
+Manual commands are exactly USAGE.md's load-plan block, including its explicit PowerShell limit
+array and local corpus role selection. No absolute input paths are committed. Expected and actual:
+
+| Command/input | Actual result | Exit |
+|---|---|---|
+| load-plan linkage_sample + utility_build_comparison provider | 5 segments, 2 dependencies, 8 references, 5 candidates, 0 selected, 11 actions, 2 concrete values, 26 blockers | 1 |
+| load-plan utility_build_comparison | same segment/dependency/reference/action totals; no supplied candidates; 26 blockers | 1 |
+| load-plan primary_real_elf | 5 segments, entry intent 0x100000070, 38 dependencies, 822 references, 30898 actions, 29791 concrete values, 1973 blockers | 1 |
+| first command with final plan limit replaced by 1 | Plan(Budget { required: 2, maximum: 1 }); no successful prefix | 1 |
+
+Blocked is an explicit planning result, not a failed experiment. No unsupported relocation numeric
+types appeared in these inputs. Missing providers plus bootstrap/RELRO/SCE requirements prevent
+load readiness. Empty TLS was found to require no work and is no longer an unnecessary blocker.
+No provider or guest memory was loaded. Real provider placement/dependency closure remains required.
+
+Before/after SHA256 matched for all inputs:
+- linkage_sample: 2f824c2a233c540d7220a4b1bc3b9c76e1a314267e47fe31740db5b93f582a3f
+- utility_build_comparison: daa15b69a637b29a34f93d5e9dd28c112e15f82f18ca12a9858b2eab55acef0b
+- primary_real_elf: a15e44caf80be1d86b72c2c1a6d1f93a171128962390cb28080507202f6e914a
+
+Indexes: implementation 815 (+51), subsystems 133 (+1), modules 481 (+13), sources 470 (+13),
+diagnostics 31 (+1), tests 389 (+23), NIDs 2 unchanged observation-only/unregistered, ABI 0.
+Total 2321 (+102). No dependency changes. Machine-readable indexes and local tracker/corpus files
+remain ignored; no machine paths were added to tracked source or documentation.
+
+M26 remains active ready_for_cleanup pending approval. No commit/push/history changes; HEAD and
+origin/main remain f15a7b633cdf64b5eb2a05722127587a5c8184ef. M27 has not started.

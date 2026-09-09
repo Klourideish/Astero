@@ -74,3 +74,5 @@ M22 [structural classification](../../knowledge/architecture/explicit_symbol_cla
 M23 candidates/workload composes existing bounded symbols, structural roles, M9 relocations and M6 names into real linkage evidence; no provider binding or application. See [M23](../../knowledge/architecture/real_linkage_evidence.md).
 
 M24 elf/dynamic/identity consumes complete M23 linkage evidence for bounded PS5 descriptor hypotheses and canonical encoded NID correlation; no provider resolution. See [PS5 identity evidence](../../knowledge/architecture/ps5_identity_evidence.md).
+
+M26 `load_plan::link::plan` composes source-bound M24 evidence and explicit providers into immutable mapping, resolution and relocation intentions. Blockers are not runtime failures; see [load/link planning](../../knowledge/architecture/guest_load_link_plan.md).

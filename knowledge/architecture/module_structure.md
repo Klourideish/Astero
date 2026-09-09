@@ -132,3 +132,5 @@ M23 owns capability composition in loader elf/dynamic/candidates/workload (synth
 M24 adds loader elf/dynamic/identity (codec, metadata correlation, immutable model, collection and synthetic fixture), core input/ps5_identity delegation and CLI ps5_identity presentation. No crate or edge changes. See [PS5 identity evidence](ps5_identity_evidence.md).
 
 M25 adds astero-timing/time, clock, scheduler and diagnostics, plus core/session/timing. The new foundational crate avoids coupling GPU/video/audio timing to a kernel consumer. No loose top-level scheduler file or global event registry.
+
+M26 nests capability planning under loader/load_plan/link, core/input/load_plan and CLI/load_plan. MappingIntent/VirtualAddress/source tokens are reused; no new parser or runtime owner.

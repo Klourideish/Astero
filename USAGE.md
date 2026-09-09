@@ -398,3 +398,35 @@ Worker joined. Manual host-domain demonstration; no guest execution.
 
 It does not sleep for a guest or configure Windows timer resolution. Default CLI/GUI sessions and
 offline artifact commands do not create a timing worker.
+
+
+## Offline guest load/link plan
+
+Use an explicit consumer and optional provider from your ignored local corpus configuration:
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+cargo run -p astero-cli -- load-plan --path $corpus.artifacts.linkage_sample.path --provider $corpus.artifacts.utility_build_comparison.path @planLimits
+cargo run -p astero-cli -- load-plan --path $corpus.artifacts.utility_build_comparison.path @planLimits
+cargo run -p astero-cli -- load-plan --path $corpus.artifacts.primary_real_elf.path @planLimits
+```
+
+These real-input examples produce useful **Blocked** plans (exit 1), not loaded guests. Both utility
+builds report five segments, two dependencies, eight external references and eleven relocation
+records. The alternate utility supplies five candidates but satisfies none of the libc/kernel
+references. The executable reports five segments and 30,898 relocation records. Missing providers
+and bootstrap/RELRO requirements remain explicit blockers. The bias is an explicit guest-address
+intent, not a host allocation. Real provider paths have no guessed placement.
+
+`--provider` can repeat up to `--max-providers`. Optional `--provider-alias <exact-name>` immediately
+after a provider explicitly declares a DT_NEEDED match; no filename/suffix inference or dependency
+search occurs. All existing acquisition/observation limits apply per artifact. `--max-plan-records`
+bounds retained planning records and match/blocker details; insufficient capacity refuses the whole
+plan. To exercise refusal, replace the final value of `$planLimits` with `'1'` and rerun the first
+command (exit 1, Budget; no successful prefix).
+
+Output retains exact totals and shows at most 16 reference/relocation/blocker details per list,
+with explicit omitted counts. Full bounded evidence remains in the API plan. Catalogue-known names
+are not Astero registrations. **PLAN ONLY: no guest memory mutated, no relocations applied, no guest
+execution.** Existing synthetic linkage and independent observation commands are unchanged.

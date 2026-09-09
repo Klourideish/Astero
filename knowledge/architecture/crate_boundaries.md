@@ -89,3 +89,5 @@ M15 activates no new edge: core/input/acquisition delegates to loader acquisitio
 M16 loader owns bounded header evidence, core/input/inspection delegates, and CLI/inspection presents an explicit request/result. No session attachment or new dependency edge. See [explicit inspection](explicit_inspection.md).
 
 M25 adds a dependency-free timing foundation. Core owns optional TimingEngine instances; kernel/timing remains the future guest clock/wait adapter. Only core gains a current timing edge. Future runtime consumers require deliberate downward policy additions; loader and frontends do not own time. See [timing](asynchronous_timing.md).
+
+M26 loader-owned load_plan/link matches immutable provider declarations, not live HLE registration or dispatch. Future HLE adapters may supply documentary declarations; no loader -> HLE/memory/timing edge is added. Existing synthetic admission remains unchanged.
