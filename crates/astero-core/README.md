@@ -40,3 +40,5 @@ M21 input/symbols delegates explicit same-source hash-proof consumption; no sess
 `input/classification` delegates immutable M21 report classification to loader; it creates no session or guest state.
 
 M23 input/linkage_evidence delegates the loader capability over immutable source input; no session/guest state is created.
+
+M24 input/ps5_identity delegates immutable M23 report plus identity limit to loader, without session construction. See [PS5 identity evidence](../../knowledge/architecture/ps5_identity_evidence.md).

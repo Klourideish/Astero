@@ -27,7 +27,7 @@ metadata supplies workspace membership/targets. No database, daemon, network or 
 | Implementation | implementation.json | [IMPLEMENTATION_INDEX.md](IMPLEMENTATION_INDEX.md): Rust declarations and methods, source spans, logical owners, reviewed relations |
 | Subsystems | subsystems.json | [SUBSYSTEM_INDEX.md](SUBSYSTEM_INDEX.md): crate/category -> subsystem -> modules and definitions |
 | Modules | modules.json | [MODULE_INDEX.md](MODULE_INDEX.md): logical modules, source owner, implementation home, documented responsibility/forbidden responsibility |
-| NIDs | nids.json | [NID_INDEX.md](NID_INDEX.md): zero reviewed Astero NIDs; schema ready for actual registration evidence |
+| NIDs | nids.json | [NID_INDEX.md](NID_INDEX.md): reviewed observed NID correlations; unregistered does not mean HLE implementation |
 | ABI | abi.json | [ABI_INDEX.md](ABI_INDEX.md): zero reviewed guest ABI contracts; scaffold directories are not ABI support |
 | Diagnostics | diagnostics.json | [DIAGNOSTIC_INDEX.md](DIAGNOSTIC_INDEX.md): deliberate host snapshot, support inventory and loader error surfaces |
 | Tests | tests.json | [TEST_INDEX.md](TEST_INDEX.md): Rust test functions/doctests and Python unittest declarations; never a passing-test report |

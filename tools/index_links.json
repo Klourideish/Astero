@@ -623,6 +623,21 @@
         "test:astero-loader/test:real_linkage/malformed_descriptors_and_deferred_formats_do_not_become_complete",
         "test:astero-loader/test:real_linkage/missing_extent_failed_symbols_and_special_definitions_remain_explicit"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
+      "tests": [
+        "test:astero-loader/test:ps5_identity/known_decrypted_and_approved_firmware_codec_vectors",
+        "test:astero-loader/test:ps5_identity/canonical_roundtrips_and_aliases_are_not_confirmed"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::collect::observe",
+      "tests": [
+        "test:astero-loader/test:ps5_identity/shared_input_is_immutable_and_repeated_reports_keep_order",
+        "test:astero-loader/test:ps5_identity/records_preserve_provenance_raw_values_and_hypothesis_context",
+        "test:astero-loader/test:ps5_identity/budget_refuses_before_successful_prefix"
+      ]
     }
   ],
   "reviews": [
@@ -1079,8 +1094,55 @@
       "evidence": [
         "knowledge/architecture/real_linkage_evidence.md"
       ]
+    },
+    {
+      "id": "diagnostic:loader.ps5_identity",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::model::IdentityFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::collect::observe"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/ps5_identity::presentation::render"
+      ],
+      "description": "Identity record and aggregate name budgets, prerequisite/discovery/string failures; conflicts remain explicit metadata evidence. No provider resolution.",
+      "evidence": [
+        "knowledge/architecture/ps5_identity_evidence.md"
+      ]
     }
   ],
-  "nids": [],
+  "nids": [
+    {
+      "id": "nid:observed.1f67bcb7949c4067",
+      "nid": {
+        "numeric_hex": "0x1F67BCB7949C4067",
+        "encoded": "H2e8t5ScQGc"
+      },
+      "guest_library": "libc (artifact-local hypothesis)",
+      "guest_module": "libc (artifact-local hypothesis)",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
+      "registration_status": "unregistered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/ps5_identity_evidence.md"
+      ],
+      "provenance": "H2e8t5ScQGc; canonical numeric correlation observed in both M24 utility builds; decoder implementation only, no HLE implementation or registration"
+    },
+    {
+      "id": "nid:observed.3f7df43f774517af",
+      "nid": {
+        "numeric_hex": "0x3F7DF43F774517AF",
+        "encoded": "P330P3dFF68"
+      },
+      "guest_library": "libc (artifact-local hypothesis)",
+      "guest_module": "libc (artifact-local hypothesis)",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
+      "registration_status": "unregistered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/ps5_identity_evidence.md"
+      ],
+      "provenance": "P330P3dFF68; canonical numeric correlation observed in both M24 utility builds; decoder implementation only, no HLE implementation or registration"
+    }
+  ],
   "abi": []
 }

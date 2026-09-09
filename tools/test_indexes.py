@@ -170,6 +170,19 @@ class IndexTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must not override"):
             self.bundle()
 
+    def test_observed_nid_render_preserves_unregistered_provenance(self):
+        data = self.bundle()
+        config = json.loads((self.root / "tools/index_links.json").read_text())
+        config["nids"] = [{"id": "nid:observation", "implementation": data["implementation"]["records"][0]["id"],
+            "nid": {"numeric_hex": "0x1", "encoded": "AAAAAAAAAAE"}, "guest_library": "unknown", "guest_module": "unknown",
+            "registration_status": "unregistered", "related_abi": [], "evidence": ["knowledge/architecture/validation.md"],
+            "provenance": "Synthetic identity observation only; no HLE implementation"}]
+        self.write("tools/index_links.json", json.dumps(config))
+        text = render(self.bundle())["NID_INDEX.md"].decode()
+        self.assertIn("unregistered", text)
+        self.assertIn("Synthetic identity observation only", text)
+        self.assertIn("does not establish an HLE provider", text)
+
     def test_repo_indexes_match_current_sources(self):
         check_generated(ROOT)
 

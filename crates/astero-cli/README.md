@@ -42,3 +42,5 @@ M21 symbols explicitly requests count proof then bounded symbol/name observation
 `classify-symbols` explicitly composes bounded symbol observations and structural roles. All budgets are required; see [USAGE](../../USAGE.md).
 
 M23 `linkage-evidence` explicitly observes selected real or synthetic ELF input with visible budgets. Existing synthetic `--linkage` modes remain separate; see [USAGE](../../USAGE.md).
+
+M24 ps5-identity selects the real evidence capability with mandatory linkage/name limits and --max-identity-records; no resolution or runtime actions. See [PS5 identity evidence](../../knowledge/architecture/ps5_identity_evidence.md).

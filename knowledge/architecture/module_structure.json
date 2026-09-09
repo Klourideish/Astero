@@ -17,7 +17,8 @@
       "input/hash_metadata",
       "input/symbols",
       "input/classification",
-      "input/linkage_evidence"
+      "input/linkage_evidence",
+      "input/ps5_identity"
     ],
     "astero-loader": [
       "admission",
@@ -79,7 +80,9 @@
       "elf/dynamic/symbol_table/synthetic",
       "elf/dynamic/candidates/structural",
       "elf/dynamic/candidates/workload",
-      "elf/dynamic/candidates/workload/synthetic"
+      "elf/dynamic/candidates/workload/synthetic",
+      "elf/dynamic/identity",
+      "elf/dynamic/identity/synthetic"
     ],
     "astero-memory": [
       "access",
@@ -253,7 +256,8 @@
       "hash_metadata",
       "symbols",
       "classification",
-      "linkage_evidence"
+      "linkage_evidence",
+      "ps5_identity"
     ]
   },
   "forbidden_top_level_filenames": [

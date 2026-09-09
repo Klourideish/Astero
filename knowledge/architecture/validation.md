@@ -1360,3 +1360,58 @@ Remaining pressure and a possible M24 (bounded PS5 module/library-name correlati
 are recorded there. M24 has not started. No commit/push/history change: local HEAD remains
 c26077f1728b7662ce4568551553444a8a964b71; origin/main remains
 5e7f450b10e3ef1091105d69fba5fd15e83d7d15 (pre-existing unpushed housekeeping commit preserved).
+
+## M24 results - 2026-09-09
+
+[PS5 identity evidence](ps5_identity_evidence.md) records sources, hypotheses and real outcomes.
+No guest binary was executed; real files were inspected as data. No dependency changes.
+
+| Validation | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 276 executable tests, 22 compile-fail doctests, all passed |
+| CLI integration tests | 45, included above, all passed |
+| Python unittest discovery | 50 passed: 20 policy/state, 9 structure, 21 index/extraction |
+| dependency/state/structure policy | 15 crates, 9 actual internal edges, 230 declared homes; passed |
+| index regeneration | two byte-identical generations, 16 generated files; freshness passed |
+| whitespace | git diff --check and supplemental scan passed |
+
+New coverage: 14 loader, 2 CLI and 1 Python index test. Codec vectors are documentary
+corroboration, not runtime/ABI proof. No HLE or relocation application tests are claimed.
+Detailed logs are local under ignored target/m24-validation.
+
+Manual commands are exactly those in USAGE.md's PS5 identity section. The comparison also ran
+with --max-identity-records 1024. No input paths are embedded here.
+
+| Input/request | Expected and actual result | Exit |
+|---|---|---|
+| linkage_sample / 1024 records | Complete, 13 NIDs, 7 descriptor hypotheses + 7 unsupported records | 0 |
+| utility_build_comparison / 1024 | Complete, same totals; differing library IDs/symbol order | 0 |
+| utility_build_comparison / 27 | Failed Budget { count: 28, maximum: 27 }, no successful prefix | 1 |
+| identity_fixture writer | 2560 synthetic bytes, create-new/overwrite-safe | 0 |
+| synthetic / exact 6 | Complete, two NIDs, null symbol, two descriptors + one unsupported | 0 |
+| synthetic metadata offset 0xffffffff | Failed String, dynamic_index 14, OffsetOutOfBounds | 1 |
+
+For the final negative smoke, a new target/m24-malformed.elf was created with Python create-new
+mode from target/m24-identity.elf; struct.pack_into('<Q', bytes, 0x6e8, 0xffffffff) changed only
+its synthetic descriptor offset. Exact command:
+
+```powershell
+cargo run -p astero-cli -- ps5-identity --path .\target\m24-malformed.elf --max-bytes 4096 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 32 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 16 --max-name-scan-bytes 64 --max-total-name-scan-bytes 256 --max-relocations 4 --max-identity-records 6
+```
+
+Both real before/after SHA256 values match the capability record. All 13 numeric NIDs overlap;
+eight context suffixes and symbol order differ. All 26 symbol context pairs match artifact-local
+declarations under the labelled hypothesis. Version semantics/attribute tags remain unresolved.
+No provider, HLE or dependency is resolved and no relocation is applied.
+
+Indexes: implementation 686 (+35), subsystems 127 (+1), modules 454 (+13), sources 443 (+13),
+diagnostics 29 (+1), tests 349 (+17), NIDs 2 (+2 observed/unregistered), ABI 0; total 2090 (+82).
+NID Markdown exposes unregistered provenance; owner status describes the decoder, not an HLE.
+Generated JSON, AGENTS.md, PROJECT_STATE.json and LOCAL_TEST_CORPUS.json remain local-only/ignored.
+
+No commit/push/history change. HEAD and origin/main remain 0766acf8017a3dfc866c94cef13140c4f211acd6.
+M24 remains active pending cleanup approval; M25 has not started.

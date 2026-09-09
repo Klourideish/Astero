@@ -11,6 +11,44 @@ fn main() -> std::process::ExitCode {
 }
 fn run() -> Result<(), String> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.first().is_some_and(|a| a == "ps5-identity") {
+        let request = astero_cli::ps5_identity::parse(args.into_iter().skip(1))
+            .map_err(|e| format!("{e}\n{}", astero_cli::ps5_identity::USAGE))?;
+        let lower = request.linkage;
+        let mut selection = astero_cli::acquisition::Selection::new(lower.symbols.acquisition);
+        selection.acquire();
+        let acquired = astero_cli::acquisition::render(&selection);
+        if matches!(selection.state(), astero_cli::acquisition::State::Failed(_)) {
+            return Err(acquired);
+        }
+        let linkage = astero_cli::linkage_evidence::observe_acquired(
+            &selection,
+            astero_core::input::linkage_evidence::LinkageLimits {
+                hash: lower.symbols.hash,
+                symbols: lower.symbols.symbols,
+                max_relocations: lower.max_relocations,
+            },
+        )
+        .map_err(|e| format!("Linkage request: {e:?}"))?;
+        let report = astero_core::input::ps5_identity::observe(
+            std::sync::Arc::new(linkage),
+            astero_core::input::ps5_identity::IdentityLimits {
+                max_identity_records: request.max_identity_records,
+            },
+        );
+        let text = format!(
+            "Acquisition stage:\n{acquired}\n{}",
+            astero_cli::ps5_identity::render(&report)
+        );
+        if matches!(
+            report.outcome(),
+            astero_core::input::ps5_identity::IdentityOutcome::Failed(_)
+        ) {
+            return Err(text);
+        }
+        print!("{text}");
+        return Ok(());
+    }
     if args.first().is_some_and(|a| a == "linkage-evidence") {
         let request = astero_cli::linkage_evidence::parse(args.into_iter().skip(1))
             .map_err(|e| format!("{e}\n{}", astero_cli::linkage_evidence::USAGE))?;
@@ -257,7 +295,7 @@ fn run() -> Result<(), String> {
     }
     if !args.is_empty() {
         return Err(format!(
-            "Usage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "Usage: astero-cli ps5-identity <linkage-evidence budgets> --max-identity-records <u64>\nUsage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             astero_cli::acquisition::USAGE,
             astero_cli::inspection::USAGE,
             astero_cli::dynamic::USAGE,

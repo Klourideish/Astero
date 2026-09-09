@@ -48,3 +48,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Explicit structural symbol classification](explicit_symbol_classification.md) — report-only roles and budgets.
 
 - [Real ELF linkage evidence](real_linkage_evidence.md): bounded symbols, relocation references and dependency-name evidence from selected real input.
+
+- [PS5 identity evidence](ps5_identity_evidence.md): M24 bounded descriptor hypotheses and encoded NID correlation, without provider binding.
