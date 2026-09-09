@@ -19,9 +19,16 @@ pub struct AddressTranslator<'a> {
 }
 impl<'a> AddressTranslator<'a> {
     pub fn new(elf: &'a ElfInspection) -> Result<Self, TranslationError> {
-        let source = elf.artifact().source();
+        Self::from_program_headers(elf.artifact().source(), elf.program_headers())
+    }
+    pub(in crate::elf) fn from_program_headers(
+        source: &'a SourceArtifact,
+        programs: impl IntoIterator<
+            Item = Result<crate::elf::program_headers::ProgramHeader, crate::elf::ElfError>,
+        >,
+    ) -> Result<Self, TranslationError> {
         let mut mappings = Vec::new();
-        for (index, p) in elf.program_headers().enumerate() {
+        for (index, p) in programs.into_iter().enumerate() {
             let p = p.map_err(TranslationError::Header)?;
             if p.kind != 1 {
                 continue;

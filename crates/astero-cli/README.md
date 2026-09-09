@@ -28,3 +28,5 @@ M13 moves the shared demo generator to loader and composition to core; CLI calls
 M15 acquisition/ owns native argument selection, Ready/Acquired/Failed state and human presentation. Both --max-bytes and --max-read-calls are mandatory. It delegates through core input, without session creation or parsing. See [input selection](../../knowledge/architecture/acquisition_frontend.md).
 
 M16 inspect requires all acquisition arguments plus --max-program-headers. It prints acquisition separately from immutable header-only inspection. acquire and synthetic linkage remain separate. See [usage](../../USAGE.md) and [inspection](../../knowledge/architecture/explicit_inspection.md).
+
+M17 dynamic requires acquisition limits, --max-program-headers and --max-dynamic-entries. It is distinct from inspect and linkage. See [usage](../../USAGE.md).

@@ -505,6 +505,22 @@
         "test:astero-cli/test:inspection/explicit_limits_exact_boundary_and_exhaustion_survive_frontend_layers",
         "test:astero-cli/test:inspection/syntax_acquisition_failures_and_inspection_failures_are_distinct"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::bounded::collect::observe",
+      "tests": [
+        "test:astero-loader/test:bounded_dynamic/raw_evidence_preserves_source_and_does_not_validate_descriptors",
+        "test:astero-loader/test:bounded_dynamic/entry_budget_sweep_includes_terminal_and_never_labels_a_prefix_complete",
+        "test:astero-loader/test:bounded_dynamic/table_bounds_translation_and_overflow_are_structured_before_scanning"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/dynamic::request::observe_acquired",
+      "tests": [
+        "test:astero-cli/test:dynamic/independent_requests_preserve_acquisition_and_header_only_behaviour",
+        "test:astero-cli/test:dynamic/real_cli_budget_status_raw_values_and_nonsemantic_boundary",
+        "test:astero-cli/test:dynamic/native_path_survives_dynamic_frontend_selection_and_process"
+      ]
     }
   ],
   "reviews": [
@@ -855,6 +871,21 @@
       "description": "Explicit inspection requires an acquired source; Ready/Failed acquisition is not inspected.",
       "evidence": [
         "knowledge/architecture/explicit_inspection.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.raw_dynamic",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::bounded::model::DynamicFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::bounded::collect::observe",
+        "impl:astero-core/lib:astero_core/input::dynamic::observe"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/dynamic::presentation::render"
+      ],
+      "description": "Source-bound independent raw dynamic report, explicit header/entry budgets, no descriptor interpretation.",
+      "evidence": [
+        "knowledge/architecture/explicit_dynamic_observation.md"
       ]
     }
   ],

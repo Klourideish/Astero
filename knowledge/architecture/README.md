@@ -34,3 +34,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Frontend acquisition](acquisition_frontend.md): M15 CLI native-path selection and explicit budgets; stop at SourceArtifact.
 
 - [Explicit bounded inspection](explicit_inspection.md): M16 opt-in header evidence, program-header budget and CLI boundary.
+
+- [Explicit raw dynamic observation](explicit_dynamic_observation.md): independent request, visible budgets, raw entries only.

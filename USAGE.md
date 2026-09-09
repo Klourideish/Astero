@@ -76,6 +76,38 @@ cargo run -p astero-cli -- inspect --path ".\target\m16-header.elf" --max-bytes 
 cargo run -p astero-cli -- inspect --path ".\README.md" --max-bytes 1048576 --max-read-calls 64 --max-program-headers 8
 ~~~
 
+### Explicit raw dynamic observation (opt-in)
+
+The separate dynamic command requires both acquisition limits, --max-program-headers and
+--max-dynamic-entries. There are no defaults. This observes raw tags/values only; it does not
+interpret strings, symbols, hashes, relocations or linkage, or load/execute a guest.
+
+Generate the small synthetic fixture once (existing output is not overwritten), then observe it:
+
+~~~powershell
+cargo run -p astero-loader --example dynamic_fixture -- .\target\m17-dynamic.elf
+cargo run -p astero-cli -- dynamic --path ".\target\m17-dynamic.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 3
+~~~
+
+Expect Acquired (1536 bytes), Complete (raw table scope only), three entries including retained
+DT_NULL, and Unknown(-42) with its numeric raw value. The synthetic STRTAB pointer is deliberately
+unusable: this command reports the value without following it. Reuse the fixture on later runs.
+
+DT_NULL consumes one entry of budget. This deliberately fails with EntryLimit and exit 1:
+
+~~~powershell
+cargo run -p astero-cli -- dynamic --path ".\target\m17-dynamic.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 2
+~~~
+
+Using the earlier m16-header fixture reports Unavailable (no PT_DYNAMIC), exit 0:
+
+~~~powershell
+cargo run -p astero-cli -- dynamic --path ".\target\m16-header.elf" --max-bytes 1024 --max-read-calls 4 --max-program-headers 1 --max-dynamic-entries 0
+~~~
+
+No incomplete prefix is presented as Complete. Malformed input fails with structured diagnostics.
+Neither acquire nor inspect automatically runs dynamic observation; this is a separate request.
+
 ## GUI
 
 Open the Winit/Vulkan/ImGui session inspector without evidence:

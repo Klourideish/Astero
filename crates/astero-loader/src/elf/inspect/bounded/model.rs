@@ -76,6 +76,9 @@ impl InspectionReport {
     pub fn limits(&self) -> InspectionLimits {
         self.limits
     }
+    pub(in crate::elf) fn into_outcome(self) -> InspectionOutcome {
+        self.outcome
+    }
     pub fn outcome(&self) -> &InspectionOutcome {
         &self.outcome
     }

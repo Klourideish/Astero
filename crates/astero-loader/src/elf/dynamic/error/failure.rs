@@ -5,6 +5,9 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DynamicError {
     Header(ElfError),
+    Allocation {
+        entries: u64,
+    },
     MultipleTables {
         first: usize,
         second: usize,

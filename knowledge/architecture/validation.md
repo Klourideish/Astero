@@ -851,3 +851,70 @@ to tests. Generated locations were never hand-edited.
 Remaining pressure: Complete describes headers, not payload/admission validity. Future optional
 inspection scopes require distinct explicit budgets; M14 I/O/namespace limitations remain. M17 has
 not begun. M16 cleanup was approved and its active item removed. Durable records are preserved.
+
+## M17 results — 2026-09-09
+
+Started clean on main at fabd470; HEAD and origin/main remain unchanged. No commit/push/history
+operation. Independent raw dynamic observation only; no GUI or guest runtime change. See
+[capability contract](explicit_dynamic_observation.md). Shared raw traversal is extracted once;
+the M5 descriptor operation retains its existing step and all prior tests pass.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI and fixture examples |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 202 executable Rust tests + 16 compile-fail doctests; no failures/ignored |
+| CLI integration tests within workspace run | 21 passed, including 4 new dynamic tests; M16 and synthetic linkage retained |
+| policy/state/structure | passed: 15 crates, 9 unique edges, 205 module homes |
+| Python tests | 49 passed: 20 dependency/state, 9 structure, 20 index/extraction |
+| index generation twice | byte-identical across 17 index-directory files |
+| index freshness | passed: 1,621 navigation records |
+| whitespace / git diff --check | passed; supplemental scan covers 442 files |
+
+Ten new executable tests: six loader and four CLI; one new compile-fail immutable-report doctest.
+Coverage includes 168 budget/count pairs, 31 pre-terminal extents, no/multiple/empty tables,
+retained DT_NULL, odd trailing bytes, unknown tags/raw values, source identity/immutability,
+translation/source/overflow and exact-end bounds, independent acquisition/header requests,
+required limits, malformed input, deterministic output and native non-UTF-8 Windows paths.
+Unix-specific behavior is not claimed validated. Allocation failure is structured but no allocator
+exhaustion experiment was performed. Existing synthetic linkage tests pass; GUI was not relaunched.
+
+### Manual CLI evidence
+
+Exact commands also appear in USAGE.md. Synthetic fixture only, no real guest input. The earlier
+272-byte M16 header fixture was reused. Example writer refuses overwrite; choose a fresh path or
+reuse the generated file when repeating these checks.
+
+~~~powershell
+cargo run -p astero-loader --example dynamic_fixture -- .\target\m17-dynamic.elf
+cargo run -p astero-cli -- dynamic --path .\target\m17-dynamic.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 3
+cargo run -p astero-cli -- dynamic --path .\target\m17-dynamic.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 2
+cargo run -p astero-cli -- dynamic --path .\target\m16-header.elf --max-bytes 1024 --max-read-calls 4 --max-program-headers 1 --max-dynamic-entries 0
+~~~
+
+| Operation | Expected and actual result | Exit |
+|---|---|---|
+| Fixture writer | Created 1536 synthetic bytes | 0 |
+| Entry budget 3 | Acquired; Complete; 3 entries; STRTAB MAX pointer not dereferenced; Unknown(-42) preserved; NULL value 7 retained | 0 |
+| Entry budget 2 | Acquired; Failed EntryLimit { limit: 2 }; no partial successful list | 1 |
+| Header fixture | Acquired; Unavailable (no PT_DYNAMIC) | 0 |
+
+Each CLI observation labels the explicit request, source/provenance, both parser budgets and no
+loaded guest/linkage/execution. Acquisition remains separately labeled. No external catalogue was
+needed; no PS5Rust/decrypted input, NID/ABI implementation, string/symbol/hash/relocation semantics,
+linkage or guest state was introduced.
+
+No manifest, lockfile or dependency-policy changes. Loader is dependency-free. Existing 9 edges
+remain 7 normal and 2 dev-only. Shared M5 byte fixture construction moved unchanged to loader
+elf/dynamic/synthetic; the owning test module re-exports it. No general fixture framework was added.
+
+Indexes: implementation 488 (+29), subsystems 120 (+1), modules 367 (+13), sources 356 (+13),
+diagnostics 22 (+1), tests 268 (+11), NID 0, ABI 0; total 1,621 (+68). Reviewed links connect raw
+observation, CLI requests, diagnostic context and tests. Machine-readable outputs remain ignored;
+Markdown navigation remains tracked. Source ranges are generated, not manually edited.
+
+M17 cleanup was approved and its active item removed; durable records remain. M18 has not started.
+Remaining pressure is future separately budgeted descriptor observation and existing synchronous
+acquisition/platform snapshot limitations. Complete means raw-table scope, not target validity.

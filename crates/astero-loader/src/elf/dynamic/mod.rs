@@ -12,3 +12,7 @@ pub mod hash;
 pub mod relocations;
 pub mod string_table;
 pub mod symbol_table;
+
+pub mod bounded;
+
+pub mod synthetic;

@@ -58,3 +58,5 @@ M13 elf/dynamic/candidates/report/synthetic owns the small generated demonstrati
 M14 artifact::filesystem::acquire(path, limits) freezes bounded regular-file bytes into SourceArtifact and stops. No format detection or downstream call occurs. See [filesystem input](../../knowledge/architecture/filesystem_input.md).
 
 M16 elf/inspect/bounded composes the existing raw header decoders under an explicit program-header budget; it does not invoke the M4 artifact adapter or dynamic/linkage operations. Shared generated M4 fixtures live in elf/inspect/synthetic. See [inspection boundary](../../knowledge/architecture/explicit_inspection.md).
+
+M17 elf/dynamic/bounded exposes independently requested raw PT_DYNAMIC evidence with header/entry budgets. Existing M5 descriptor semantics remain separate. See [raw boundary](../../knowledge/architecture/explicit_dynamic_observation.md).

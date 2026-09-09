@@ -26,3 +26,5 @@ M13 session/inputs/synthetic composes loader-generated demonstration reports and
 M15 input/acquisition is a thin application entry point to the unchanged loader acquisition API. It exposes immutable sources and structured failures without reading bytes itself, creating sessions or invoking parsing. See [frontend acquisition](../../knowledge/architecture/acquisition_frontend.md).
 
 M16 input/inspection delegates an explicit source/budget request to loader header inspection without acquiring a file, attaching evidence or creating a session.
+
+M17 input/dynamic delegates raw table observation with explicit budgets; no acquisition, session composition or linkage occurs.

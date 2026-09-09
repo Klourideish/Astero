@@ -7,3 +7,6 @@ pub use model::{
     DynamicDescriptors, DynamicObservation, DynamicTable, ObservationLimits, PltDescriptor,
     PltRelocationKind, SymbolTableDescriptor, TableDescriptor,
 };
+
+pub(in crate::elf::dynamic) mod raw;
+pub use raw::RawTable;

@@ -10,7 +10,8 @@
       "session/statistics",
       "input",
       "input/acquisition",
-      "input/inspection"
+      "input/inspection",
+      "input/dynamic"
     ],
     "astero-loader": [
       "admission",
@@ -61,7 +62,9 @@
       "relocations",
       "self_format",
       "elf/inspect/bounded",
-      "elf/inspect/synthetic"
+      "elf/inspect/synthetic",
+      "elf/dynamic/bounded",
+      "elf/dynamic/synthetic"
     ],
     "astero-memory": [
       "access",
@@ -228,7 +231,8 @@
       "linkage",
       "linkage/synthetic",
       "acquisition",
-      "inspection"
+      "inspection",
+      "dynamic"
     ]
   },
   "forbidden_top_level_filenames": [
