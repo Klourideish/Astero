@@ -1,8 +1,19 @@
 use astero_core::session::Session;
 
 fn main() -> Result<(), String> {
-    if std::env::args().len() != 1 {
-        return Err("Usage: astero-cli (creates and inspects an unloaded host session)".into());
+    let args: Vec<_> = std::env::args().skip(1).collect();
+    if args == ["--linkage"] || args == ["--linkage", "--details"] {
+        let snapshot = astero_debug::snapshots::linkage::inspect_linkage(None);
+        print!(
+            "{}",
+            astero_cli::linkage::render(&snapshot, args.len() == 2)
+        );
+        return Ok(());
+    }
+    if !args.is_empty() {
+        return Err(
+            "Usage: astero-cli [--linkage [--details]] (no target input adapter yet)".into(),
+        );
     }
     let mut session = Session::new().map_err(|e| format!("Create session: {e:?}"))?;
     session

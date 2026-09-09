@@ -307,6 +307,48 @@
       "tests": [
         "test:astero-loader/test:linkage_candidates/only_trusted_membership_and_matching_sources_enable_candidates"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::report::collect::collect",
+      "tests": [
+        "test:astero-loader/test:linkage_report/complete_owned_report_preserves_counts_details_provenance_and_duplicates",
+        "test:astero-loader/test:linkage_report/symbol_detail_and_name_limits_preserve_coherent_prefixes"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::report::model::LinkageEvidenceReport",
+      "tests": [
+        "test:astero-loader/test:linkage_report/complete_owned_report_preserves_counts_details_provenance_and_duplicates"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::report::status::Completeness",
+      "tests": [
+        "test:astero-loader/test:linkage_report/relocation_budget_is_partial_without_unvalidated_associations",
+        "test:astero-loader/test:linkage_report/missing_extent_and_mismatched_evidence_remain_distinct",
+        "test:astero-loader/test:linkage_report/name_failure_keeps_structured_error_and_only_successful_prefix"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::report::model::ReportBudget",
+      "tests": [
+        "test:astero-loader/test:linkage_report/symbol_detail_and_name_limits_preserve_coherent_prefixes",
+        "test:astero-loader/test:linkage_report/relocation_budget_is_partial_without_unvalidated_associations"
+      ]
+    },
+    {
+      "implementation": "impl:astero-debug/lib:astero_debug/snapshots::linkage::inspect_linkage",
+      "tests": [
+        "test:astero-debug/test:linkage/snapshot_pins_the_same_owned_report_without_reclassification",
+        "test:astero-debug/test:linkage/snapshot_preserves_partial_unavailable_failed_and_absent_states"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/linkage::render",
+      "tests": [
+        "test:astero-cli/test:linkage/cli_uses_candidate_labels_and_byte_faithful_details",
+        "test:astero-cli/test:linkage/cli_preserves_completeness_and_never_prints_partial_totals"
+      ]
     }
   ],
   "reviews": [
@@ -569,6 +611,21 @@
       "description": "Trusted membership, same-source and nested symbol/relocation failures; ambiguity remains a classification, no resolution.",
       "evidence": [
         "knowledge/architecture/linkage_candidates.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.linkage_report",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::report::status::ReportError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::report::collect::collect",
+        "impl:astero-debug/lib:astero_debug/snapshots::linkage::inspect_linkage"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/linkage::render"
+      ],
+      "description": "Structured source/evidence report failures retained through an immutable debugger snapshot; CLI preserves completeness and observed-count labels.",
+      "evidence": [
+        "knowledge/architecture/linkage_reporting.md"
       ]
     }
   ],

@@ -567,3 +567,43 @@ records, active state, reviewed index links and generated indexes. No Cargo mani
 dependency policy or unrelated crate implementation changed. Loader remains dependency-free.
 See [candidate decisions and pressure](linkage_candidates.md). M10 cleanup was approved and its active item removed; durable evidence remains here.
 M11 has not begun.
+
+## M11 results — 2026-09-09
+
+Bounded linkage evidence reporting through loader, debugger and CLI, using generated in-memory
+ELF fixtures only. No resolution, NIDs, runtime mutation, guest memory, relocation application,
+PS5Rust migration or execution was introduced. Started clean at 3eb0593; no commit or push.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 157 executable Rust tests + 13 compile-fail doctests passed; zero failed/ignored |
+| python tools/check_policy.py | passed: 15 packages, 8 internal edges, active state valid |
+| structure policy | passed: 188 module homes |
+| python -m unittest discover -s tools -p "test_*.py" | 48 passed: 19 policy + 9 structure + 20 index/extraction |
+| index generation twice / --check | byte-identical across 17 index-directory files; fresh |
+| git diff --check | passed |
+| supplemental whitespace | passed: 386 files |
+
+New Rust coverage: five loader report tests, two debugger snapshot tests, three CLI tests and one
+compile-fail doctest. Existing capability inventory assertions were updated for the implemented
+offline LinkageEvidence operation; guest operations remain unsupported. Tests cover complete/partial/
+unavailable/failed states, symbol/detail/name/relocation budgets, mixed counts, byte names, duplicates,
+null symbols, unknown attributes, source mismatch, failure prefixes, owned lifetimes, deterministic
+ordering, identical debugger report identity and accurate CLI labels. A bounded symbol-budget sweep
+checks thresholds 0 through 9. The executable command honestly reports no supplied report; actual
+nonempty evidence is exercised by renderer integration tests. No interactive GUI validation claimed.
+
+Indexes: implementation 371 (+22), subsystems 116 (+1), modules 317 (+10), sources 307 (+9),
+diagnostics 16 (+1), tests 218 (+12), NIDs 0, ABI 0; total 1,345 (+55). Test index counts include
+Python/doctests and do not equal executable Rust test counts. Reviewed links connect report collection,
+completeness/budgets, structured diagnostics, debugger snapshot inspection and CLI rendering.
+
+No external dependency/version changes. Added debug -> loader (normal, previously allowed) and
+CLI -> loader (dev-only fixture edge, explicitly enforced by policy). Cargo.lock reflects those two
+internal edges. Loader remains dependency-free. Scope is reporting/consumers/tests/docs/policy/indexes;
+core and GUI source code remain unchanged. See [report architecture](linkage_reporting.md).
+M11 cleanup was approved and its active item removed; durable evidence remains here. M12 has not begun.

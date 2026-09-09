@@ -20,6 +20,7 @@
       "elf/dynamic/candidates/evidence",
       "elf/dynamic/candidates/exports",
       "elf/dynamic/candidates/imports",
+      "elf/dynamic/candidates/report",
       "elf/dynamic/dependencies",
       "elf/dynamic/entries",
       "elf/dynamic/error",
@@ -184,6 +185,7 @@
       "sampling",
       "session",
       "snapshots",
+      "snapshots/linkage",
       "symbols",
       "threads",
       "tracing",
@@ -211,6 +213,9 @@
       "replay",
       "scenarios",
       "validation"
+    ],
+    "astero-cli": [
+      "linkage"
     ]
   },
   "forbidden_top_level_filenames": [

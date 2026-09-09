@@ -46,3 +46,6 @@ See [relocation observation](../../knowledge/architecture/elf_relocation_observa
 
 M10 adds elf::dynamic::candidates::enumerate for trusted, budgeted import/export candidate classification.
 See [candidate policy](../../knowledge/architecture/linkage_candidates.md); no runtime resolution.
+
+M11 adds candidates::report::collect with owned bounded evidence and explicit completeness.
+See [linkage reporting](../../knowledge/architecture/linkage_reporting.md).

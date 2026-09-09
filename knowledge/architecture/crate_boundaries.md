@@ -70,3 +70,7 @@ See [loader pipeline](loader_pipeline.md).
 M10 ELF linkage candidates remain loader-owned observation evidence under
 `elf/dynamic/candidates/`. They neither populate resolved runtime imports/exports nor assign addresses;
 see [candidate policy](linkage_candidates.md). No dependency edges change.
+
+M11 adds debug -> loader for read-only evidence reporting. CLI -> loader is dev-only for fixtures,
+with production presentation consuming debug. Semantic classification remains loader-owned.
+See [reporting](linkage_reporting.md); core and GUI state are unchanged.

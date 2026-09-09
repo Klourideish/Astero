@@ -30,3 +30,8 @@ and [validation](validation.md).
 Physical scaffolding does not change this inventory. Existing session inspection is under src/session/;
 the new threads/context/memory/modules/symbols/nids/tracing/sampling/breakpoints/watchpoints/faults/gpu/
 snapshots roots contain ownership documentation and declarations only.
+
+M11: LinkageEvidence is implemented and tested for offline immutable report inspection under
+snapshots/linkage (loader owns semantics). Tests cover identity, ownership and all completeness states.
+This does not enable guest module/NID attribution, resolution, relocation application or guest snapshots.
+The snapshots root is now implemented for this bounded host report; other scaffold status is unchanged.

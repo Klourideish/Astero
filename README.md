@@ -34,3 +34,6 @@ no symbol count is guessed; the original candidate-only API still refuses enumer
 [M8](knowledge/architecture/elf_hash_extents.md) adds source-bound hash evidence and gated symbol enumeration.
 
 [M9](knowledge/architecture/elf_relocation_observation.md) adds bounded RELA and same-source symbol-reference observation; no relocation application.
+
+- `cargo run -p astero-cli -- --linkage [--details]`: show linkage-report availability;
+  no input adapter exists yet. See [bounded reporting](knowledge/architecture/linkage_reporting.md).

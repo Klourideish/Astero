@@ -64,7 +64,8 @@
     ],
     "astero-cli": [
       "astero-core",
-      "astero-debug"
+      "astero-debug",
+      "astero-loader"
     ],
     "astero-gui": [
       "astero-core",
@@ -93,5 +94,10 @@
   ],
   "dependency_free_packages": [
     "astero-loader"
-  ]
+  ],
+  "dev_only_internal_dependencies": {
+    "astero-cli": [
+      "astero-loader"
+    ]
+  }
 }

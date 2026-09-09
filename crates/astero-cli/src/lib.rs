@@ -35,3 +35,5 @@ pub fn render(report: &Inspection) -> String {
     }
     text
 }
+
+pub mod linkage;

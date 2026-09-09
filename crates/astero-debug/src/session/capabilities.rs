@@ -2,6 +2,7 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Capability {
     SessionInspection,
+    LinkageEvidence,
     Threads,
     MemoryMaps,
     ModuleNidAttribution,
@@ -23,6 +24,7 @@ pub enum Support {
 
 pub const INVENTORY: &[(Capability, Support)] = &[
     (Capability::SessionInspection, Support::Implemented),
+    (Capability::LinkageEvidence, Support::Implemented),
     (Capability::Threads, Support::Unsupported),
     (Capability::MemoryMaps, Support::Unsupported),
     (Capability::ModuleNidAttribution, Support::Unsupported),
@@ -44,7 +46,7 @@ pub struct Unsupported {
 /// A support query only; success does not execute an operation.
 pub fn require_support(capability: Capability) -> Result<(), Unsupported> {
     match capability {
-        Capability::SessionInspection => Ok(()),
+        Capability::SessionInspection | Capability::LinkageEvidence => Ok(()),
         _ => Err(Unsupported { capability }),
     }
 }

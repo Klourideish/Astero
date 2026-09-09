@@ -62,6 +62,8 @@ def check_dependencies(metadata, policy):
                 require(name == "astero-gui", f"GUI toolkit dependency outside GUI: {name} -> {target}")
             if target in packages:
                 require(target in allowed[name], f"forbidden dependency: {name} -> {target}")
+                if target in policy.get("dev_only_internal_dependencies", {}).get(name, []):
+                    require(dep.get("kind") == "dev", f"test-only internal dependency: {name} -> {target}")
                 expected = Path(packages[target]["manifest_path"]).parent.resolve()
                 require(dep.get("path") and Path(dep["path"]).resolve() == expected,
                         f"internal dependency must resolve to workspace member: {name} -> {target}")

@@ -102,3 +102,6 @@ dependency declaration types remain under loader/dependencies. See [dynamic stri
 
 M10 nests candidate classification, evidence, imports, exports and errors under
 `elf/dynamic/candidates/`; enumeration wiring consumes existing symbol/relocation owners.
+
+M11 report ownership nests under loader elf/dynamic/candidates/report, debugger snapshots/linkage
+and CLI linkage. Counts and classification must never move into frontend modules.

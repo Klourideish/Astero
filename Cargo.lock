@@ -108,6 +108,7 @@ version = "0.1.0"
 dependencies = [
  "astero-core",
  "astero-debug",
+ "astero-loader",
 ]
 
 [[package]]
@@ -119,6 +120,7 @@ name = "astero-debug"
 version = "0.1.0"
 dependencies = [
  "astero-core",
+ "astero-loader",
 ]
 
 [[package]]

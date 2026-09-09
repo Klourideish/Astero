@@ -14,3 +14,7 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),
 [GUI decisions](../../knowledge/architecture/gui_framework.md) and
 [validation](../../knowledge/architecture/validation.md).
+
+M11 linkage::render consumes debugger linkage snapshots. --linkage [--details] reports absence
+until an input adapter exists; tests exercise nonempty generated reports. The loader edge is
+dev-only. See [report contract](../../knowledge/architecture/linkage_reporting.md).

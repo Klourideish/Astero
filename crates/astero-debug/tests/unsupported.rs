@@ -35,13 +35,13 @@ fn inspection_rejects_closed_session() {
 
 #[test]
 fn all_guest_capabilities_remain_explicitly_unsupported() {
-    assert_eq!(INVENTORY.len(), 12);
+    assert_eq!(INVENTORY.len(), 13);
     assert_eq!(
         INVENTORY
             .iter()
             .filter(|(_, support)| *support == Support::Implemented)
             .count(),
-        1
+        2
     );
     for &(capability, support) in INVENTORY {
         assert_eq!(

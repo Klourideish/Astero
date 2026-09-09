@@ -1,2 +1,2 @@
-//! Planned snapshots ownership within astero-debug.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Immutable snapshot consumers; no loader classification or runtime mutation.
+pub mod linkage;
