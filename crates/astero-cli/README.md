@@ -30,3 +30,5 @@ M15 acquisition/ owns native argument selection, Ready/Acquired/Failed state and
 M16 inspect requires all acquisition arguments plus --max-program-headers. It prints acquisition separately from immutable header-only inspection. acquire and synthetic linkage remain separate. See [usage](../../USAGE.md) and [inspection](../../knowledge/architecture/explicit_inspection.md).
 
 M17 dynamic requires acquisition limits, --max-program-headers and --max-dynamic-entries. It is distinct from inspect and linkage. See [usage](../../USAGE.md).
+
+M18 descriptors requires all dynamic/acquisition limits plus --max-descriptors. It reports selected structural metadata, never payload contents. See [usage](../../USAGE.md).

@@ -521,6 +521,22 @@
         "test:astero-cli/test:dynamic/real_cli_budget_status_raw_values_and_nonsemantic_boundary",
         "test:astero-cli/test:dynamic/native_path_survives_dynamic_frontend_selection_and_process"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::descriptors::collect::observe",
+      "tests": [
+        "test:astero-loader/test:bounded_descriptors/valid_pairs_are_source_bound_auditable_and_do_not_traverse_payloads",
+        "test:astero-loader/test:bounded_descriptors/budget_counts_families_including_incomplete_groups_not_unknown_entries",
+        "test:astero-loader/test:bounded_descriptors/selected_pair_semantics_match_existing_authoritative_descriptor_collector"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/descriptors::request::observe_acquired",
+      "tests": [
+        "test:astero-cli/test:descriptors/prior_commands_do_not_request_descriptors_even_when_pairing_would_fail",
+        "test:astero-cli/test:descriptors/limits_and_complete_failed_unavailable_status_survive_real_cli",
+        "test:astero-cli/test:descriptors/native_path_and_repeated_evidence_remain_immutable"
+      ]
     }
   ],
   "reviews": [
@@ -886,6 +902,21 @@
       "description": "Source-bound independent raw dynamic report, explicit header/entry budgets, no descriptor interpretation.",
       "evidence": [
         "knowledge/architecture/explicit_dynamic_observation.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.selected_descriptors",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::descriptors::model::DescriptorFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::descriptors::collect::observe",
+        "impl:astero-core/lib:astero_core/input::descriptors::observe"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/descriptors::presentation::render"
+      ],
+      "description": "Independent source-bound selected descriptor report; explicit family budget, raw audit evidence and nested pairing/translation failures.",
+      "evidence": [
+        "knowledge/architecture/explicit_descriptor_observation.md"
       ]
     }
   ],

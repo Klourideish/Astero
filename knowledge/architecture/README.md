@@ -36,3 +36,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Explicit bounded inspection](explicit_inspection.md): M16 opt-in header evidence, program-header budget and CLI boundary.
 
 - [Explicit raw dynamic observation](explicit_dynamic_observation.md): independent request, visible budgets, raw entries only.
+
+- [Explicit descriptor observation](explicit_descriptor_observation.md): separately requested bounded STRTAB/SYMTAB metadata only.

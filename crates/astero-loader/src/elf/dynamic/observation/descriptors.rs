@@ -11,8 +11,8 @@ use crate::{
 use DynamicTag::*;
 use std::collections::BTreeMap;
 type Fields = BTreeMap<DynamicTag, (u64, u64)>;
-pub(super) fn collect(
-    entries: &[DynamicEntry],
+pub(in crate::elf::dynamic) fn collect<'a>(
+    entries: impl IntoIterator<Item = &'a DynamicEntry>,
     translator: &AddressTranslator<'_>,
 ) -> Result<DynamicDescriptors, DynamicError> {
     let mut fields = Fields::new();

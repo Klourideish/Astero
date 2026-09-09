@@ -108,6 +108,41 @@ cargo run -p astero-cli -- dynamic --path ".\target\m16-header.elf" --max-bytes 
 No incomplete prefix is presented as Complete. Malformed input fails with structured diagnostics.
 Neither acquire nor inspect automatically runs dynamic observation; this is a separate request.
 
+### Explicit selected descriptor observation (opt-in)
+
+The separate descriptors command reports STRTAB/STRSZ and SYMTAB/SYMENT metadata only.
+It requires all acquisition/dynamic limits plus --max-descriptors: the number of supported
+families attempted (at most two currently). No defaults. Zero permits only absence of supported
+families; insufficient budget fails without a partial successful list.
+
+Generate these small synthetic fixtures once; the writer refuses existing output paths:
+
+~~~powershell
+cargo run -p astero-loader --example descriptor_fixture -- .\target\m18-valid.elf valid
+cargo run -p astero-loader --example descriptor_fixture -- .\target\m18-none.elf none
+cargo run -p astero-loader --example descriptor_fixture -- .\target\m18-conflict.elf conflict
+~~~
+
+Successful observation (exit 0) shows two families, original dynamic values and translated source
+ranges. The symbol range proves only its first entry, not a symbol count:
+
+~~~powershell
+cargo run -p astero-cli -- descriptors --path ".\target\m18-valid.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 2
+~~~
+
+Budget refusal, no supported descriptors, and conflicting duplicate tags respectively:
+
+~~~powershell
+cargo run -p astero-cli -- descriptors --path ".\target\m18-valid.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1
+cargo run -p astero-cli -- descriptors --path ".\target\m18-none.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 4 --max-descriptors 0
+cargo run -p astero-cli -- descriptors --path ".\target\m18-conflict.elf" --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 4 --max-descriptors 1
+~~~
+
+Expect Failed Budget (exit 1), Unavailable NoSupportedDescriptors (exit 0), and Failed DuplicateTag
+(exit 1). Fixtures deliberately contain unsuitable payload bytes: this command does not read strings,
+enumerate symbols, walk hashes, decode relocations, derive linkage, load a guest or execute code.
+Earlier acquire, inspect and dynamic commands never trigger this separate operation.
+
 ## GUI
 
 Open the Winit/Vulkan/ImGui session inspector without evidence:

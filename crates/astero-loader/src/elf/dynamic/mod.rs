@@ -16,3 +16,5 @@ pub mod symbol_table;
 pub mod bounded;
 
 pub mod synthetic;
+
+pub mod descriptors;

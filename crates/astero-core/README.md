@@ -28,3 +28,5 @@ M15 input/acquisition is a thin application entry point to the unchanged loader 
 M16 input/inspection delegates an explicit source/budget request to loader header inspection without acquiring a file, attaching evidence or creating a session.
 
 M17 input/dynamic delegates raw table observation with explicit budgets; no acquisition, session composition or linkage occurs.
+
+M18 input/descriptors delegates selected descriptor metadata observation; it creates no session and performs no payload interpretation.

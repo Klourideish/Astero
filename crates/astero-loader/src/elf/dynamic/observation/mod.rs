@@ -1,5 +1,5 @@
 //! Source-bound dynamic reports and descriptor pairing; successful observation never grants admission.
-mod descriptors;
+pub(in crate::elf::dynamic) mod descriptors;
 mod inspect;
 mod model;
 pub use inspect::observe;

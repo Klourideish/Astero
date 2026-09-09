@@ -918,3 +918,76 @@ Markdown navigation remains tracked. Source ranges are generated, not manually e
 M17 cleanup was approved and its active item removed; durable records remain. M18 has not started.
 Remaining pressure is future separately budgeted descriptor observation and existing synchronous
 acquisition/platform snapshot limitations. Complete means raw-table scope, not target validity.
+
+## M18 results — 2026-09-09
+
+Started clean on main at 45d80a1; HEAD and origin/main remain unchanged. No commit/push/history
+operation. Selected STRTAB/STRSZ and SYMTAB/SYMENT metadata only, using the existing M5 collector.
+See [capability contract](explicit_descriptor_observation.md). M17 private discovery is shared,
+without changing its public outcome or introducing automatic descriptor calls.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI and fixture examples |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 212 executable Rust tests + 17 compile-fail doctests; no failures/ignored |
+| CLI integration tests within workspace run | 25 passed, including 4 new descriptor tests; prior inspection/dynamic/linkage tests retained |
+| policy/state/structure | passed: 15 crates, 9 unique edges, 208 module homes |
+| Python tests | 49 passed: 20 dependency/state, 9 structure, 20 index/extraction |
+| index generation twice | byte-identical across 17 index-directory files |
+| index freshness | passed: 1,685 navigation records |
+| whitespace / git diff --check | passed; supplemental scan covers 454 files |
+
+Ten new executable tests: six loader and four CLI; one immutable-report compile-fail doctest.
+Coverage: 16 family/budget combinations, 81 string-boundary combinations, zero/exact/excess budgets,
+equal/conflicting duplicates, missing companions, symbol-width rejection, first-entry bounds,
+BSS/unmapped/overflow/crossing errors, independently valid overlapping ranges, unavailable/discovery
+failure distinction, raw audit values, source identity/immutability, shared M5 semantic equivalence,
+invalid payloads not interpreted, all prior explicit commands, and native Windows non-UTF-8 paths.
+Unix-specific behavior is not claimed validated. Allocation refusal is structured, but allocator
+exhaustion was not induced. Existing synthetic linkage tests passed; GUI was not relaunched.
+
+### Manual CLI evidence
+
+Exact commands also appear in USAGE.md. Three 1536-byte synthetic fixtures use the existing M5
+builder. Their payload bytes are intentionally unsuitable for string/symbol interpretation. The
+writer refuses existing outputs; reuse files or choose fresh names when repeating these commands.
+
+~~~powershell
+cargo run -p astero-loader --example descriptor_fixture -- .\target\m18-valid.elf valid
+cargo run -p astero-loader --example descriptor_fixture -- .\target\m18-none.elf none
+cargo run -p astero-loader --example descriptor_fixture -- .\target\m18-conflict.elf conflict
+cargo run -p astero-cli -- descriptors --path .\target\m18-valid.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 2
+cargo run -p astero-cli -- descriptors --path .\target\m18-valid.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 5 --max-descriptors 1
+cargo run -p astero-cli -- descriptors --path .\target\m18-none.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 4 --max-descriptors 0
+cargo run -p astero-cli -- descriptors --path .\target\m18-conflict.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 4 --max-descriptors 1
+~~~
+
+| Operation | Expected and actual result | Exit |
+|---|---|---|
+| Fixture generation, valid/none/conflict | Created each 1536-byte synthetic layout | 0 each |
+| Valid, descriptor budget 2 | Complete; Strings full 16-byte range; Symbols first 24-byte entry only; raw original fields retained | 0 |
+| Valid, descriptor budget 1 | Failed Budget { attempted_families: 2, maximum: 1 }; no partial list | 1 |
+| Unsupported-only tags, budget 0 | Unavailable NoSupportedDescriptors; no hash/relocation pointer traversal | 0 |
+| Conflicting STRTAB, budget 1 | Failed DuplicateTag { tag: StrTab, first: 0, second: 1 } | 1 |
+
+Each observation labels its explicit request, source/provenance, all observation budgets, no payload
+traversal and no guest/linkage/execution. Acquisition output is a separately labeled stage.
+No external catalogue was needed. No string reads, symbol enumeration/count derivation, hash walks,
+relocation decoding, import/export/linkage/NID/ABI interpretation, guest admission or runtime state.
+
+No dependency/manifests/lock changes; loader remains dependency-free. The 9 edges remain 7 normal and
+2 dev-only. New nested homes: loader elf/dynamic/descriptors, core input/descriptors, CLI descriptors.
+M5 collector visibility/iterator input is generalized for filtered reuse; its pairing implementation
+is unchanged. M17 extraction avoids duplicate header decoding; its prior tests pass unchanged.
+
+Indexes: implementation 517 (+29), subsystems 121 (+1), modules 378 (+11), sources 367 (+11),
+diagnostics 23 (+1), tests 279 (+11), NID 0, ABI 0; total 1,685 (+64). Reviewed links connect selected
+observation, source/budget evidence, CLI and tests. Generated JSON remains local/ignored; Markdown
+navigation remains tracked. Source locations are regenerated, not manually repaired.
+
+M18 cleanup was approved and its active item removed; durable records remain. M19 has not started.
+Remaining pressure: Complete certifies only selected metadata; future payload observation needs
+separate caller-visible budgets and must not automatically become dependency resolution/linking.

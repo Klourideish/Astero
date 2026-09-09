@@ -3,3 +3,5 @@ pub mod acquisition;
 pub mod inspection;
 
 pub mod dynamic;
+
+pub mod descriptors;
