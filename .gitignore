@@ -1,3 +1,8 @@
 /target/
 __pycache__/
 *.pyc
+
+# Local agent instructions, active work, and generated machine-readable indexes
+/AGENTS.md
+/PROJECT_STATE.json
+/knowledge/indexes/*.json
