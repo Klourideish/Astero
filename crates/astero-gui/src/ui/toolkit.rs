@@ -7,6 +7,7 @@ use winit::window::Window;
 pub(crate) struct Toolkit {
     pub context: Context,
     pub platform: WinitPlatform,
+    selected_linkage: Option<u64>,
 }
 impl Toolkit {
     pub fn new(window: &Window) -> Self {
@@ -22,7 +23,11 @@ impl Toolkit {
                     ..Default::default()
                 }),
             }]);
-        Self { context, platform }
+        Self {
+            context,
+            platform,
+            selected_linkage: None,
+        }
     }
 
     pub fn prepare(&mut self, window: &Window, view: &SessionView) -> Result<(), String> {
@@ -58,7 +63,11 @@ impl Toolkit {
                             s.statistics.lifecycle_changes
                         ));
                         ui.separator();
-                        if let Some(_table) = ui.begin_table("Inspector panes", 2) {
+                        if ui.collapsing_header(
+                            "Subsystems and capabilities",
+                            imgui::TreeNodeFlags::empty(),
+                        ) && let Some(_table) = ui.begin_table("Inspector panes", 2)
+                        {
                             ui.table_next_column();
                             ui.text("Subsystem availability");
                             for sub in &s.subsystems {
@@ -79,6 +88,11 @@ impl Toolkit {
                                 ui.text(format!("{capability:?}: {support:?}"));
                             }
                         }
+                        crate::ui::modules::draw(
+                            ui,
+                            &crate::model::linkage::LinkageView::new(s),
+                            &mut self.selected_linkage,
+                        );
                     }
                 }
             });

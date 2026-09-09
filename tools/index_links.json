@@ -382,6 +382,43 @@
         "test:astero-cli/test:linkage/live_synthetic_command_uses_composed_evidence_and_labels_its_origin",
         "test:astero-cli/test:linkage/session_path_preserves_partial_counts_without_frontend_classification"
       ]
+    },
+    {
+      "implementation": "impl:astero-gui/lib:astero_gui/model::linkage::view::LinkageView",
+      "tests": [
+        "test:astero-gui/test:linkage_view/all_report_states_preserve_session_provenance_and_counts",
+        "test:astero-gui/test:linkage_view/no_evidence_is_unavailable_and_no_guest_is_loaded"
+      ]
+    },
+    {
+      "implementation": "impl:astero-gui/lib:astero_gui/model::linkage::view::impl[< ' a > LinkageView < ' a >]::selected",
+      "tests": [
+        "test:astero-gui/test:linkage_view/retained_selection_keeps_duplicates_unknowns_and_relocation_labels"
+      ]
+    },
+    {
+      "implementation": "impl:astero-gui/lib:astero_gui/model::linkage::view::impl[< ' a > LinkageView < ' a >]::status",
+      "tests": [
+        "test:astero-gui/test:linkage_view/partial_details_do_not_turn_observed_counts_into_totals"
+      ]
+    },
+    {
+      "implementation": "impl:astero-gui/lib:astero_gui/model::linkage::names::display_name",
+      "tests": [
+        "test:astero-gui/test:linkage_view/name_formats_preserve_absent_empty_utf8_and_raw_bytes"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/session::inputs::synthetic::session_with_case",
+      "tests": [
+        "test:astero-gui/test:linkage_view/all_report_states_preserve_session_provenance_and_counts"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::report::synthetic::report",
+      "tests": [
+        "test:astero-gui/test:linkage_view/retained_selection_keeps_duplicates_unknowns_and_relocation_labels"
+      ]
     }
   ],
   "reviews": [
@@ -654,11 +691,13 @@
         "impl:astero-debug/lib:astero_debug/snapshots::linkage::inspect_linkage"
       ],
       "surfaces": [
-        "impl:astero-cli/lib:astero_cli/linkage::render"
+        "impl:astero-cli/lib:astero_cli/linkage::render",
+        "impl:astero-gui/lib:astero_gui/ui::modules::linkage::draw"
       ],
-      "description": "Structured source/evidence report failures retained through an immutable debugger snapshot; CLI preserves completeness and observed-count labels.",
+      "description": "Structured report failures retained through session/debug snapshots; CLI and GUI preserve completeness and observed-count labels.",
       "evidence": [
-        "knowledge/architecture/linkage_reporting.md"
+        "knowledge/architecture/linkage_reporting.md",
+        "knowledge/architecture/gui_linkage_evidence.md"
       ]
     },
     {

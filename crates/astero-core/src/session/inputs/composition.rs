@@ -15,6 +15,12 @@ pub enum InputError {
         report: EvidenceTarget,
     },
 }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum EvidenceOrigin {
+    #[default]
+    Unspecified,
+    Synthetic,
+}
 /// Checked once at construction; no replacement or mutable attachment API.
 /// ```compile_fail
 /// use astero_core::session::inputs::SessionInputs;
@@ -22,6 +28,7 @@ pub enum InputError {
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct SessionInputs {
+    pub(super) origin: EvidenceOrigin,
     target: Option<EvidenceTarget>,
     linkage: Option<Arc<LinkageEvidenceReport>>,
 }
@@ -43,7 +50,14 @@ impl SessionInputs {
                 });
             }
         }
-        Ok(Self { target, linkage })
+        Ok(Self {
+            target,
+            linkage,
+            origin: EvidenceOrigin::Unspecified,
+        })
+    }
+    pub fn origin(&self) -> EvidenceOrigin {
+        self.origin
     }
     pub fn target(&self) -> Option<EvidenceTarget> {
         self.target

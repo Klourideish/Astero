@@ -110,3 +110,7 @@ The report remains loader-specific, an explicit coupling accepted here. A future
 must preserve structured errors and distinguish observation locations from validation authority;
 just moving types is not sufficient. A bounded M13 option is a read-only GUI status/detail view of
 these already composed synthetic session inputs, without adding files, linking, NIDs or execution.
+
+## M13 consumer extension
+
+The GUI now consumes this path. The synthetic generator moved into loader and typed composition into core; CLI -> loader is dev-only again. EvidenceOrigin records synthetic composition explicitly. See [GUI evidence](gui_linkage_evidence.md); no neutral crate or additional edge was needed.

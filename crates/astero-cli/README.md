@@ -22,3 +22,5 @@ dev-only. See [report contract](../../knowledge/architecture/linkage_reporting.m
 M12 --linkage --synthetic [--details] composes generated loader evidence into a real host session.
 The loader edge now supports that production demo; rendering still consumes debug snapshots.
 No file input is supported. See [composition](../../knowledge/architecture/evidence_composition.md).
+
+M13 moves the shared demo generator to loader and composition to core; CLI calls core and its direct loader edge is dev-only again. No file input or resolution is added.

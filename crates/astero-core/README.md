@@ -20,3 +20,5 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 
 M12 session/inputs carries checked immutable linkage evidence. Core depends on loader only for
 that report/identity contract; it never derives evidence. See [composition](../../knowledge/architecture/evidence_composition.md).
+
+M13 session/inputs/synthetic composes loader-generated demonstration reports and records typed synthetic provenance. It performs no parsing/classification itself; normal inputs remain explicitly unspecified in origin.

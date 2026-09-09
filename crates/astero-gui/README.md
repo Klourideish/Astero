@@ -17,3 +17,5 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),
 [GUI decisions](../../knowledge/architecture/gui_framework.md) and
 [validation](../../knowledge/architecture/validation.md).
+
+M13 [model/linkage](src/model/linkage/mod.rs) borrows session evidence; ui/modules renders a read-only selectable detail pane. Launch with --synthetic-linkage for shared generated evidence, or no arguments for absent evidence. See [GUI evidence](../../knowledge/architecture/gui_linkage_evidence.md).

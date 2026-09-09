@@ -52,3 +52,5 @@ See [linkage reporting](../../knowledge/architecture/linkage_reporting.md).
 
 M12 leaves report generation here and lets core share the immutable result as session input.
 No loader dependency was added. See [composition](../../knowledge/architecture/evidence_composition.md).
+
+M13 elf/dynamic/candidates/report/synthetic owns the small generated demonstration consumed through core by CLI/GUI. It reuses existing evidence generation and adds no parser or linkage semantics.

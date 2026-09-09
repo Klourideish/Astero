@@ -84,3 +84,5 @@ justify it. M1 GUI starts without a guest GPU; no emulator GPU implementation ex
 
 Structural follow-up: app/ wires the unchanged run entry; ui/ reserves named pane homes.
 M1 public view_model remains a re-export of model; no rendering or lifecycle behavior changed.
+
+M13 adds a read-only [linkage pane](gui_linkage_evidence.md) using the same Winit/Ash/Vulkan/ImGui stack and session snapshot. No rendering backend change.

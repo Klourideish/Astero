@@ -4,6 +4,7 @@
     "astero-core": [
       "session",
       "session/inputs",
+      "session/inputs/synthetic",
       "session/lifecycle",
       "session/observation",
       "session/statistics"
@@ -22,6 +23,7 @@
       "elf/dynamic/candidates/exports",
       "elf/dynamic/candidates/imports",
       "elf/dynamic/candidates/report",
+      "elf/dynamic/candidates/report/synthetic",
       "elf/dynamic/dependencies",
       "elf/dynamic/entries",
       "elf/dynamic/error",
@@ -195,6 +197,7 @@
     "astero-gui": [
       "app",
       "model",
+      "model/linkage",
       "renderer",
       "renderer/vulkan",
       "ui",

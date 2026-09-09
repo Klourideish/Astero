@@ -38,18 +38,21 @@ class PolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "dependency-free package cannot allow"):
             check_dependencies(self.metadata, self.policy)
 
-    def test_debug_loader_fixture_edge_is_dev_only(self):
-        self.edge("astero-debug", "astero-loader", kind="dev")
-        self.assertEqual(check_dependencies(self.metadata, self.policy), 1)
-        package = next(p for p in self.metadata["packages"] if p["name"] == "astero-debug")
-        for kind in (None, "build"):
-            package["dependencies"][0]["kind"] = kind
-            with self.assertRaisesRegex(ValueError, "test-only internal dependency"):
-                check_dependencies(self.metadata, self.policy)
+    def test_frontend_debug_loader_fixture_edges_are_dev_only(self):
+        for owner in ("astero-debug", "astero-cli"):
+            with self.subTest(owner=owner):
+                metadata = copy.deepcopy(self.metadata)
+                package = next(p for p in metadata["packages"] if p["name"] == owner)
+                package["dependencies"].append({"name": "astero-loader", "path": str(ROOT / "crates" / "astero-loader"), "kind": "dev"})
+                self.assertEqual(check_dependencies(metadata, self.policy), 1)
+                for kind in (None, "build"):
+                    package["dependencies"][0]["kind"] = kind
+                    with self.assertRaisesRegex(ValueError, "test-only internal dependency"):
+                        check_dependencies(metadata, self.policy)
 
     def test_composition_edges_remain_downward(self):
         self.edge("astero-core", "astero-loader")
-        self.edge("astero-cli", "astero-loader")
+        self.edge("astero-cli", "astero-loader", kind="dev")
         self.assertEqual(check_dependencies(self.metadata, self.policy), 2)
         self.edge("astero-loader", "astero-core")
         with self.assertRaisesRegex(ValueError, "dependency-free package declares dependencies"):

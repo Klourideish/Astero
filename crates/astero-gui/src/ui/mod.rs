@@ -1,5 +1,5 @@
-//! Planned ui ownership within astero-gui.
-//! Structural home only; no additional functionality or capability is implemented.
+//! ImGui session and read-only evidence presentation.
+//! Guest mechanisms and linkage classification remain outside this crate.
 pub mod debugger;
 pub mod diagnostics;
 pub mod gpu;

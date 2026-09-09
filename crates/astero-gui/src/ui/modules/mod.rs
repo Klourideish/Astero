@@ -1,2 +1,3 @@
-//! Planned ui / modules ownership within astero-gui.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Read-only module/linkage evidence panes. No runtime actions.
+mod linkage;
+pub(crate) use linkage::draw;

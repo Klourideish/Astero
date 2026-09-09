@@ -7,3 +7,4 @@ pub use model::{
     CandidateDetail, LinkageEvidenceReport, RelocationCounts, ReportBudget, ReportCounts,
 };
 pub use status::{BudgetReason, Completeness, ReportError, UnavailableReason};
+pub mod synthetic;

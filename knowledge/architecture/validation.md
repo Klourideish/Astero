@@ -650,4 +650,50 @@ composition path. No manual source-range edits. Test inventory includes Python/d
 Scope: core typed input/session observation, debugger transport, CLI synthetic composition/rendering,
 corresponding tests, manifests/lock, policy, documentation and generated indexes. No loader parser,
 classification, relocation or evidence-generation implementation changed. M12 cleanup was approved and its active item removed; durable evidence remains here.
-M13 has not begun.
+M13 results follow below.
+
+## M13 results — 2026-09-09
+
+Read-only GUI evidence only. No commit/push, file input, new ELF parsing, linking, NIDs, relocation
+application or guest execution. Shared generated demo code moved from CLI into loader with typed
+core composition; report generation/classification algorithms are unchanged.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed after collapsing one nested UI conditional |
+| cargo test --workspace | 169 executable tests + 14 compile-fail doctests; zero failures/ignored |
+| python tools/check_policy.py | passed: 15 crates, 9 unique internal edges, active state valid |
+| structure policy | passed: 193 declared module homes |
+| Python unittest discovery | 49 passed: 20 dependency/state + 9 structure + 20 index/extraction |
+| index generation twice and freshness | byte-identical across 17 index-directory files; fresh |
+| git diff --check | passed |
+| supplemental whitespace | passed: 399 files |
+| real GUI --synthetic-linkage | Vulkan first frame, correct pane/counts, selection, maximize/restore, exit 0 |
+
+Five new GUI integration tests cover absence and all report completeness states, typed synthetic
+provenance, no guest loaded, exact borrowed report/count/detail identity, candidate selection,
+duplicate/absent/empty/UTF-8/non-UTF-8 names, unknown attributes, ordinary/PLT references and partial
+budgets. Existing CLI live synthetic tests pass through the shared core composer. No new policy
+test count; the dev-only edge test now covers both debug and CLI. GUI rendering is not unit-tested
+as ImGui internals; the Astero view model is.
+
+Runtime used the NVIDIA GeForce RTX 4070. Complete demo counts: eight observed symbols, one import,
+one export, one internal, four unclassified, one null; two unique references, one ordinary and one
+PLT/JMPREL. Symbol 1 selection showed its raw FF name and both reference classes. Synthetic and
+No guest loaded labels were visible. Maximize/restore reflowed the real window without losing
+selection; closing returned code 0. Partial/unavailable/failed UI rules are validated by model
+tests, not claimed as interactive runtime coverage. This is host GUI evidence, not emulator correctness.
+
+No external dependency changes; Cargo.lock unchanged. Nine unique internal edges remain, now seven
+normal and two dev-only (CLI/debug -> loader). GUI retains core/debug only; loader is dependency-free.
+Three new declared homes: loader report/synthetic, core inputs/synthetic, GUI model/linkage.
+
+Indexes: implementation 401 (+19), subsystems 116 (+0), modules 328 (+7), sources 318 (+7),
+diagnostics 17 (+0), tests 232 (+5), NID 0, ABI 0; total 1,412 (+38). Reviewed links connect GUI
+names/status/selection and shared synthetic composition with tests; the existing report diagnostic
+now includes the GUI surface. Generated locations were not hand-edited.
+
+See [GUI evidence architecture](gui_linkage_evidence.md). M13 cleanup was approved and its active item removed. Durable evidence remains here; M14 has not begun.
