@@ -638,6 +638,41 @@
         "test:astero-loader/test:ps5_identity/records_preserve_provenance_raw_values_and_hypothesis_context",
         "test:astero-loader/test:ps5_identity/budget_refuses_before_successful_prefix"
       ]
+    },
+    {
+      "implementation": "impl:astero-timing/lib:astero_timing/scheduler::client::impl[Scheduler]::schedule",
+      "tests": [
+        "test:astero-timing/test:scheduler/equal_deadlines_use_registration_sequence_not_consumer_order",
+        "test:astero-timing/test:scheduler/concurrent_producers_and_cancellers_have_unique_sequences",
+        "test:astero-timing/test:scheduler/earlier_real_deadline_wakes_parked_worker_and_never_fires_early"
+      ]
+    },
+    {
+      "implementation": "impl:astero-timing/lib:astero_timing/scheduler::client::impl[Scheduler]::cancel",
+      "tests": [
+        "test:astero-timing/test:scheduler/cancellation_vs_expiry_race_never_claims_both"
+      ]
+    },
+    {
+      "implementation": "impl:astero-timing/lib:astero_timing/scheduler::owner::impl[TimingEngine]::shutdown",
+      "tests": [
+        "test:astero-timing/test:scheduler/shutdown_releases_waiters_and_all_repeated_calls_join",
+        "test:astero-timing/test:scheduler/concurrent_shutdown_and_registration_release_every_accepted_ticket"
+      ]
+    },
+    {
+      "implementation": "impl:astero-timing/lib:astero_timing/scheduler::client::impl[Scheduler]::snapshot",
+      "tests": [
+        "test:astero-timing/test:scheduler/capacity_labels_and_snapshot_limits_are_explicit",
+        "test:astero-timing/test:scheduler/unread_completions_do_not_block_scheduler_or_other_consumers"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/session::owner::impl[Session]::with_timing",
+      "tests": [
+        "test:astero-core/test:timing/session_timing_is_explicit_owned_and_stops_with_session",
+        "test:astero-core/test:timing/dropping_session_releases_future_consumer_waits"
+      ]
     }
   ],
   "reviews": [
@@ -1107,6 +1142,18 @@
       "description": "Identity record and aggregate name budgets, prerequisite/discovery/string failures; conflicts remain explicit metadata evidence. No provider resolution.",
       "evidence": [
         "knowledge/architecture/ps5_identity_evidence.md"
+      ]
+    },
+    {
+      "id": "diagnostic:timing.scheduler",
+      "implementation": "impl:astero-timing/lib:astero_timing/diagnostics::Snapshot",
+      "consumers": [
+        "impl:astero-timing/lib:astero_timing/scheduler::client::impl[Scheduler]::snapshot"
+      ],
+      "surfaces": [],
+      "description": "Bounded pending events, explicit omissions, terminal outcome, lateness and counters; no guest-time or precision claim.",
+      "evidence": [
+        "knowledge/architecture/asynchronous_timing.md"
       ]
     }
   ],

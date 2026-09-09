@@ -60,7 +60,8 @@
       "astero-shader",
       "astero-gpu",
       "astero-video",
-      "astero-audio"
+      "astero-audio",
+      "astero-timing"
     ],
     "astero-cli": [
       "astero-core",
@@ -74,7 +75,8 @@
     "astero-gpu-smoke": [
       "astero-gpu",
       "astero-shader"
-    ]
+    ],
+    "astero-timing": []
   },
   "gui_only_dependencies": [
     "imgui",
@@ -93,7 +95,8 @@
     "wgpu"
   ],
   "dependency_free_packages": [
-    "astero-loader"
+    "astero-loader",
+    "astero-timing"
   ],
   "dev_only_internal_dependencies": {
     "astero-debug": [

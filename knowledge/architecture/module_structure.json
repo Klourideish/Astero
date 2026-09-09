@@ -18,7 +18,8 @@
       "input/symbols",
       "input/classification",
       "input/linkage_evidence",
-      "input/ps5_identity"
+      "input/ps5_identity",
+      "session/timing"
     ],
     "astero-loader": [
       "admission",
@@ -258,6 +259,12 @@
       "classification",
       "linkage_evidence",
       "ps5_identity"
+    ],
+    "astero-timing": [
+      "time",
+      "clock",
+      "scheduler",
+      "diagnostics"
     ]
   },
   "forbidden_top_level_filenames": [

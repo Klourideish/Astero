@@ -42,3 +42,5 @@ M21 input/symbols delegates explicit same-source hash-proof consumption; no sess
 M23 input/linkage_evidence delegates the loader capability over immutable source input; no session/guest state is created.
 
 M24 input/ps5_identity delegates immutable M23 report plus identity limit to loader, without session construction. See [PS5 identity evidence](../../knowledge/architecture/ps5_identity_evidence.md).
+
+M25 Session::with_timing explicitly receives a TimingEngine. Ordinary sessions and offline input APIs remain worker-free; stop/drop joins the opted-in engine. The only new dependency is core -> timing.

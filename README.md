@@ -18,7 +18,7 @@ Use [generated navigation](knowledge/indexes/README.md) to locate subsystem owne
 Start with [architecture](knowledge/architecture/README.md), [session contract](knowledge/architecture/session_observation.md),
 [GUI decisions](knowledge/architecture/gui_framework.md), [agent instructions](AGENTS.md),
 [active work](PROJECT_STATE.json) and [validation](knowledge/architecture/validation.md).
-There are 15 packages; GUI alone has external dependencies. Rust edition 2024 is used; no MSRV is promised.
+There are 16 packages; GUI alone has external dependencies. Rust edition 2024 is used; no MSRV is promised.
 ImGui needs a C++ build toolchain. Vulkan is the primary host graphics choice, not the PS5 guest API.
 
 Project licensing remains unresolved: LICENSE is empty and no licence grant is asserted.
@@ -42,3 +42,5 @@ no symbol count is guessed; the original candidate-only API still refuses enumer
   See [composition](knowledge/architecture/evidence_composition.md).
 
 M15: astero-cli acquire --path <native-path> --max-bytes <u64> --max-read-calls <u64> acquires bytes only. All limits are required; no parsing/loading occurs. See [frontend acquisition](knowledge/architecture/acquisition_frontend.md).
+
+M25 adds [asynchronous host/manual timing](knowledge/architecture/asynchronous_timing.md), explicitly owned by opted-in sessions. Offline loader workflows start no timing worker.

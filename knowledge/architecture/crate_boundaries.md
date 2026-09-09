@@ -3,6 +3,7 @@
 | Crate | Owns | Must not own |
 |---|---|---|
 | astero-abi | Guest ABI layouts, identifiers and constants. | Host-side application types or service mechanisms. |
+| astero-timing | Host/manual monotonic clocks, bounded asynchronous deadlines and completion diagnostics. | Guest semantics, consumers, loader/core/debug dependencies or global runtime ownership. |
 | astero-memory | Guest mappings, protections, allocation and checked access. | Process scheduling or library exports. |
 | astero-loader | Binary parsing, load plans, relocations and import metadata. | Executing guest code or owning session lifecycle. |
 | astero-kernel | Processes, threads, synchronization, clocks, execution, kernel object lifetimes and filesystem mechanisms. | Guest library export contracts or application composition. |
@@ -86,3 +87,5 @@ M14 loader/artifact/filesystem owns bounded host input acquisition only. Kernel 
 M15 activates no new edge: core/input/acquisition delegates to loader acquisition; CLI owns selection/result presentation only. This extends the existing core-to-loader application boundary without adding guest state or frontend loader semantics. See [frontend input](acquisition_frontend.md).
 
 M16 loader owns bounded header evidence, core/input/inspection delegates, and CLI/inspection presents an explicit request/result. No session attachment or new dependency edge. See [explicit inspection](explicit_inspection.md).
+
+M25 adds a dependency-free timing foundation. Core owns optional TimingEngine instances; kernel/timing remains the future guest clock/wait adapter. Only core gains a current timing edge. Future runtime consumers require deliberate downward policy additions; loader and frontends do not own time. See [timing](asynchronous_timing.md).

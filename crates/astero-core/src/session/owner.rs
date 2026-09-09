@@ -29,11 +29,13 @@ pub enum SessionError {
     ExecutionUnsupported,
     EmptyFault,
     StateUnavailable,
+    TimingShutdownFailed,
 }
 
 /// Sole strong owner of session state. Frontends retain only a weak observer.
 pub struct Session {
     state: Arc<Mutex<SessionSnapshot>>,
+    timing: Option<super::timing::TimingEngine>,
 }
 
 #[derive(Clone)]
@@ -52,6 +54,7 @@ impl Session {
             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |n| n.checked_add(1))
             .map_err(|_| SessionError::IdentityExhausted)?;
         Ok(Self {
+            timing: None,
             state: Arc::new(Mutex::new(SessionSnapshot {
                 id: SessionId(id),
                 lifecycle: Lifecycle::Created,
@@ -79,6 +82,20 @@ impl Session {
         })
     }
 
+    /// Explicit ownership transfer; all existing constructors remain worker-free.
+    pub fn with_timing(
+        inputs: super::inputs::SessionInputs,
+        timing: super::timing::TimingEngine,
+    ) -> Result<Self, SessionError> {
+        let mut session = Self::with_inputs(inputs)?;
+        session.timing = Some(timing);
+        Ok(session)
+    }
+
+    pub fn timing(&self) -> Option<super::timing::Scheduler> {
+        self.timing.as_ref().map(|engine| engine.scheduler())
+    }
+
     pub fn observer(&self) -> SessionObserver {
         SessionObserver {
             state: Arc::downgrade(&self.state),
@@ -91,7 +108,13 @@ impl Session {
     }
 
     pub fn stop(&mut self) -> Result<(), SessionError> {
-        self.change(Lifecycle::Stopped, None)
+        self.change(Lifecycle::Stopped, None)?;
+        if let Some(timing) = &self.timing {
+            timing
+                .shutdown()
+                .map_err(|_| SessionError::TimingShutdownFailed)?;
+        }
+        Ok(())
     }
 
     /// Record a real host orchestration failure; this is not guest fault capture.

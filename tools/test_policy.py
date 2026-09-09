@@ -58,6 +58,17 @@ class PolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "dependency-free package declares dependencies"):
             check_dependencies(self.metadata, self.policy)
 
+    def test_timing_is_a_dependency_free_leaf_and_loader_stays_independent(self):
+        self.edge("astero-core", "astero-timing")
+        self.assertEqual(check_dependencies(self.metadata, self.policy), 1)
+        for owner, target in (("astero-timing", "astero-kernel"), ("astero-timing", "astero-core"), ("astero-loader", "astero-timing")):
+            with self.subTest(owner=owner, target=target):
+                metadata = copy.deepcopy(self.metadata)
+                package = next(p for p in metadata["packages"] if p["name"] == owner)
+                package["dependencies"].append({"name": target})
+                with self.assertRaisesRegex(ValueError, "dependency-free package declares dependencies"):
+                    check_dependencies(metadata, self.policy)
+
     def test_valid(self):
         check_state(self.state)
         self.edge("astero-libs", "astero-hle")

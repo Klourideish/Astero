@@ -116,6 +116,7 @@ name = "astero-core"
 version = "0.1.0"
 dependencies = [
  "astero-loader",
+ "astero-timing",
 ]
 
 [[package]]
@@ -174,6 +175,10 @@ version = "0.1.0"
 
 [[package]]
 name = "astero-shader"
+version = "0.1.0"
+
+[[package]]
+name = "astero-timing"
 version = "0.1.0"
 
 [[package]]

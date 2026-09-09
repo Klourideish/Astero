@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "crates/astero-abi",
+    "crates/astero-timing",
     "crates/astero-memory",
     "crates/astero-loader",
     "crates/astero-kernel",

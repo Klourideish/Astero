@@ -1415,3 +1415,44 @@ Generated JSON, AGENTS.md, PROJECT_STATE.json and LOCAL_TEST_CORPUS.json remain 
 
 No commit/push/history change. HEAD and origin/main remain 0766acf8017a3dfc866c94cef13140c4f211acd6.
 M24 remains active pending cleanup approval; M25 has not started.
+
+
+## M25 results - 2026-09-09
+
+[Asynchronous timing](asynchronous_timing.md) records exact catalogue evidence, ownership,
+race semantics, measured host limitations and future consumer boundaries. No guest code ran.
+
+| Validation | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 292 executable tests and 22 compile-fail doctests passed |
+| Existing CLI integration tests | 45 included above, passed |
+| Python unittest discovery | 51 passed: 21 policy/state, 9 structure, 21 index/extraction |
+| dependency/state/structure policy | 16 crates, 10 actual internal edges, 235 declared homes; passed |
+| deterministic index regeneration | 16 generated files byte-identical; freshness passed |
+| whitespace | git diff --check and supplemental scan passed |
+
+Added 14 timing and 2 core tests plus one dependency-policy test. Most timing semantics use
+explicit manual advancement; real tests enforce never-early delivery and a tolerant 5-second
+liveness guard. One measured run: 15 ms request took 19.3608 ms, 5.333333 ms took 18.5654 ms,
+and 16.666667 ms took 32.0294 ms. These are noisy observations, not latency guarantees.
+No default host timer-resolution change is claimed. Focused tests passed before full validation.
+
+Manual command, exit 0: `cargo run -p astero-timing --example deadlines`.
+Expected and actual: Cancelled; events 1 and 2 dispatched in order at manual 5000000 ns with
+zero lateness; pending=0 fired=2 cancelled=1; worker joined. This exercises a real worker,
+not a synchronous mock. USAGE.md contains the copy/pasteable command and output.
+Full Cargo/Python logs are local under ignored target/m25-validation.
+
+Indexes: implementation 764 (+78), subsystems 132 (+5), modules 468 (+14), sources 457 (+14),
+diagnostics 30 (+1), tests 366 (+17), NIDs 2 (unchanged, observation-only/unregistered), ABI 0.
+Total 2219 (+129). Generated JSON and local configuration/tracker files remain ignored.
+Only new dependency edge is core -> timing; timing is dependency-free and loader remains
+independent. No external dependency added. Queue work is bounded O(n), with caller-owned terminal
+tickets; per-ticket Arc allocation follows the process allocator's ordinary failure policy.
+
+M25 remains active ready_for_cleanup pending user approval. No commit/push/history changes:
+HEAD and origin/main remain 332b39e8a1ff518c1f3e4807666a9512b6b3e05b. M26 has not started.

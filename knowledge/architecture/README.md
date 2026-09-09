@@ -50,3 +50,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Real ELF linkage evidence](real_linkage_evidence.md): bounded symbols, relocation references and dependency-name evidence from selected real input.
 
 - [PS5 identity evidence](ps5_identity_evidence.md): M24 bounded descriptor hypotheses and encoded NID correlation, without provider binding.
+
+- [Asynchronous timing](asynchronous_timing.md): M25 host/manual clocks, bounded worker, completion tickets and explicit session ownership.

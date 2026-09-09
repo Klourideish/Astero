@@ -23,3 +23,5 @@ Allowed dependencies are permissions, not a requirement to add dependencies.
 See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),
 and [repository contract](../../AGENTS.md).
+
+M25 separates the generic asynchronous mechanism into astero-timing. This crate retains future guest clocks, waits and timer policy adapters; no timing HLE is implemented here.

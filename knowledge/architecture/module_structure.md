@@ -130,3 +130,5 @@ M22 adds candidates/structural under loader ELF dynamic ownership, core input/cl
 M23 owns capability composition in loader elf/dynamic/candidates/workload (synthetic child for generated tests), core input/linkage_evidence and CLI linkage_evidence. M9 observation/raw is the shared canonical raw iterator. See [M23](real_linkage_evidence.md).
 
 M24 adds loader elf/dynamic/identity (codec, metadata correlation, immutable model, collection and synthetic fixture), core input/ps5_identity delegation and CLI ps5_identity presentation. No crate or edge changes. See [PS5 identity evidence](ps5_identity_evidence.md).
+
+M25 adds astero-timing/time, clock, scheduler and diagnostics, plus core/session/timing. The new foundational crate avoids coupling GPU/video/audio timing to a kernel consumer. No loose top-level scheduler file or global event registry.
