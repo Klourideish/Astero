@@ -146,7 +146,8 @@
         "test:astero-loader/test:dynamic_strings/bounded_views_handle_empty_suffix_and_exact_final_nul",
         "test:astero-loader/test:dynamic_strings/every_offset_and_budget_matches_bounded_nul_oracle",
         "test:astero-loader/test:dynamic_strings/missing_nul_never_scans_past_declared_strsz",
-        "test:astero-loader/test:dynamic_strings/scan_budgets_include_terminators_and_repeated_offsets"
+        "test:astero-loader/test:dynamic_strings/scan_budgets_include_terminators_and_repeated_offsets",
+        "test:astero-loader/test:linkage_candidates/names_remain_absent_empty_utf8_or_raw_without_normalization"
       ]
     },
     {
@@ -177,7 +178,8 @@
         "test:astero-loader/test:dynamic_symbols/fields_names_and_repeated_observation_preserve_source",
         "test:astero-loader/test:dynamic_symbols/name_failures_are_string_errors_with_symbol_index",
         "test:astero-loader/test:dynamic_symbols/translation_and_truncation_are_not_fabricated_symbols",
-        "test:astero-loader/test:dynamic_symbols/binding_type_visibility_and_sections_preserve_extensions"
+        "test:astero-loader/test:dynamic_symbols/binding_type_visibility_and_sections_preserve_extensions",
+        "test:astero-loader/test:linkage_candidates/invalid_names_fail_stop_and_never_become_candidates"
       ]
     },
     {
@@ -253,7 +255,57 @@
       "tests": [
         "test:astero-loader/test:relocation_observation/iteration_limits_fail_stop_and_do_not_report_partial_completion",
         "test:astero-loader/test:relocation_observation/aliases_retain_both_labels_and_canonical_enumeration_never_duplicates",
-        "test:astero-loader/test:relocation_observation/plt_rela_provenance_and_rel_deferral_are_explicit"
+        "test:astero-loader/test:relocation_observation/plt_rela_provenance_and_rel_deferral_are_explicit",
+        "test:astero-loader/test:linkage_candidates/aliased_relocation_record_is_associated_once_with_both_labels"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::enumerate::enumerate",
+      "tests": [
+        "test:astero-loader/test:linkage_candidates/only_trusted_membership_and_matching_sources_enable_candidates",
+        "test:astero-loader/test:linkage_candidates/budgets_are_errors_not_successful_truncated_enumerations",
+        "test:astero-loader/test:linkage_candidates/relocation_reference_failures_are_not_skipped"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::classification::derive::classify",
+      "tests": [
+        "test:astero-loader/test:linkage_candidates/exports_require_external_attributes_and_nonempty_names",
+        "test:astero-loader/test:linkage_candidates/uncertain_attributes_are_explicit_and_raw_values_survive",
+        "test:astero-loader/test:linkage_candidates/bounded_attribute_and_relocation_sweep_preserves_determinism"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::imports::ImportCandidate",
+      "tests": [
+        "test:astero-loader/test:linkage_candidates/imports_preserve_both_relocation_classes_duplicates_and_null",
+        "test:astero-loader/test:linkage_candidates/names_remain_absent_empty_utf8_or_raw_without_normalization"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::exports::ExportCandidate",
+      "tests": [
+        "test:astero-loader/test:linkage_candidates/exports_require_external_attributes_and_nonempty_names"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::evidence::model::CandidateEvidence",
+      "tests": [
+        "test:astero-loader/test:linkage_candidates/aliased_relocation_record_is_associated_once_with_both_labels",
+        "test:astero-loader/test:linkage_candidates/imports_preserve_both_relocation_classes_duplicates_and_null"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::error::CandidateError",
+      "tests": [
+        "test:astero-loader/test:linkage_candidates/invalid_names_fail_stop_and_never_become_candidates",
+        "test:astero-loader/test:linkage_candidates/only_trusted_membership_and_matching_sources_enable_candidates"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::enumeration::impl[< ' e > SymbolTable < ' e >]::with_hash",
+      "tests": [
+        "test:astero-loader/test:linkage_candidates/only_trusted_membership_and_matching_sources_enable_candidates"
       ]
     }
   ],
@@ -505,6 +557,18 @@
       "description": "Trusted relocation bounds, alias conflicts and same-source symbol validation errors; application deferred.",
       "evidence": [
         "knowledge/architecture/elf_relocation_observation.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf.candidates",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::error::CandidateError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::enumerate::enumerate"
+      ],
+      "surfaces": [],
+      "description": "Trusted membership, same-source and nested symbol/relocation failures; ambiguity remains a classification, no resolution.",
+      "evidence": [
+        "knowledge/architecture/linkage_candidates.md"
       ]
     }
   ],

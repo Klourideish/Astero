@@ -529,3 +529,41 @@ not relocation applicability, import/export semantics, linking or emulator corre
 symbol/dependency resolution, NIDs, PLT/GOT patching, runtime addresses, guest memory, HLE, SELF,
 PS5Rust migration or execution occurred. M10 has not started. See
 [relocation contract](elf_relocation_observation.md) for support boundaries and remaining pressure.
+
+## M10 results — 2026-09-09
+
+Bounded linkage candidate derivation only; no resolution, runtime registration, NIDs,
+relocation application, external binaries or emulator migration. Prior M2-M9 APIs/tests remain
+unchanged. Working tree started clean at e711de6; no commit or push performed.
+
+| Required check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 147 executable Rust tests, 12 compile-fail doctests passed; zero failures/ignored |
+| python tools/check_policy.py | passed: 15 members, 6 internal edges, active state valid |
+| structure policy | passed: 185 declared module homes |
+| python -m unittest discover -s tools -p "test_*.py" -v | 47 passed: 18 policy + 9 structure + 20 index/extraction |
+| index generation/freshness | passed; two regenerations byte-identical across all 17 index-directory files |
+| git diff --check | passed |
+| python tools/check_whitespace.py | passed; supplemental source/document whitespace scan |
+
+M10 adds 10 executable integration tests and one compile-fail doctest. This includes a
+192-image deterministic attribute/section/relocation sweep (four name states each), named and
+unnamed candidates, byte names, duplicate identity, trusted membership, source mismatch, null
+references, aliases, nested error boundaries and explicit budgets. Existing 137 executable tests
+and 11 doctests pass unchanged. No runtime validation or emulator correctness claim follows.
+
+Indexes: implementation 349 (+29), subsystems 115 (+0), modules 307 (+11), source files 298 (+10),
+diagnostics 15 (+1), tests 206 (+11), NIDs 0 and ABI 0. Total 1,290 navigation records (+62).
+Reviewed links connect the candidate tests to M6 string lookup, M7 symbols, M8 evidence and M9
+relocation enumeration. Source spans remain generated. No index schema/tool dependency change.
+The index test inventory includes Python and doctest records; it is not an executable Rust count.
+
+Scope: new loader candidate modules/test, loader wiring/README, focused architecture and module-home
+records, active state, reviewed index links and generated indexes. No Cargo manifest, Cargo.lock,
+dependency policy or unrelated crate implementation changed. Loader remains dependency-free.
+See [candidate decisions and pressure](linkage_candidates.md). M10 cleanup was approved and its active item removed; durable evidence remains here.
+M11 has not begun.

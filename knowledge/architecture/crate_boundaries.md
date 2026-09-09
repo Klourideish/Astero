@@ -66,3 +66,7 @@ ABI contracts. It must not absorb libc, TLS mechanisms, host execution or unrela
 M2 admission and immutable load planning belong to astero-loader, not core. Its dependency-free
 synthetic contracts describe work only; memory application and runtime execution are deferred.
 See [loader pipeline](loader_pipeline.md).
+
+M10 ELF linkage candidates remain loader-owned observation evidence under
+`elf/dynamic/candidates/`. They neither populate resolved runtime imports/exports nor assign addresses;
+see [candidate policy](linkage_candidates.md). No dependency edges change.

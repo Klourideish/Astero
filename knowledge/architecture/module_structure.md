@@ -99,3 +99,6 @@ See [dynamic observations](dynamic_elf_observation.md).
 
 M6 nests dynamic/string_table and dynamic/dependencies beneath loader/elf. Generic byte-name and
 dependency declaration types remain under loader/dependencies. See [dynamic strings](dynamic_strings.md).
+
+M10 nests candidate classification, evidence, imports, exports and errors under
+`elf/dynamic/candidates/`; enumeration wiring consumes existing symbol/relocation owners.

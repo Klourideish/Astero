@@ -43,3 +43,6 @@ M8 adds hash::observe and SymbolTable::with_hash/enumerate; see [hash extents](.
 
 M9 adds relocations::RelocationTables for bounded RELA records and trusted symbol references.
 See [relocation observation](../../knowledge/architecture/elf_relocation_observation.md).
+
+M10 adds elf::dynamic::candidates::enumerate for trusted, budgeted import/export candidate classification.
+See [candidate policy](../../knowledge/architecture/linkage_candidates.md); no runtime resolution.
