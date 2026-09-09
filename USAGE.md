@@ -274,3 +274,30 @@ cargo test -p astero-cli
 
 See [validation records](knowledge/architecture/validation.md) for recorded test and GUI runtime
 coverage. Synthetic examples are demonstrations, not evidence that a PS5 executable runs.
+
+## Structural symbol candidates (synthetic example)
+
+This separate command explicitly requests symbol observations, then classifies that immutable
+report. Acquisition and the older observation commands never run classification automatically.
+All acquisition/hash/symbol/name limits below are required, plus `--max-classifications` in records.
+Every symbol, including index zero and special indices, consumes one unit. Zero refuses nonempty
+input; insufficient budget fails before any successful classification prefix. Duplicate names
+remain distinct. Names and unknown numeric attributes are preserved.
+
+Run from the repository root. Fixture writers refuse overwrites; reuse existing fixtures or
+choose new output names when repeating.
+
+```powershell
+cargo run -p astero-loader --example classification_fixture -- .\target\m22-ordinary.elf ordinary
+cargo run -p astero-loader --example classification_fixture -- .\target\m22-special.elf special
+cargo run -p astero-cli -- classify-symbols --path .\target\m22-ordinary.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12 --max-classifications 3
+cargo run -p astero-cli -- classify-symbols --path .\target\m22-ordinary.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12 --max-classifications 2
+cargo run -p astero-cli -- classify-symbols --path .\target\m22-special.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12 --max-classifications 3
+```
+
+Expected: writers create 1536 synthetic bytes (exit 0). Ordinary/3 reports Complete with NullSymbol,
+UndefinedCandidate and DefinitionCandidate (exit 0). Ordinary/2 reports Budget { count: 3,
+maximum: 2 } (exit 1). Special/3 retains reserved section and unknown attributes as SpecialCandidate
+(exit 0). The two ordinary named symbols are both GLOBAL/FUNC; only section state changes the role.
+Undefined does not mean resolved import; defined/global does not mean export. No dependency
+resolution, linkage, NID resolution or guest loading/execution occurs.

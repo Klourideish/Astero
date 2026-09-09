@@ -599,6 +599,15 @@
         "test:astero-cli/test:symbols/prior_frontend_operations_do_not_observe_an_invalid_null_symbol",
         "test:astero-cli/test:symbols/live_symbol_report_preserves_raw_names_and_explicit_refusals"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::structural::classify::classify",
+      "tests": [
+        "test:astero-loader/test:structural_classification/roles_keep_shared_original_evidence_names_order_and_identity",
+        "test:astero-loader/test:structural_classification/every_record_consumes_budget_before_any_successful_prefix",
+        "test:astero-loader/test:structural_classification/prerequisites_remain_unavailable_or_structured_failure",
+        "test:astero-loader/test:structural_classification/bounded_attribute_sweep_uses_only_section_role_and_preserves_unknowns"
+      ]
     }
   ],
   "reviews": [
@@ -1024,6 +1033,21 @@
       "description": "Exact source-proof gate, entry/name budgets and fail-stop symbol/name evidence; no classification.",
       "evidence": [
         "knowledge/architecture/explicit_symbols.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.structural_classification",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::structural::model::ClassificationFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::candidates::structural::classify::classify",
+        "impl:astero-core/lib:astero_core/input::classification::classify"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/classification::presentation::render"
+      ],
+      "description": "Complete M21 prerequisite, classification count and allocation refusal; shared input retains source and nested failures. No resolution.",
+      "evidence": [
+        "knowledge/architecture/explicit_symbol_classification.md"
       ]
     }
   ],

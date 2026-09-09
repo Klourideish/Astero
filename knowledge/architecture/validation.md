@@ -1218,3 +1218,69 @@ Remaining pressure: repeated bounded M18 discovery after M20 is explicit; immuta
 coherence risk, not that fixed extra work. Future classification must be separately requested and
 budgeted. A possible M22 is bounded candidate classification using established evidence, stopping
 before linkage/dependency/NID resolution. No such work is included here.
+
+## M22: explicit structural symbol classification — 2026-09-09
+
+Loader candidates/structural consumes a shared complete M21 report. Core delegates and the separate
+CLI command explicitly composes prerequisites. M10 import/export eligibility and relocation
+association are not invoked. No dependency, manifest, lockfile or GUI changes. Prior CLI commands
+and synthetic linkage paths remain intact. No catalogue or real guest input was used.
+
+| Check | Actual result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI/examples |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 247 executable tests + 21 compile-fail doctests; zero failed/ignored |
+| CLI integration subset | 40 passed, including 3 new |
+| dependency/state/structure | 15 crates, 9 unchanged edges, 222 declared homes |
+| Python suite | 49 passed: 20 dependency/state, 9 structure, 20 index/extraction |
+| index regeneration twice / freshness | byte-identical across 17 files; 1,929 records current |
+| whitespace / git diff --check | passed; supplemental scan covers 507 files |
+
+Seven new executable tests (4 loader, 3 CLI) and one immutable-report compile-fail test. A bounded
+150-combination sweep varies section, binding/type and visibility, with raw non-UTF8 names.
+Coverage includes null, undefined, ordinary, ABS, COMMON, reserved/extended; local/global/weak and
+unknown values; duplicate names; unnamed/empty/UTF8/raw; shared original records/proof; deterministic
+ordering and repeated classification; exact/zero/insufficient budget with no prefix; unavailable
+and failed prerequisites. Prior acquire and M16-M21 commands never emit classification. Native
+Windows non-UTF8 paths pass; Unix-only behavior is not claimed validated. Allocation failure was
+not injected. A test-only unused import was removed before warnings-denied full validation.
+GUI built and its existing tests passed; no GUI runtime smoke was needed for this CLI-only change.
+
+### Manual CLI evidence
+
+These exact commands are documented in USAGE.md. Fixture writers are overwrite-safe; reuse their
+outputs or select fresh names for another run. Only repository-generated 1536-byte fixtures used.
+
+~~~powershell
+cargo run -p astero-loader --example classification_fixture -- .\target\m22-ordinary.elf ordinary
+cargo run -p astero-loader --example classification_fixture -- .\target\m22-special.elf special
+cargo run -p astero-cli -- classify-symbols --path .\target\m22-ordinary.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12 --max-classifications 3
+cargo run -p astero-cli -- classify-symbols --path .\target\m22-ordinary.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12 --max-classifications 2
+cargo run -p astero-cli -- classify-symbols --path .\target\m22-special.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12 --max-classifications 3
+~~~
+
+| Operation | Expected and actual result | Exit |
+|---|---|---|
+| ordinary and special fixture writers | each created 1536 bytes | 0 each |
+| ordinary / classifications 3 | Complete: null, UndefinedCandidate, DefinitionCandidate | 0 |
+| ordinary / classifications 2 | Failed Budget count=3 maximum=2, no successful prefix | 1 |
+| special / classifications 3 | Complete: SpecialCandidate retains Reserved(65312), Unknown(14/15/5) | 0 |
+
+Ordinary symbols 1 and 2 are both named alpha, GLOBAL/FUNC; section alone distinguishes their roles.
+Neither is labeled import/export. Output retains source/provenance and prerequisite status, and
+states no resolution/linkage/NID/guest loading/execution. Classification reads no source bytes,
+relocations, PLT/GOT or other artifacts; it pairs roles with the existing immutable M21 records.
+
+Indexes: implementation 616 (+21), subsystems 125 (+1), modules 427 (+11), sources 416 (+11),
+diagnostics 27 (+1), tests 318 (+8), NID 0, ABI 0; total 1,929 (+53). Three required nested homes
+added: loader candidates/structural, core input/classification, CLI classification. Generated JSON,
+AGENTS.md and PROJECT_STATE.json remain ignored/local-only.
+
+M22 is ready_for_cleanup pending approval. HEAD and origin/main remain
+51628cfaa6b1626b041b0db02ca541feeddf4fcc; no commit/push/history change. M23 has not started.
+Remaining pressure: structural roles deliberately do not prove import/export eligibility or use.
+A possible M23 is separately requested bounded relocation report exposure using M9 mechanisms,
+with explicit budgets and trusted reference validation; no application, association or resolution.

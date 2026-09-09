@@ -36,3 +36,5 @@ M19 input/string_references delegates explicit reference lookup without creating
 M20 input/hash_metadata delegates immutable source/count evidence requests; no session or symbol consumer is created.
 
 M21 input/symbols delegates explicit same-source hash-proof consumption; no session or classification is created.
+
+`input/classification` delegates immutable M21 report classification to loader; it creates no session or guest state.

@@ -38,3 +38,5 @@ M19 string-references requires all descriptor limits plus explicit reference/per
 M20 hash-metadata requires acquisition/header/dynamic limits plus --max-hash-words. It prints counts/proof only; see [usage](../../USAGE.md).
 
 M21 symbols explicitly requests count proof then bounded symbol/name observations. All entry/lookup/scan limits are required; see [usage](../../USAGE.md).
+
+`classify-symbols` explicitly composes bounded symbol observations and structural roles. All budgets are required; see [USAGE](../../USAGE.md).

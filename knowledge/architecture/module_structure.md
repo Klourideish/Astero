@@ -124,3 +124,5 @@ M19 adds loader elf/dynamic/string_references, core input/string_references and 
 M20 hash/bounded owns independent hash/count reports; hash/synthetic owns small generated fixtures. Core input/hash_metadata and CLI hash_metadata delegate/present only. Existing hash decoders remain authoritative.
 
 M21 symbol_table/bounded owns complete proof-gated reports; symbol_table/decode is the sole field decoder shared with M7. symbol_table/synthetic owns fixtures. Core input/symbols and CLI symbols delegate/present only.
+
+M22 adds candidates/structural under loader ELF dynamic ownership, core input/classification and CLI classification. Rules and ownership: [M22](explicit_symbol_classification.md).

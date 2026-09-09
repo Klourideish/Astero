@@ -3,7 +3,7 @@ use astero_core::input::{
     symbols::{SymbolObservationReport, SymbolOutcome},
 };
 use std::fmt::Write;
-fn name(bytes: Option<&[u8]>) -> String {
+pub(crate) fn name(bytes: Option<&[u8]>) -> String {
     match bytes {
         None => "<unnamed>".into(),
         Some([]) => "<empty>".into(),
