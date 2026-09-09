@@ -38,3 +38,5 @@ no symbol count is guessed; the original candidate-only API still refuses enumer
 - `cargo run -p astero-cli -- --linkage --synthetic [--details]`: compose generated in-memory
   linkage evidence into a session; no guest is loaded. Omit --synthetic for an empty session.
   See [composition](knowledge/architecture/evidence_composition.md).
+
+M15: astero-cli acquire --path <native-path> --max-bytes <u64> --max-read-calls <u64> acquires bytes only. All limits are required; no parsing/loading occurs. See [frontend acquisition](knowledge/architecture/acquisition_frontend.md).

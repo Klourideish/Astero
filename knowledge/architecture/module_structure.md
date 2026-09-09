@@ -110,3 +110,5 @@ M12 adds core session/inputs and CLI linkage/synthetic. Report/parser mechanics 
 no neutral/shared-types crate or attachment registry is introduced.
 
 M14 adds loader artifact/filesystem for host acquisition, with separate acquisition orchestration, bounded reads and structured errors. It does not overlap guest kernel/filesystem ownership.
+
+M15 core/input/acquisition owns the application acquisition entry point, independent of core/session. CLI/acquisition separates argument syntax, selection state and presentation. Neither owns filesystem mechanisms.

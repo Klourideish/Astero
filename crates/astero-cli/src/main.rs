@@ -1,7 +1,28 @@
 use astero_core::session::Session;
 
-fn main() -> Result<(), String> {
-    let args: Vec<_> = std::env::args().skip(1).collect();
+fn main() -> std::process::ExitCode {
+    match run() {
+        Ok(()) => std::process::ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("{error}");
+            std::process::ExitCode::FAILURE
+        }
+    }
+}
+fn run() -> Result<(), String> {
+    let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.first().is_some_and(|a| a == "acquire") {
+        let request = astero_cli::acquisition::parse(args.into_iter().skip(1))
+            .map_err(|e| format!("{e}\n{}", astero_cli::acquisition::USAGE))?;
+        let mut selection = astero_cli::acquisition::Selection::new(request);
+        selection.acquire();
+        let text = astero_cli::acquisition::render(&selection);
+        if matches!(selection.state(), astero_cli::acquisition::State::Failed(_)) {
+            return Err(text);
+        }
+        print!("{text}");
+        return Ok(());
+    }
     if args.first().is_some_and(|a| a == "--linkage") {
         let synthetic = args.iter().skip(1).any(|a| a == "--synthetic");
         let details = args.iter().skip(1).any(|a| a == "--details");
@@ -30,7 +51,10 @@ fn main() -> Result<(), String> {
         return Ok(());
     }
     if !args.is_empty() {
-        return Err("Usage: astero-cli [--linkage [--synthetic] [--details]]".into());
+        return Err(format!(
+            "Usage: astero-cli [--linkage [--synthetic] [--details]]\n{}",
+            astero_cli::acquisition::USAGE
+        ));
     }
     let mut session = Session::new().map_err(|e| format!("Create session: {e:?}"))?;
     session

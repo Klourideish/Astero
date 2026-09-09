@@ -442,6 +442,34 @@
         "test:astero-loader/lib:astero_loader/artifact::filesystem::read::tests::short_reads_and_interruptions_are_bounded_including_eof_probe",
         "test:astero-loader/lib:astero_loader/artifact::filesystem::read::tests::io_failure_keeps_path_operation_and_underlying_error"
       ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/acquisition::arguments::parse",
+      "tests": [
+        "test:astero-cli/test:acquisition/required_limits_have_no_defaults_and_syntax_errors_remain_structured",
+        "test:astero-cli/test:acquisition/native_non_utf8_selection_reaches_acquisition_including_process_arguments"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/acquisition::selection::impl[Selection]::acquire",
+      "tests": [
+        "test:astero-cli/test:acquisition/selection_retains_native_request_and_replaces_only_its_acquisition_result",
+        "test:astero-cli/test:acquisition/limits_propagate_without_frontend_revalidation_or_silent_defaults"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/acquisition::presentation::render",
+      "tests": [
+        "test:astero-cli/test:acquisition/nonexistent_input_preserves_io_error_path_and_failure_presentation",
+        "test:astero-cli/test:acquisition/live_command_stops_at_arbitrary_bytes_and_reports_limits_and_exit_status"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/input::acquisition::acquire",
+      "tests": [
+        "test:astero-cli/test:acquisition/limits_propagate_without_frontend_revalidation_or_silent_defaults",
+        "test:astero-cli/test:acquisition/native_non_utf8_selection_reaches_acquisition_including_process_arguments"
+      ]
     }
   ],
   "reviews": [
@@ -740,12 +768,29 @@
       "id": "diagnostic:loader.filesystem_input",
       "implementation": "impl:astero-loader/lib:astero_loader/artifact::filesystem::error::AcquisitionError",
       "consumers": [
-        "impl:astero-loader/lib:astero_loader/artifact::filesystem::acquire::acquire"
+        "impl:astero-loader/lib:astero_loader/artifact::filesystem::acquire::acquire",
+        "impl:astero-core/lib:astero_core/input::acquisition::acquire",
+        "impl:astero-cli/lib:astero_cli/acquisition::selection::impl[Selection]::acquire"
       ],
-      "surfaces": [],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/acquisition::presentation::render"
+      ],
       "description": "Native requested path, acquisition operation, size/read limits and nested I/O failure; no parser or loading action.",
       "evidence": [
-        "knowledge/architecture/filesystem_input.md"
+        "knowledge/architecture/filesystem_input.md",
+        "knowledge/architecture/acquisition_frontend.md"
+      ]
+    },
+    {
+      "id": "diagnostic:cli.acquisition_arguments",
+      "implementation": "impl:astero-cli/lib:astero_cli/acquisition::arguments::ArgumentError",
+      "consumers": [
+        "impl:astero-cli/lib:astero_cli/acquisition::arguments::parse"
+      ],
+      "surfaces": [],
+      "description": "Missing/duplicate/unknown selection flags and invalid explicit limits. Native path values stay opaque.",
+      "evidence": [
+        "knowledge/architecture/acquisition_frontend.md"
       ]
     }
   ],

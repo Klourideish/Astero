@@ -7,7 +7,9 @@
       "session/inputs/synthetic",
       "session/lifecycle",
       "session/observation",
-      "session/statistics"
+      "session/statistics",
+      "input",
+      "input/acquisition"
     ],
     "astero-loader": [
       "admission",
@@ -221,7 +223,8 @@
     ],
     "astero-cli": [
       "linkage",
-      "linkage/synthetic"
+      "linkage/synthetic",
+      "acquisition"
     ]
   },
   "forbidden_top_level_filenames": [

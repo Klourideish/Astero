@@ -740,3 +740,45 @@ M14 cleanup was approved and its active item removed; durable records remain. Du
 replacement and atomic snapshot guarantees need explicit platform work if required; this adapter
 claims none of them. A future milestone may expose acquisition-only selection/size policy through
 a frontend, retaining the STOP boundary. No M15 work has begun.
+
+## M15 results — 2026-09-09
+
+Started clean at 7d92593. CLI acquisition-only selection with required native path/byte/read budgets;
+thin core application entry point. M14 loader source and GUI remain unchanged. No parsing, loading,
+linkage, NIDs, guest state or execution is introduced. No commit or push.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including unchanged GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 184 executable tests + 14 compile-fail doctests; zero failures/ignored |
+| policy/state | passed: 15 crates, 9 unique internal edges |
+| structure | passed: 197 declared module homes |
+| Python discovery | 49 passed: 20 dependency/state + 9 structure + 20 index/extraction |
+| regeneration twice and freshness | byte-identical across 17 index-directory files; fresh |
+| git diff --check | passed |
+| supplemental whitespace | passed: 414 files |
+
+Six new CLI integration tests cover mandatory/invalid/duplicate limits, exact-size success,
+byte-limit/read-budget failure, nonexistent path retaining I/O cause, synchronous state transitions,
+unchanged-input repeated acquisition/new identity, retained immutable bytes, native non-UTF-8 path
+through model and real executable, success/status/length/budget output and nonzero error exits.
+Actual CLI subprocesses acquire generated invalid-ELF bytes without a parser or session branch.
+The five linkage tests, including live synthetic mode, and two default-presentation tests still pass.
+No GUI behavior changed; no new interactive GUI smoke is claimed.
+
+No dependencies, manifests or lock changes. Existing nine edges remain seven normal/two dev-only;
+CLI -> loader remains dev-only and loader remains dependency-free. New homes are core/input,
+core/input/acquisition and CLI/acquisition. There is no file-reading implementation outside loader.
+
+Indexes: implementation 428 (+15), subsystems 118 (+2), modules 341 (+7), sources 331 (+7),
+diagnostics 19 (+1), tests 248 (+6), NID 0, ABI 0; total 1,485 (+38). Reviewed links cover native
+argument syntax, selection/delegation, presentation and diagnostics. M14 acquisition diagnostics
+now identify the application/CLI consumer path; source locations remain generated.
+
+See [frontend boundary](acquisition_frontend.md). M14 synchronous I/O/namespace/snapshot limitations
+remain unchanged. No M16 work has begun.
+
+M15 cleanup was approved and its active item removed. All durable records remain; M16 has not begun.

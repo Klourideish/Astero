@@ -30,3 +30,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [GUI linkage evidence](gui_linkage_evidence.md): M13 read-only session report presentation and shared synthetic inputs.
 
 - [Filesystem input](filesystem_input.md): M14 bounded host file acquisition into SourceArtifact; no automatic interpretation.
+
+- [Frontend acquisition](acquisition_frontend.md): M15 CLI native-path selection and explicit budgets; stop at SourceArtifact.

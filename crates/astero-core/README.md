@@ -22,3 +22,5 @@ M12 session/inputs carries checked immutable linkage evidence. Core depends on l
 that report/identity contract; it never derives evidence. See [composition](../../knowledge/architecture/evidence_composition.md).
 
 M13 session/inputs/synthetic composes loader-generated demonstration reports and records typed synthetic provenance. It performs no parsing/classification itself; normal inputs remain explicitly unspecified in origin.
+
+M15 input/acquisition is a thin application entry point to the unchanged loader acquisition API. It exposes immutable sources and structured failures without reading bytes itself, creating sessions or invoking parsing. See [frontend acquisition](../../knowledge/architecture/acquisition_frontend.md).
