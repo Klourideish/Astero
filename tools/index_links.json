@@ -579,6 +579,26 @@
       "tests": [
         "test:astero-loader/test:bounded_hash_metadata/absence_lower_bound_and_corroboration_remain_distinct"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::bounded::collect::observe",
+      "tests": [
+        "test:astero-loader/test:bounded_symbols/exact_membership_order_raw_fields_names_and_shared_proof_are_preserved",
+        "test:astero-loader/test:bounded_symbols/lookup_budget_sweep_charges_nonzero_offsets_and_nul_without_partial_success"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::decode::decode",
+      "tests": [
+        "test:astero-loader/test:bounded_symbols/complete_extent_and_entry_budget_precede_decoding"
+      ]
+    },
+    {
+      "implementation": "impl:astero-cli/lib:astero_cli/symbols::request::observe_acquired",
+      "tests": [
+        "test:astero-cli/test:symbols/prior_frontend_operations_do_not_observe_an_invalid_null_symbol",
+        "test:astero-cli/test:symbols/live_symbol_report_preserves_raw_names_and_explicit_refusals"
+      ]
     }
   ],
   "reviews": [
@@ -989,6 +1009,21 @@
       "description": "Independent bounded hash metadata, exact/lower-bound source evidence, nested discovery/hash/refusal failures; no symbol enumeration.",
       "evidence": [
         "knowledge/architecture/explicit_hash_metadata.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.bounded_symbols",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::bounded::error::SymbolObservationFailure",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::symbol_table::bounded::collect::observe",
+        "impl:astero-core/lib:astero_core/input::symbols::observe"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/symbols::presentation::render"
+      ],
+      "description": "Exact source-proof gate, entry/name budgets and fail-stop symbol/name evidence; no classification.",
+      "evidence": [
+        "knowledge/architecture/explicit_symbols.md"
       ]
     }
   ],

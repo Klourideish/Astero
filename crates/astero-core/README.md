@@ -34,3 +34,5 @@ M18 input/descriptors delegates selected descriptor metadata observation; it cre
 M19 input/string_references delegates explicit reference lookup without creating dependency/session state.
 
 M20 input/hash_metadata delegates immutable source/count evidence requests; no session or symbol consumer is created.
+
+M21 input/symbols delegates explicit same-source hash-proof consumption; no session or classification is created.

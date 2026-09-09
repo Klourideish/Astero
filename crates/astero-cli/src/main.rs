@@ -11,6 +11,31 @@ fn main() -> std::process::ExitCode {
 }
 fn run() -> Result<(), String> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.first().is_some_and(|a| a == "symbols") {
+        let request = astero_cli::symbols::parse(args.into_iter().skip(1))
+            .map_err(|e| format!("{e}\n{}", astero_cli::symbols::USAGE))?;
+        let mut selection = astero_cli::acquisition::Selection::new(request.acquisition);
+        selection.acquire();
+        let acquired = astero_cli::acquisition::render(&selection);
+        if matches!(selection.state(), astero_cli::acquisition::State::Failed(_)) {
+            return Err(acquired);
+        }
+        let report =
+            astero_cli::symbols::observe_acquired(&selection, request.hash, request.symbols)
+                .map_err(|e| format!("Symbol request: {e:?}"))?;
+        let text = format!(
+            "Acquisition stage:\n{acquired}\n{}",
+            astero_cli::symbols::render(&report)
+        );
+        if matches!(
+            report.outcome(),
+            astero_core::input::symbols::SymbolOutcome::Failed(_)
+        ) {
+            return Err(text);
+        }
+        print!("{text}");
+        return Ok(());
+    }
     if args.first().is_some_and(|a| a == "hash-metadata") {
         let request = astero_cli::hash_metadata::parse(args.into_iter().skip(1))
             .map_err(|e| format!("{e}\n{}", astero_cli::hash_metadata::USAGE))?;
@@ -172,13 +197,14 @@ fn run() -> Result<(), String> {
     }
     if !args.is_empty() {
         return Err(format!(
-            "Usage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}\n{}\n{}\n{}\n{}",
+            "Usage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             astero_cli::acquisition::USAGE,
             astero_cli::inspection::USAGE,
             astero_cli::dynamic::USAGE,
             astero_cli::descriptors::USAGE,
             astero_cli::string_references::USAGE,
-            astero_cli::hash_metadata::USAGE
+            astero_cli::hash_metadata::USAGE,
+            astero_cli::symbols::USAGE
         ));
     }
     let mut session = Session::new().map_err(|e| format!("Create session: {e:?}"))?;

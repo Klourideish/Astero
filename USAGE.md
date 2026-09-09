@@ -208,6 +208,34 @@ Unavailable/lower-bound-only (exit 0). Reuse files on later runs or choose fresh
 For real input, replace the path and deliberately choose every limit. Count evidence is not a
 runnable/loaded guest, symbol validation or linkage. Earlier commands never invoke this request.
 
+### Explicit symbols (opt-in)
+
+symbols requires exact M20 count evidence and observes every proven member in table-index order.
+All acquisition/hash limits remain mandatory, plus --max-descriptors, --max-symbols,
+--max-name-lookups, --max-name-scan-bytes and --max-total-name-scan-bytes. Names charge NUL and
+repeated lookups; unnamed entries skip lookup. Insufficient budgets fail without a successful prefix.
+
+Create these synthetic fixtures once (existing files are refused), then run the commands:
+
+~~~powershell
+cargo run -p astero-loader --example symbol_fixture -- .\target\m21-sysv.elf sysv
+cargo run -p astero-loader --example symbol_fixture -- .\target\m21-raw.elf raw
+cargo run -p astero-loader --example symbol_fixture -- .\target\m21-lower.elf lower
+cargo run -p astero-cli -- symbols --path .\target\m21-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12
+cargo run -p astero-cli -- symbols --path .\target\m21-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 2 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12
+cargo run -p astero-cli -- symbols --path .\target\m21-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 5 --max-total-name-scan-bytes 12
+cargo run -p astero-cli -- symbols --path .\target\m21-lower.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12
+cargo run -p astero-cli -- symbols --path .\target\m21-raw.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 8
+~~~
+
+The three writers create 1536 bytes each. Observations respectively show Complete with indices
+0,1,2 and duplicate "alpha" names (exit 0); EntryBudget failure (exit 1); ScanLimit failure (exit 1);
+Unavailable because GNU gives only a lower bound (exit 0); and Complete with <non-UTF8: FF> (exit 0).
+Index zero displays <unnamed>; a referenced empty string displays <empty>. Reuse fixtures on later
+runs or select new output paths. For real input, replace the path and choose limits deliberately.
+Attributes such as SHN_UNDEF are structural facts, not import/export classification. No linkage,
+NID/dependency resolution, guest loading or execution occurs. Earlier operations remain independent.
+
 ## GUI
 
 Open the Winit/Vulkan/ImGui session inspector without evidence:

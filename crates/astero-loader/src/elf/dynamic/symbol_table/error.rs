@@ -18,6 +18,7 @@ pub enum SymbolError {
     StringsUnavailable { index: u64, offset: u32 },
     Name { index: u64, error: StringTableError },
     InvalidNullSymbol,
+    InvalidEntryRange { index: u64, size: u64 },
 }
 impl std::fmt::Display for SymbolError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

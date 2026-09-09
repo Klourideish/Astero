@@ -1143,3 +1143,78 @@ change occurred; HEAD and origin/main remain 6950e014965f55c2d6bd9634b77a4881152
 Remaining pressure: M8's conservative GNU layout support and budgeted repeated SysV paths remain
 explicit. A possible M21 is separately requested bounded symbol observation from trusted extents,
 with explicit entry/name budgets and no classification/linking. No such consumer was added here.
+
+## M21: explicit trusted symbol observation — 2026-09-09
+
+M21 explicitly consumes immutable exact M20 evidence, preserving same-source identity and [0,N)
+membership. Core delegates; CLI's separate symbols mode requests and supplies proof. M7 decoding
+was extracted once for shared use; its candidate-only count refusal and name behavior remain.
+M6 lookup, M20, earlier commands and GUI are unchanged. No dependency/manifests/lockfile changes.
+
+| Check | Actual result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI and fixtures |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 240 executable tests + 20 compile-fail doctests; no failures/ignored |
+| CLI integration tests included above | 37 passed, including 4 new; old synthetic modes retained |
+| dependency/state/structure | passed: 15 crates, 9 unique edges, 219 module homes |
+| Python tests | 49 passed: 20 dependency/state, 9 structure, 20 index/extraction |
+| regeneration twice | byte-identical across 17 index-directory files |
+| index freshness | passed: 1,876 navigation records |
+| whitespace / git diff --check | passed, supplemental scan covers 495 files |
+
+Nine new executable tests (5 loader, 4 CLI), one immutable-report compile-fail doctest. Coverage:
+273 lookup-count/per-scan/aggregate-budget combinations; exact/insufficient entry limits; count one;
+zero count refused upstream; exact-end/short symbol extent; symbol zero; SysV/GNU/corroborated proof;
+lower-bound/absent/conflicting/mismatched-source evidence; index ordering and duplicates; all raw
+fields; unknown attributes; unnamed/empty/UTF-8/raw bytes; missing/out-of-range/unterminated names;
+shared Arc identity and deterministic immutable results. Native Windows non-UTF-8 paths validated.
+Earlier acquire/inspect/dynamic/descriptors/string-references/hash-metadata commands succeed on a
+fixture where explicit M21 rejects invalid symbol zero. Old M7/M8 tests pass after decoder extraction.
+An unused test import was removed before full warnings-denied validation. Unix-only behavior is not
+claimed validated. Allocation failure was not injected. GUI built but was not relaunched. This is
+bounded structural/name observation evidence, not emulator correctness or runnable-guest evidence.
+
+### Manual CLI evidence
+
+Three generated synthetic 1536-byte fixtures, no guest binaries. Writers refuse existing outputs.
+Reuse fixtures or choose fresh names when repeating. Exact commands also appear in USAGE.md:
+
+~~~powershell
+cargo run -p astero-loader --example symbol_fixture -- .\target\m21-sysv.elf sysv
+cargo run -p astero-loader --example symbol_fixture -- .\target\m21-raw.elf raw
+cargo run -p astero-loader --example symbol_fixture -- .\target\m21-lower.elf lower
+cargo run -p astero-cli -- symbols --path .\target\m21-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12
+cargo run -p astero-cli -- symbols --path .\target\m21-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 2 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12
+cargo run -p astero-cli -- symbols --path .\target\m21-sysv.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 5 --max-total-name-scan-bytes 12
+cargo run -p astero-cli -- symbols --path .\target\m21-lower.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 12
+cargo run -p astero-cli -- symbols --path .\target\m21-raw.elf --max-bytes 2048 --max-read-calls 4 --max-program-headers 2 --max-dynamic-entries 8 --max-hash-words 64 --max-descriptors 2 --max-symbols 3 --max-name-lookups 2 --max-name-scan-bytes 6 --max-total-name-scan-bytes 8
+~~~
+
+| Operation | Expected and actual result | Exit |
+|---|---|---|
+| three fixture writers | each created 1536 synthetic bytes | 0 each |
+| SysV, symbols 3 / lookups 2 / scan 6 / total 12 | Complete indices 0,1,2; unnamed zero; duplicate alpha names; exact proof 3 | 0 |
+| SysV, symbols 2 | Failed EntryBudget before decoding; no successful prefix | 1 |
+| SysV, scan 5 | Failed ScanLimit at symbol 1, no partial symbol list | 1 |
+| GNU lower-bound-only | Unavailable, no enumeration | 0 |
+| Raw, symbols 3 / lookups 2 / scan 6 / total 8 | Complete; raw FF preserved/displayed <non-UTF8: FF> | 0 |
+
+Output includes original source/provenance, explicit budgets, expected count and proof, raw fields,
+structural views and no import/export/linkage/dependency/NID/guest execution claims. A symbol marked
+Undefined remains only that structural fact. No classification or relocation association was called.
+No external catalogue was consulted; existing Astero contracts resolved the scope and semantics.
+
+Indexes: implementation 595 (+28), subsystems 124 (+1), modules 416 (+14), sources 405 (+14),
+diagnostics 26 (+1), tests 310 (+10), NID 0, ABI 0; total 1,876 (+68). Generated JSON remains ignored.
+New nested homes are symbol_table/bounded and symbol_table/synthetic, core input/symbols, CLI symbols;
+shared symbol_table/decode replaces the prior inline field decoder. No new parser or string reader.
+
+M21 is ready_for_cleanup pending approval; its local active item remains. No commit/push/history
+change occurred; HEAD and origin/main remain 3ab7ad5b7c4e195703cb8d834eef187cb87f4515. M22 has not started.
+Remaining pressure: repeated bounded M18 discovery after M20 is explicit; immutable proof removes
+coherence risk, not that fixed extra work. Future classification must be separately requested and
+budgeted. A possible M22 is bounded candidate classification using established evidence, stopping
+before linkage/dependency/NID resolution. No such work is included here.

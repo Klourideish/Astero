@@ -36,3 +36,5 @@ M18 descriptors requires all dynamic/acquisition limits plus --max-descriptors. 
 M19 string-references requires all descriptor limits plus explicit reference/per-scan/total-scan budgets. It presents referenced bytes only. See [usage](../../USAGE.md).
 
 M20 hash-metadata requires acquisition/header/dynamic limits plus --max-hash-words. It prints counts/proof only; see [usage](../../USAGE.md).
+
+M21 symbols explicitly requests count proof then bounded symbol/name observations. All entry/lookup/scan limits are required; see [usage](../../USAGE.md).

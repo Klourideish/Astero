@@ -51,3 +51,20 @@ pub struct DynamicSymbolObservation<'a> {
     pub value: u64,
     pub size: u64,
 }
+
+/// Raw ELF64 fields and established structural views; no linkage classification.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SymbolFields {
+    pub index: u64,
+    pub source: crate::artifact::BoundSourceRange,
+    pub name_offset: u32,
+    pub info: u8,
+    pub other: u8,
+    pub shndx: u16,
+    pub binding: Binding,
+    pub symbol_type: SymbolType,
+    pub visibility: Visibility,
+    pub section: Section,
+    pub value: u64,
+    pub size: u64,
+}

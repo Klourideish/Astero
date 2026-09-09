@@ -14,7 +14,8 @@
       "input/dynamic",
       "input/descriptors",
       "input/string_references",
-      "input/hash_metadata"
+      "input/hash_metadata",
+      "input/symbols"
     ],
     "astero-loader": [
       "admission",
@@ -71,7 +72,9 @@
       "elf/dynamic/descriptors",
       "elf/dynamic/string_references",
       "elf/dynamic/hash/bounded",
-      "elf/dynamic/hash/synthetic"
+      "elf/dynamic/hash/synthetic",
+      "elf/dynamic/symbol_table/bounded",
+      "elf/dynamic/symbol_table/synthetic"
     ],
     "astero-memory": [
       "access",
@@ -242,7 +245,8 @@
       "dynamic",
       "descriptors",
       "string_references",
-      "hash_metadata"
+      "hash_metadata",
+      "symbols"
     ]
   },
   "forbidden_top_level_filenames": [

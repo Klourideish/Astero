@@ -66,3 +66,5 @@ M18 elf/dynamic/descriptors explicitly observes only STRTAB/STRSZ and SYMTAB/SYM
 M19 elf/dynamic/string_references composes M18 metadata and M6 lookup for DT_NEEDED byte evidence only, with explicit reference/per-scan/total-scan budgets. See [boundary](../../knowledge/architecture/explicit_string_references.md).
 
 M20 elf/dynamic/hash/bounded reuses M8 hash proofs through M17 bounded discovery, without symbol enumeration. See [boundary](../../knowledge/architecture/explicit_hash_metadata.md).
+
+M21 symbol_table/bounded explicitly consumes M20 proof with entry/name budgets, reusing the extracted M7 decoder and M6 lookup. See [boundary](../../knowledge/architecture/explicit_symbols.md).

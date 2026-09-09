@@ -42,3 +42,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Explicit string references](explicit_string_references.md): independently requested bounded DT_NEEDED bytes, no dependency declarations.
 
 - [Explicit hash metadata](explicit_hash_metadata.md): independent bounded SysV/GNU extent evidence, no symbol enumeration.
+
+- [Explicit symbols](explicit_symbols.md): exact M20 proof consumption, bounded entries/names, no linkage classification.

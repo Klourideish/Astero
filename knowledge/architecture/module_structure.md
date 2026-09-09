@@ -122,3 +122,5 @@ M18 adds loader elf/dynamic/descriptors, core input/descriptors and CLI descript
 M19 adds loader elf/dynamic/string_references, core input/string_references and CLI string_references. M6 string_table remains the sole byte lookup owner.
 
 M20 hash/bounded owns independent hash/count reports; hash/synthetic owns small generated fixtures. Core input/hash_metadata and CLI hash_metadata delegate/present only. Existing hash decoders remain authoritative.
+
+M21 symbol_table/bounded owns complete proof-gated reports; symbol_table/decode is the sole field decoder shared with M7. symbol_table/synthetic owns fixtures. Core input/symbols and CLI symbols delegate/present only.

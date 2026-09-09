@@ -7,3 +7,9 @@ pub use model::{Binding, DynamicSymbolObservation, Section, SymbolType, Visibili
 pub use read::SymbolTable;
 mod enumeration;
 pub use enumeration::{EnumerationLimits, SymbolEnumeration};
+
+mod decode;
+pub use model::SymbolFields;
+pub mod bounded;
+
+pub mod synthetic;
