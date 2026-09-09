@@ -217,6 +217,44 @@
         "test:astero-loader/test:hash_extents/enumeration_budgets_and_name_errors_stop_without_fabricated_success",
         "test:astero-loader/test:hash_extents/absent_and_empty_gnu_evidence_never_guesses_count"
       ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::relocations::descriptor::inspect::discover",
+      "tests": [
+        "test:astero-loader/test:relocation_observation/incomplete_rela_descriptors_and_entry_sizes_fail_at_m5",
+        "test:astero-loader/test:relocation_observation/descriptor_source_boundaries_and_overflow_remain_structured"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::relocations::observation::read::impl[RelocationTables]::read_raw",
+      "tests": [
+        "test:astero-loader/test:relocation_observation/raw_maximum_info_is_preserved_but_invalid_reference_is_rejected",
+        "test:astero-loader/test:relocation_observation/bounded_size_index_info_and_addend_sweeps"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::relocations::symbol_reference::validate::validate",
+      "tests": [
+        "test:astero-loader/test:relocation_observation/source_mismatches_cannot_rebind_relocation_or_symbol_evidence",
+        "test:astero-loader/test:relocation_observation/symbol_name_failure_is_not_silently_downgraded_to_in_range",
+        "test:astero-loader/test:relocation_observation/minimal_null_relocation_requires_extent_and_null_symbol_observation",
+        "test:astero-loader/test:relocation_observation/no_hash_keeps_reference_validation_unavailable"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::relocations::plt::alias::classify",
+      "tests": [
+        "test:astero-loader/test:relocation_observation/aliases_retain_both_labels_and_canonical_enumeration_never_duplicates",
+        "test:astero-loader/test:relocation_observation/conflicting_overlap_and_duplicate_tags_are_rejected"
+      ]
+    },
+    {
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::relocations::observation::enumerate::impl[RelocationTables]::enumerate",
+      "tests": [
+        "test:astero-loader/test:relocation_observation/iteration_limits_fail_stop_and_do_not_report_partial_completion",
+        "test:astero-loader/test:relocation_observation/aliases_retain_both_labels_and_canonical_enumeration_never_duplicates",
+        "test:astero-loader/test:relocation_observation/plt_rela_provenance_and_rel_deferral_are_explicit"
+      ]
     }
   ],
   "reviews": [
@@ -454,6 +492,19 @@
       "description": "Source-bound hash structure, work limit, conflicting evidence and full-symbol extent failures; no lookup or linking.",
       "evidence": [
         "knowledge/architecture/elf_hash_extents.md"
+      ]
+    },
+    {
+      "id": "diagnostic:loader.elf.relocations",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::relocations::error::RelocationError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::relocations::observation::read::impl[RelocationTables]::read",
+        "impl:astero-loader/lib:astero_loader/elf::dynamic::relocations::observation::enumerate::impl[RelocationTables]::enumerate"
+      ],
+      "surfaces": [],
+      "description": "Trusted relocation bounds, alias conflicts and same-source symbol validation errors; application deferred.",
+      "evidence": [
+        "knowledge/architecture/elf_relocation_observation.md"
       ]
     }
   ],

@@ -40,3 +40,6 @@ M7 adds elf::dynamic::symbol_table::SymbolTable for bounded candidate reads and 
 Enumeration requires future trusted count evidence; see [dynamic symbols](../../knowledge/architecture/dynamic_symbols.md).
 
 M8 adds hash::observe and SymbolTable::with_hash/enumerate; see [hash extents](../../knowledge/architecture/elf_hash_extents.md).
+
+M9 adds relocations::RelocationTables for bounded RELA records and trusted symbol references.
+See [relocation observation](../../knowledge/architecture/elf_relocation_observation.md).

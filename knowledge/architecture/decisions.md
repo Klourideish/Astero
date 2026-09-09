@@ -64,3 +64,9 @@ metadata/count evidence; no hash implementation, linking or M8 work is part of M
 [Hash extents](elf_hash_extents.md) permit bounded observation enumeration only with exact evidence.
 M9 should consider bounded relocation records and symbol-index validation without application/linking.
 GNU empty-bucket exact-count inference, hash lookup and broader count sources remain deferred.
+
+## M9 boundary and proposed M10
+
+[Relocation observation](elf_relocation_observation.md) validates records and symbol references only.
+M10 may define explicit import/export candidate contracts from trusted symbol observations, with
+byte identities and evidence limits; no linking/application is implied. M10 has not started.

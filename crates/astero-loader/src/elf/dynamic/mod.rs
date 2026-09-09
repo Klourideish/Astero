@@ -8,5 +8,6 @@ pub use observation::{
 };
 pub mod dependencies;
 pub mod hash;
+pub mod relocations;
 pub mod string_table;
 pub mod symbol_table;

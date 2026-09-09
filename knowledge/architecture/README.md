@@ -5,6 +5,7 @@
 - [Module structure](module_structure.md): physical homes, moves and bounded structural policy.
 - [Crate boundaries](crate_boundaries.md): ownership and forbidden responsibilities.
 - [Dependency policy](dependency_policy.json): explicit internal edge allowlist.
+- [Relocation observation](elf_relocation_observation.md): M9 trusted RELA extents, PLT aliases and symbol references.
 - [Hash extents](elf_hash_extents.md): M8 source-bound SysV/GNU evidence and gated enumeration.
 - [Dynamic symbols](dynamic_symbols.md): M7 bounded individual candidates and explicit count dependency.
 - [Dynamic strings and dependency declarations](dynamic_strings.md): M6 bounded byte names, duplicate preservation and generic metadata boundary.

@@ -490,3 +490,42 @@ and the original M7 constructor retains enumeration refusal. Source bounds, admi
 immutable planning are preserved. No import/export derivation, dependency resolution, symbol lookup,
 NIDs, relocations, PLT/GOT, HLE, SELF, guest memory, migration or execution occurred. M9 not started.
 See [hash contract](elf_hash_extents.md) for conservative support and remaining resource pressure.
+
+## M9 validation: bounded relocation observations (2026-09-09)
+
+Scope: seven nested ELF relocation homes, module export, generated fixtures, architecture/ownership
+records and indexes. Earlier source, translation, dynamic descriptor, hash and symbol implementations
+remain unchanged. No manifest, lockfile, dependency or internal-edge changes: 15 packages, six edges,
+dependency-free loader. No commits or pushes were made during milestone implementation.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed, including GUI |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 137 executable tests + 11 compile-fail doctests passed; zero failed/ignored |
+| python -m unittest discover -s tools -p "test_*.py" | 47 passed: 27 policy/structure + 20 index/extraction |
+| python tools/check_policy.py | passed; active state valid and indexes fresh |
+| python tools/check_structure.py | passed, 179 declared module homes |
+| python tools/check_whitespace.py | passed, 365 files |
+| git diff --check | passed |
+| two generate_indexes.py / --check cycles | passed; 16 generated files byte-identical |
+
+New coverage: 15 executable tests and one trusted-relocation-extent privacy doctest. All prior tests
+remain intact. Sweeps exercise 74 table sizes, six indices and 100 symbol/type/signed-addend tuples.
+Fixtures cover source identity, missing evidence, null/highest-valid/out-of-range references, name
+failures, PLT/REL deferral, exact-end/truncated/overflow descriptors, aliases/conflicts and budgets.
+Aliases enumerate once with both provenance labels; failed reads/iteration cannot claim completion.
+
+Index records before -> after: implementation 282 -> 320; subsystems 115 -> 115; modules 279 -> 296;
+diagnostics 13 -> 14; tests 179 -> 195; sources 272 -> 288. NIDs/ABI remain zero. Total 1,228.
+All 38 ELF relocation implementation records are searchable with reviewed test/diagnostic links.
+Aggregate SHA256 of sorted filename + NUL + raw bytes across 16 generated files:
+723ccd0652cfce077e9d118d858231187c623271880b6f1d492691421b733ec5.
+
+No GUI runtime launch was performed. Tests establish generated-byte structural/reference contracts,
+not relocation applicability, import/export semantics, linking or emulator correctness. No application,
+symbol/dependency resolution, NIDs, PLT/GOT patching, runtime addresses, guest memory, HLE, SELF,
+PS5Rust migration or execution occurred. M10 has not started. See
+[relocation contract](elf_relocation_observation.md) for support boundaries and remaining pressure.
