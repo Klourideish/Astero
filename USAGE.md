@@ -430,3 +430,27 @@ Output retains exact totals and shows at most 16 reference/relocation/blocker de
 with explicit omitted counts. Full bounded evidence remains in the API plan. Catalogue-known names
 are not Astero registrations. **PLAN ONLY: no guest memory mutated, no relocations applied, no guest
 execution.** Existing synthetic linkage and independent observation commands are unchanged.
+
+## Explicit guest-image staging (no execution)
+
+Use `$corpus` and `$planLimits` from the load-plan block above, then:
+
+```powershell
+cargo build -p astero-cli
+& .\target\debug\astero-cli.exe stage-image --path $corpus.artifacts.linkage_sample.path @planLimits --max-mapped-bytes 67108864
+& .\target\debug\astero-cli.exe stage-image --path $corpus.artifacts.utility_build_comparison.path @planLimits --max-mapped-bytes 67108864
+& .\target\debug\astero-cli.exe stage-image --path $corpus.artifacts.primary_real_elf.path @planLimits --max-mapped-bytes 67108864
+```
+
+These are real input paths, not synthetic linkage demos. All three validated examples exit 0 with
+`StagedWithPendingWork`, `MetadataOnly` protections, `Ready for execution: false`, and
+`Teardown: 0 active mappings`. The utility builds each apply 2 relocations and retain 9 pending;
+the executable applies 29,791 and retains 1,107 pending. Staging copies bytes into owned logical guest
+regions, zero-fills tails and applies already-proven independent values. It does not resolve or load
+providers. Pending target bytes remain unchanged. No guest code, constructors or HLE calls execute.
+
+`--max-mapped-bytes` is required and bounds the sum of region memory sizes, excluding address holes.
+Replace it with `1` to see explicit Budget refusal (exit 1, zero active mappings). Other arguments
+are identical to load-plan, including optional explicit providers. Provider plans do not make those
+providers resident. The byte backend has no executable host mapping; native execution requires a
+future backend with proven placement/protection. The CLI releases all image storage before exiting.

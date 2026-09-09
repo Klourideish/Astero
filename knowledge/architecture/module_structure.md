@@ -134,3 +134,5 @@ M24 adds loader elf/dynamic/identity (codec, metadata correlation, immutable mod
 M25 adds astero-timing/time, clock, scheduler and diagnostics, plus core/session/timing. The new foundational crate avoids coupling GPU/video/audio timing to a kernel consumer. No loose top-level scheduler file or global event registry.
 
 M26 nests capability planning under loader/load_plan/link, core/input/load_plan and CLI/load_plan. MappingIntent/VirtualAddress/source tokens are reused; no new parser or runtime owner.
+
+M27 introduces loader/load_plan/staging, core/input/staging and CLI/staging. Existing memory/mapping owns byte-backed regions; no new crate or broad helper root.

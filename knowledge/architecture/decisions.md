@@ -70,3 +70,19 @@ GNU empty-bucket exact-count inference, hash lookup and broader count sources re
 [Relocation observation](elf_relocation_observation.md) validates records and symbol references only.
 M10 may define explicit import/export candidate contracts from trusted symbol observations, with
 byte identities and evidence limits; no linking/application is implied. M10 has not started.
+
+## Primary CPU execution strategy (M27)
+
+On x86-64 Windows, Astero is designed to execute compatible decrypted PS5 x86-64 guest
+instructions directly on the host CPU. This is an intentional project direction inherited from
+the experimentally validated PS5Rust prototype, not a claim of Astero execution support today.
+Guest memory must support eventual native address reservation and executable protection; it is
+not an instruction-fetch/decode abstraction. Guest virtual addresses and host pointers remain
+conceptually distinct. The host backend must prove their correspondence for direct memory
+operands and embedded pointers before native entry. A different placement requires a new valid
+plan and relocation values, not reinterpretation of an already-staged image.
+
+An interpreter/JIT is not the primary CPU architecture. Such machinery requires a deliberate
+secondary purpose or an explicit architecture change. Native VM mechanisms stay behind the
+memory backend; native entry, ABI transitions, TLS, exception recovery and execution lifetime
+coordination remain under kernel/execution. M27 executes no guest code.

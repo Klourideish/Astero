@@ -1510,3 +1510,51 @@ remain ignored; no machine paths were added to tracked source or documentation.
 
 M26 remains active ready_for_cleanup pending approval. No commit/push/history changes; HEAD and
 origin/main remain f15a7b633cdf64b5eb2a05722127587a5c8184ef. M27 has not started.
+
+## M27 results - 2026-09-09
+
+[Guest staging](guest_image_staging.md) records focused catalogue evidence, native CPU direction,
+blocker policy, real results and pending execution requirements. No guest instructions executed.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 329 executable Rust tests; 23 doctests passed |
+| CLI integration tests | 50 included above; passed |
+| Python discovery | 51 passed: 21 policy/state, 9 structure, 21 index/extraction |
+| policy/structure | 16 crates, 11 internal edges, 241 homes; passed |
+| indexes | 16 generated files byte-identical across two generations; fresh |
+| whitespace | supplemental 578 files and git diff --check passed |
+
+Added 16 tests: 10 core composition/transaction, 4 memory backend and 2 CLI tests. Coverage includes
+copy/provenance, BSS, exact/refused budgets, alignment/overlap, known writes, unchanged pending bytes,
+selected-but-unstaged provider values, no execution readiness, repeated release/drop, deterministic
+staging and an injected post-copy write failure with zero surviving mappings. One early test used
+an unknown-width relocation to try to prove write overlap; corrected to two known-width writes.
+All final tests passed. No GUI/timing/native-entry changes or guest execution tests were introduced.
+
+Manual commands exactly match USAGE.md's stage-image block, reusing its explicit corpus/plan limits:
+`cargo build -p astero-cli`, then `.\target\debug\astero-cli.exe stage-image --path <role.path>
+@planLimits --max-mapped-bytes 67108864` (PowerShell call operator). Roles and observed results:
+
+| Role | Regions | Bytes copied / zero-fill | Applied / pending | Unresolved | Exit / teardown |
+|---|---:|---|---|---:|---|
+| linkage_sample | 5 | 3336 / 31 | 2 / 9 | 8 | 0 / zero mappings |
+| utility_build_comparison | 5 | 3312 / 31 | 2 / 9 | 8 | 0 / zero mappings |
+| primary_real_elf | 5 | 9164955 / 8259680 | 29791 / 1107 | 822 | 0 / zero mappings |
+
+All StagedWithPendingWork, MetadataOnly, ready_for_execution=false. SHA256 before/after matched all
+three M26 hashes; inputs unchanged. Initial run refused unknown PH 0x6fffff00 before allocation;
+its narrow execution-blocker treatment is an explicit structural-staging hypothesis, not established
+payload semantics. Latest runs reproduced all counts after final backend-reservation wiring.
+A max-mapped-bytes=1 utility run returned Budget { required: 3367, maximum: 1 }, exit 1, zero mappings.
+Full local logs are ignored target/m27-validation; no native input paths entered tracked records.
+
+Indexes: implementation 870 (+55), subsystems 134 (+1), modules 490 (+9), sources 479 (+9),
+tests 405 (+16), diagnostics 32 (+1), NIDs 2 unchanged observation-only/unregistered, ABI 0.
+Total 2412 (+91). No external dependency; only core -> memory activated. Existing loader and timing
+remain dependency-free. No history mutation/commit/push: HEAD and origin/main remain a9f3e77.
+M27 awaits approval for tracker removal; M28 has not started.

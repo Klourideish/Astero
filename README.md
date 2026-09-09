@@ -4,7 +4,7 @@
 
 Astero is a Rust PS5 emulator workspace informed by lessons from PS5Rust.
 M1 implements a real host session â†’ read-only observation â†’ debugger â†’ CLI/GUI slice.
-No emulator implementation has been migrated. There is no guest loading, execution or emulated GPU.
+No emulator implementation has been migrated. M27 stages real guest images into owned byte memory; guest execution and emulated GPU remain absent.
 
 - `cargo run -p astero-cli`: create an unloaded host session and print state/capabilities.
 - `cargo run -p astero-gui`: real Winit/ImGui window using an independent Ash/Vulkan context.
@@ -27,8 +27,7 @@ load-plan contracts. [M3](knowledge/architecture/source_binding.md) binds them t
 source bytes and checked ranges; `cargo test -p astero-loader` exercises both. [M4](knowledge/architecture/elf_inspection.md) adds bounded ELF64 header/program-header inspection
 using generated fixtures. [M5](knowledge/architecture/dynamic_elf_observation.md) adds bounded dynamic
 observations and source-backed address translation. [M6](knowledge/architecture/dynamic_strings.md)
-interprets bounded dynamic strings into byte-preserving dependency declarations. Dependency resolution,
-relocation application, linking, SELF and runtime application remain deferred. [Next bounded milestone](knowledge/architecture/decisions.md).
+interprets bounded dynamic strings into byte-preserving dependency declarations. Those earlier APIs retain their original boundaries; M26 planning and M27 explicit staging are separate capabilities. [Next bounded milestone](knowledge/architecture/decisions.md).
 
 [M7](knowledge/architecture/dynamic_symbols.md) observes individual dynamic symbol candidates and names;
 no symbol count is guessed; the original candidate-only API still refuses enumeration.
@@ -44,3 +43,5 @@ no symbol count is guessed; the original candidate-only API still refuses enumer
 M15: astero-cli acquire --path <native-path> --max-bytes <u64> --max-read-calls <u64> acquires bytes only. All limits are required; no parsing/loading occurs. See [frontend acquisition](knowledge/architecture/acquisition_frontend.md).
 
 M25 adds [asynchronous host/manual timing](knowledge/architecture/asynchronous_timing.md), explicitly owned by opted-in sessions. Offline loader workflows start no timing worker.
+
+M27 adds [bounded guest-image staging](knowledge/architecture/guest_image_staging.md). The primary CPU direction is [native x86-64 Windows execution](knowledge/architecture/decisions.md), not an interpreter/JIT. Staging creates no executable host mappings or guest threads.

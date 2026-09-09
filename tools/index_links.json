@@ -1187,6 +1187,20 @@
       "evidence": [
         "knowledge/architecture/guest_load_link_plan.md"
       ]
+    },
+    {
+      "id": "diagnostic:loader.guest_staging",
+      "implementation": "impl:astero-loader/lib:astero_loader/load_plan::staging::model::StagingError",
+      "consumers": [
+        "impl:astero-loader/lib:astero_loader/load_plan::staging::apply::stage"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/staging::render"
+      ],
+      "description": "Transactional staging errors and applied/pending state; native execution and protection enforcement remain explicit.",
+      "evidence": [
+        "knowledge/architecture/guest_image_staging.md"
+      ]
     }
   ],
   "nids": [

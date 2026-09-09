@@ -91,3 +91,5 @@ M16 loader owns bounded header evidence, core/input/inspection delegates, and CL
 M25 adds a dependency-free timing foundation. Core owns optional TimingEngine instances; kernel/timing remains the future guest clock/wait adapter. Only core gains a current timing edge. Future runtime consumers require deliberate downward policy additions; loader and frontends do not own time. See [timing](asynchronous_timing.md).
 
 M26 loader-owned load_plan/link matches immutable provider declarations, not live HLE registration or dispatch. Future HLE adapters may supply documentary declarations; no loader -> HLE/memory/timing edge is added. Existing synthetic admission remains unchanged.
+
+M27 adds core -> memory for explicit image composition. Loader defines the plan-consumer/backend contract and eligibility; memory owns checked storage. Core translates loader virtual-address intents to memory guest addresses. Neither loader nor memory depends on the other. Native VM mechanisms must remain private behind the memory backend, with platform execution integration under kernel/execution.

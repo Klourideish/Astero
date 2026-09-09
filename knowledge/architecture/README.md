@@ -54,3 +54,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Asynchronous timing](asynchronous_timing.md): M25 host/manual clocks, bounded worker, completion tickets and explicit session ownership.
 
 - [Guest load/link planning](guest_load_link_plan.md): M26 explicit provider evidence, mappings, relocation values and readiness blockers; no runtime mutation.
+
+- [Guest image staging](guest_image_staging.md): transactional owned byte mappings, planned writes, pending references and native execution constraints.

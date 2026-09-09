@@ -20,7 +20,8 @@
       "input/linkage_evidence",
       "input/ps5_identity",
       "session/timing",
-      "input/load_plan"
+      "input/load_plan",
+      "input/staging"
     ],
     "astero-loader": [
       "admission",
@@ -85,7 +86,8 @@
       "elf/dynamic/candidates/workload/synthetic",
       "elf/dynamic/identity",
       "elf/dynamic/identity/synthetic",
-      "load_plan/link"
+      "load_plan/link",
+      "load_plan/staging"
     ],
     "astero-memory": [
       "access",
@@ -261,7 +263,8 @@
       "classification",
       "linkage_evidence",
       "ps5_identity",
-      "load_plan"
+      "load_plan",
+      "staging"
     ],
     "astero-timing": [
       "time",

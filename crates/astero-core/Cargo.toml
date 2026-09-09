@@ -10,3 +10,4 @@ workspace = true
 [dependencies]
 astero-loader = { path = "../astero-loader" }
 astero-timing = { path = "../astero-timing" }
+astero-memory = { path = "../astero-memory" }

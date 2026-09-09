@@ -1,6 +1,6 @@
 # astero-core
 
-Owns a real host Session, checked lifecycle and coherent detached snapshots. SessionObserver is weak/read-only; ObserveSession is the application observation contract. No guest loading or execution exists.
+Owns a real host Session, checked lifecycle and coherent detached snapshots. SessionObserver is weak/read-only; ObserveSession is the application observation contract. Session state remains separate from explicit M27 staging; no guest execution exists.
 
 ## Module ownership
 
@@ -46,3 +46,5 @@ M24 input/ps5_identity delegates immutable M23 report plus identity limit to loa
 M25 Session::with_timing explicitly receives a TimingEngine. Ordinary sessions and offline input APIs remain worker-free; stop/drop joins the opted-in engine. The only new dependency is core -> timing.
 
 M26 input/load_plan delegates offline load/link planning without constructing a session or timing worker.
+
+M27 input/staging composes loader plan application with astero-memory byte regions. The new core -> memory edge is already policy-permitted. It creates no Session/timer or execution state.

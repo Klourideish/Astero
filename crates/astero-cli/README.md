@@ -46,3 +46,5 @@ M23 `linkage-evidence` explicitly observes selected real or synthetic ELF input 
 M24 ps5-identity selects the real evidence capability with mandatory linkage/name limits and --max-identity-records; no resolution or runtime actions. See [PS5 identity evidence](../../knowledge/architecture/ps5_identity_evidence.md).
 
 M26 load-plan is an explicit offline capability; caller budgets, bias and provider paths are mandatory/explicit. See root USAGE.md.
+
+M27 stage-image explicitly composes acquisition/planning/staging, prints bounded read-only diagnostics and releases the isolated image. No GUI or guest execution change.
