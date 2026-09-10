@@ -138,3 +138,5 @@ M26 nests capability planning under loader/load_plan/link, core/input/load_plan 
 M27 introduces loader/load_plan/staging, core/input/staging and CLI/staging. Existing memory/mapping owns byte-backed regions; no new crate or broad helper root.
 
 M28 adds memory/mapping/windows_native, core/input/native and CLI/native. Layout/model are safe; only the private Windows platform leaf opts into unsafe.
+
+M29 moves the empty ABI layouts.rs to layouts/mod.rs and adds layouts/entry. Kernel execution/preparation owns layout/storage/boundary; loader load_plan/bootstrap supplies existing structural evidence; core input/entry and CLI entry compose/present. HLE dispatch/prepared remains a host-model registry, not native dispatch.

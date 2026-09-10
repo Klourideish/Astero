@@ -115,6 +115,8 @@ dependencies = [
 name = "astero-core"
 version = "0.1.0"
 dependencies = [
+ "astero-hle",
+ "astero-kernel",
  "astero-loader",
  "astero-memory",
  "astero-timing",
@@ -154,10 +156,17 @@ dependencies = [
 [[package]]
 name = "astero-hle"
 version = "0.1.0"
+dependencies = [
+ "astero-abi",
+]
 
 [[package]]
 name = "astero-kernel"
 version = "0.1.0"
+dependencies = [
+ "astero-abi",
+ "astero-memory",
+]
 
 [[package]]
 name = "astero-libs"

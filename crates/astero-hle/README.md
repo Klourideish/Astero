@@ -19,3 +19,5 @@ Allowed dependencies are permissions, not a requirement to add dependencies.
 See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),
 and [repository contract](../../AGENTS.md).
+
+M29 dispatch/prepared implements a bounded immutable exact-key host-model registry consuming ABI call frames. Artifact declarations are not callable; native guest dispatch and registrations remain absent.

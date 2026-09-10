@@ -22,7 +22,8 @@
       "session/timing",
       "input/load_plan",
       "input/staging",
-      "input/native"
+      "input/native",
+      "input/entry"
     ],
     "astero-loader": [
       "admission",
@@ -88,7 +89,8 @@
       "elf/dynamic/identity",
       "elf/dynamic/identity/synthetic",
       "load_plan/link",
-      "load_plan/staging"
+      "load_plan/staging",
+      "load_plan/bootstrap"
     ],
     "astero-memory": [
       "access",
@@ -117,7 +119,8 @@
       "threading/context",
       "threading/thread",
       "threading/tls",
-      "timing"
+      "timing",
+      "execution/preparation"
     ],
     "astero-hle": [
       "calls",
@@ -267,13 +270,18 @@
       "ps5_identity",
       "load_plan",
       "staging",
-      "native"
+      "native",
+      "entry"
     ],
     "astero-timing": [
       "time",
       "clock",
       "scheduler",
       "diagnostics"
+    ],
+    "astero-abi": [
+      "layouts",
+      "layouts/entry"
     ]
   },
   "forbidden_top_level_filenames": [

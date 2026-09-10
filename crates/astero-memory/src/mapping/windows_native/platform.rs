@@ -136,6 +136,79 @@ impl NativeImage {
     pub fn release(&mut self) -> Result<(), NativeError> {
         self.reservation.release()
     }
+    /// Remove write permission from complete owned pages only. Failure quarantines/releases
+    /// the whole image rather than exposing partially finalized protection as success.
+    pub fn seal_read_only(&mut self, range: GuestRange) -> Result<(), NativeError> {
+        if self.reservation.base.is_null() {
+            return Err(NativeError::Released);
+        }
+        let page = self.layout.geometry.page_size;
+        if range.size == 0
+            || !range.start.0.is_multiple_of(page)
+            || !range.size.is_multiple_of(page)
+        {
+            return Err(NativeError::Geometry);
+        }
+        let end = range
+            .start
+            .0
+            .checked_add(range.size)
+            .ok_or(NativeError::Overflow)?;
+        let first = self
+            .layout
+            .pages
+            .iter()
+            .position(|p| p.range.start == range.start)
+            .ok_or(NativeError::Unreadable)?;
+        let count = usize::try_from(range.size / page).map_err(|_| NativeError::Overflow)?;
+        let stop = first.checked_add(count).ok_or(NativeError::Overflow)?;
+        if stop > self.layout.pages.len() {
+            return Err(NativeError::Unreadable);
+        }
+        for (i, p) in self.layout.pages[first..stop].iter().enumerate() {
+            if p.range.start.0 != range.start.0 + i as u64 * page
+                || p.range.start.0 >= end
+                || !p.protection.read
+                || p.protection.execute
+            {
+                return Err(NativeError::Unreadable);
+            }
+        }
+        for index in first..stop {
+            let address = self.layout.pages[index].range.start.0;
+            let mut old = 0;
+            // SAFETY: prevalidated committed, readable, non-executable owned page; removing write only.
+            let ok = unsafe { VirtualProtect(address as *mut c_void, page as usize, 2, &mut old) };
+            if ok == 0 {
+                let e = error("seal", address, page);
+                let _ = self.release();
+                return Err(e);
+            }
+            let mut info = MaybeUninit::<MemoryInfo>::zeroed();
+            // SAFETY: valid initialized storage of pinned x64 layout; VirtualQuery never dereferences guest data.
+            let n = unsafe {
+                VirtualQuery(
+                    address as *const c_void,
+                    info.as_mut_ptr(),
+                    size_of::<MemoryInfo>(),
+                )
+            };
+            if n != size_of::<MemoryInfo>() {
+                let e = error("seal-query", address, page);
+                let _ = self.release();
+                return Err(e);
+            }
+            // SAFETY: full output layout returned successfully.
+            let info = unsafe { info.assume_init() };
+            if info.protect != 2 || info.allocation != self.reservation.base || info.state != 0x1000
+            {
+                let _ = self.release();
+                return Err(NativeError::ProtectionMismatch { address });
+            }
+            self.layout.pages[index].protection.write = false;
+        }
+        Ok(())
+    }
     pub fn read(
         &self,
         address: crate::mapping::GuestAddress,

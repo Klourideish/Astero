@@ -232,3 +232,55 @@ mod windows {
         assert_eq!(two.active_reservations(), 0);
     }
 }
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn relro_seal_is_exact_and_os_verified() {
+    use astero_memory::mapping::{GuestAddress, windows_native::*};
+    let base = 0x1700000000 + (std::process::id() as u64) * 0x100000;
+    let bytes = [7; 8192];
+    let (image, o) = realize(
+        &[NativeRegion {
+            range: GuestRange {
+                start: GuestAddress(base),
+                size: 8192,
+            },
+            bytes: &bytes,
+            protection: Protection {
+                read: true,
+                write: true,
+                execute: false,
+            },
+        }],
+        NativeLimits {
+            max_reserved_bytes: 8192,
+            max_committed_bytes: 8192,
+        },
+    );
+    let mut image = image.unwrap();
+    assert!(
+        image
+            .seal_read_only(GuestRange {
+                start: GuestAddress(base + 1),
+                size: 4096
+            })
+            .is_err()
+    );
+    image
+        .seal_read_only(GuestRange {
+            start: GuestAddress(base),
+            size: 4096,
+        })
+        .unwrap();
+    assert!(!image.pages()[0].protection.write);
+    assert!(image.pages()[1].protection.write);
+    assert_eq!(image.read(GuestAddress(base), 8).unwrap(), [7; 8]);
+    image
+        .seal_read_only(GuestRange {
+            start: GuestAddress(base),
+            size: 4096,
+        })
+        .unwrap();
+    image.release().unwrap();
+    assert_eq!(o.active_reservations(), 0);
+}

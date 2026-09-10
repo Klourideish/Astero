@@ -78,3 +78,5 @@ M24 elf/dynamic/identity consumes complete M23 linkage evidence for bounded PS5 
 M26 `load_plan::link::plan` composes source-bound M24 evidence and explicit providers into immutable mapping, resolution and relocation intentions. Blockers are not runtime failures; see [load/link planning](../../knowledge/architecture/guest_load_link_plan.md).
 
 M27 load_plan/staging consumes M26 plans through a trusted isolated backend interface; it owns stage admission and relocation write eligibility. Loader retains zero dependencies. See [staging](../../knowledge/architecture/guest_image_staging.md).
+
+M29 load_plan/bootstrap exposes existing PH/dynamic-plan evidence for TLS templates, RELRO, procparam and init/fini. No runtime allocation or execution is owned here.

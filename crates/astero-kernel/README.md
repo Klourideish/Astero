@@ -25,3 +25,5 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 and [repository contract](../../AGENTS.md).
 
 M25 separates the generic asynchronous mechanism into astero-timing. This crate retains future guest clocks, waits and timer policy adapters; no timing HLE is implemented here.
+
+M29 execution/preparation implements guarded native stack/TLS storage, layout, explicit context and recovery/import-encoding contracts. No thread, FS switch or native transfer occurs. Dependencies on memory/ABI are now active.

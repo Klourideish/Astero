@@ -131,3 +131,89 @@ fn native_cli_realizes_without_execution_and_refuses_budget() {
     assert!(String::from_utf8(o.stderr).unwrap().contains("Budget"));
     assert_eq!(fs::read(path).unwrap(), b);
 }
+
+#[test]
+fn entry_limits_are_explicit_and_native_path_is_preserved() {
+    let f = Fixture::new();
+    let path = f.file(&identity_image());
+    let mut a = plan_args(&path);
+    a.extend(
+        [
+            "--max-mapped-bytes",
+            "65536",
+            "--max-native-bytes",
+            "131072",
+        ]
+        .map(OsString::from),
+    );
+    assert!(astero_cli::entry::parse(a.clone()).is_err());
+    a.extend(
+        [
+            "--stack-base",
+            "8589934592",
+            "--stack-bytes",
+            "8192",
+            "--tls-base",
+            "8858370048",
+            "--max-runtime-bytes",
+            "16384",
+        ]
+        .map(OsString::from),
+    );
+    let r = astero_cli::entry::parse(a.clone()).unwrap();
+    assert_eq!(r.limits.stack_bytes, 8192);
+    assert_eq!(
+        r.native
+            .staging
+            .plan
+            .identity
+            .linkage
+            .symbols
+            .acquisition
+            .path,
+        path
+    );
+    a.extend(["--stack-bytes", "8192"].map(OsString::from));
+    assert!(astero_cli::entry::parse(a).is_err());
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn entry_cli_refuses_runtime_budget_without_execution() {
+    let f = Fixture::new();
+    let mut b = identity_image();
+    astero_loader::elf::dynamic::synthetic::put32(&mut b, 68, 6);
+    use astero_loader::elf::dynamic::synthetic::put64;
+    put64(&mut b, 104, 0xa00);
+    for i in 0..4 {
+        put64(&mut b, 0x540 + i * 24, 0x1800 + i as u64 * 8);
+    }
+    put64(&mut b, 0x580, 4);
+    let path = f.file(&b);
+    let mut a = plan_args(&path);
+    a.extend(
+        [
+            "--max-mapped-bytes",
+            "65536",
+            "--max-native-bytes",
+            "131072",
+            "--stack-base",
+            "8589934592",
+            "--stack-bytes",
+            "8192",
+            "--tls-base",
+            "8858370048",
+            "--max-runtime-bytes",
+            "1",
+        ]
+        .map(OsString::from),
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_astero-cli"))
+        .arg("entry-readiness")
+        .args(a)
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    let err = String::from_utf8(output.stderr).unwrap();
+    assert!(err.contains("Budget"), "{err}");
+}

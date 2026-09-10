@@ -691,6 +691,12 @@
       "tests": [
         "test:astero-loader/test:guest_load_plan/known_catalogue_nid_stays_unimplemented_without_provider"
       ]
+    },
+    {
+      "implementation": "impl:astero-abi/lib:astero_abi/layouts::entry::process_arguments",
+      "tests": [
+        "test:astero-abi/test:entry/process_record_has_exact_little_endian_layout"
+      ]
     }
   ],
   "reviews": [
@@ -1215,6 +1221,20 @@
       "evidence": [
         "knowledge/architecture/windows_native_vm.md"
       ]
+    },
+    {
+      "id": "diagnostic:runtime.entry",
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::owner::EntryError",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::owner::prepare"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::execute"
+      ],
+      "evidence": [
+        "knowledge/architecture/runtime_entry_preparation.md"
+      ],
+      "description": "Structured runtime preparation refusal and explicit uninstalled entry/recovery prerequisites; no execution."
     }
   ],
   "nids": [
@@ -1251,5 +1271,15 @@
       "provenance": "P330P3dFF68; canonical numeric correlation observed in both M24 utility builds; decoder implementation only, no HLE implementation or registration"
     }
   ],
-  "abi": []
+  "abi": [
+    {
+      "id": "abi:process_entry.arguments",
+      "guest_concept": "Legacy-correlated 32-byte process-entry argument record; not a complete runtime ABI",
+      "guest_library": "process bootstrap",
+      "implementation": "impl:astero-abi/lib:astero_abi/layouts::entry::process_arguments",
+      "evidence": [
+        "knowledge/architecture/runtime_entry_preparation.md"
+      ]
+    }
+  ]
 }

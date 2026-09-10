@@ -58,3 +58,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Guest image staging](guest_image_staging.md): transactional owned byte mappings, planned writes, pending references and native execution constraints.
 
 - [Windows native VM](windows_native_vm.md): exact placement and protection proof from staged bytes, without execution.
+
+- [Native entry preparation](runtime_entry_preparation.md): owned stack/context/TLS, explicit unresolved entry blockers, no execution.

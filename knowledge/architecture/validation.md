@@ -1608,3 +1608,57 @@ tests 422 (+17), diagnostics 33 (+1), NIDs 2 unchanged observation-only/unregist
 Total 2504 (+92). No dependency/edge additions. Local AGENTS policy exception remains ignored.
 HEAD and origin/main remain 0179c2093b3e9e8a12a29916bf6c158a05fde76b; no commit/push/history changes.
 M28 awaits approval for active-item removal. M29 has not started.
+
+## M29 results - 2026-09-10
+
+[Runtime entry preparation](runtime_entry_preparation.md) records the exact catalogue/firmware routes,
+selected workload, argument/TCB hypotheses, ownership, real results and remaining entry blockers.
+No guest instructions, constructors, native import landing or runtime entry trampoline were executed.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 365 executable Rust tests and 23 doctests passed |
+| CLI integration tests | 54 included above; passed |
+| Python discovery | 52 passed: 22 policy/state/safety, 9 structure, 21 index/extraction |
+| policy/structure | 16 crates, 16 internal edges, 250 module homes; passed |
+| indexes | fresh; two byte-identical generations across 16 files |
+| whitespace | supplemental scan and git diff --check passed |
+
+20 new Rust tests: ABI 2, HLE 4, kernel 8, core 3, memory 1, CLI 2. Tests exercise explicit argument
+encoding/context, host-only provider return/ambiguity/panic rules, bounded stack/TLS layout, native
+NOACCESS guard and template/self-pointer readback, TLS-collision rollback, recovery first-stop contract,
+far-indirect stub *encoding only*, runtime ownership, consumed-image refusal, exact-page RELRO query,
+and CLI budget propagation. No native-entry success or actual fault-recovery claim comes from these.
+One overflow test initially failed because its chosen extent did not overflow; corrected to cross the
+boundary. A CLI fixture initially failed at an earlier invalid relocation target, then was corrected
+using the existing staging fixture addresses to reach the intended runtime-budget boundary.
+
+Manual command: the exact USAGE.md entry-readiness block with primary_real_elf and the existing
+explicit plan budgets, --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592
+--stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216. Expected and actual:
+exit 0, PreparedBlocked, EntryReady=false; RIP 0x100000070, RSP 0x200800fb8 (mod16=8), RDI 0x200800fc0,
+empty PT_TLS with experimental TCB at 0x210000000. 822 external references, 1107 pending relocations,
+38 dependencies, zero HLE registrations/native matches. RELRO PendingWrites; recovery model Prepared,
+native adapter not installed. All image/stack/TLS reservations and byte mappings were zero at teardown.
+Repeated preparation produced the same report. With --max-runtime-bytes 1: exit 1, structured Budget
+(required 8396800, maximum 1); ownership rollback is covered by the core test. Selected input SHA256
+before/after: A15E44CAF80BE1D86B72C2C1A6D1F93A171128962390CB28080507202F6E914A.
+Ignored target/m29-validation contains logs; no machine-specific path enters tracked documentation.
+
+A separate bounded read-only 96-byte Capstone experiment corroborated RDI record consumption and
+first PLT references _init_env/atexit through slots 0x77acc8/0x77acd0. These names remain documentary
+catalogue correlations, not registered HLE. _init_env's legacy zero-return stub was explicitly rejected
+as proof of environment closure. PT_TLS emptiness was refined to mean no main-module template, not
+no libc TCB/errno requirement. Native bridge/return/exit landing, FS activation, fault adapter, pending
+provider writes and initializer ordering remain immediate blockers; no ready token is fabricated.
+
+Indexes: implementation 993 (+73), subsystems 137 (+1), modules 515 (+13), sources 502 (+13),
+tests 442 (+20), diagnostics 34 (+1), NIDs 2 unchanged observation-only/unregistered, ABI 1 (+1).
+Total 2626 (+122). ABI record is the legacy-correlated process-argument encoder, not complete native ABI.
+Five already-allowed edges activated; no external dependency, new crate or unsafe-policy relaxation.
+HEAD and origin/main remain 0b19a5fc18c0920dcaf678838ef4ec70b8554989. No commit/push/history changes.
+M29 awaits approval for active-item removal; M30 has not started.

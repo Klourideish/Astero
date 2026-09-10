@@ -477,3 +477,25 @@ zero native reservations). Exact placement collision also fails without choosing
 Output distinguishes logical segment permissions from effective shared-page protections and marks
 widening. No writable-executable page is permitted. Other host architectures refuse explicitly.
 This is separate from the unchanged byte-backed stage-image command and synthetic linkage demo.
+
+## Native entry preparation (no execution)
+
+Use the existing `$corpus` and `$planLimits` from the load-plan block on x86-64 Windows:
+
+```powershell
+cargo build -p astero-cli
+& .\target\debug\astero-cli.exe entry-readiness --path $corpus.artifacts.primary_real_elf.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216
+```
+
+This real-input run prepares an 8-MiB RW stack above a NOACCESS guard and a separate experimental
+TLS/TCB block. Addresses are explicit placement policy, not file identities. `--max-runtime-bytes`
+bounds their combined page-rounded bytes, including the guard. Limits and placements are required;
+collisions refuse without choosing another address. Replace its value with `1` for budget refusal
+(exit 1). The unchanged acquire/inspect/native-map commands do not start runtime preparation.
+
+Expected validated result: raw entry `0x70`, planned RIP `0x100000070`, RSP `0x200800fb8`,
+`PreparedBlocked`, `EntryReady: false`, exit 0. Exit 0 means a preparation report was produced, not that
+entry is safe. Output identifies 1,107 pending relocations, unresolved providers, deferred RELRO,
+experimental TLS and missing native recovery/entry adapters. No timing worker is requested.
+Image, stack, TLS and byte-storage ownership counters return to zero on teardown.
+**NO GUEST CODE EXECUTED.** Constructors and synthetic linkage behavior remain unchanged.

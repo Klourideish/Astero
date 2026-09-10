@@ -50,3 +50,5 @@ M26 load-plan is an explicit offline capability; caller budgets, bias and provid
 M27 stage-image explicitly composes acquisition/planning/staging, prints bounded read-only diagnostics and releases the isolated image. No GUI or guest execution change.
 
 M28 native-map explicitly realizes M27 bytes with a visible native envelope/commit budget, reports effective protections, and releases both images. Windows x86-64 only; no guest execution.
+
+M29 entry-readiness explicitly composes native mapping and runtime preparation with required stack/TLS/capacity inputs. PreparedBlocked is not runnable; all storage is released before exit.

@@ -386,3 +386,111 @@ fn released_staging_cannot_be_realized() {
     assert!(matches!(r, Err(native::NativeError::Released)));
     assert_eq!(o.active_reservations(), 0);
 }
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+fn entry_fixture(
+    offset: u64,
+) -> (
+    astero_core::input::native::NativeBackedGuestImage,
+    astero_core::input::native::NativeObserver,
+) {
+    use astero_core::input::native;
+    let mut b = image();
+    put32(&mut b, 68, 6);
+    let bias = 0x1100000000 + (std::process::id() as u64) * 0x100000 + offset;
+    let p = plan(
+        report(b),
+        vec![],
+        VirtualAddress(bias),
+        PlanningLimits {
+            max_providers: 1,
+            max_plan_records: 256,
+        },
+    )
+    .unwrap();
+    let (s, _) = staged(p);
+    let (r, o) = native::realize(
+        &s,
+        native::NativeLimits {
+            max_reserved_bytes: 65536,
+            max_committed_bytes: 65536,
+        },
+    );
+    (r.unwrap(), o)
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn entry_owner_preserves_plan_and_releases_every_reservation() {
+    use astero_core::input::entry::*;
+    let (image, o) = entry_fixture(0);
+    let plan = image.plan().clone();
+    let bias = (std::process::id() as u64) * 0x100000;
+    let (mut g, obs) = prepare(
+        image,
+        RuntimeLimits {
+            stack_base: 0x1300000000 + bias,
+            stack_bytes: 8192,
+            tls_base: 0x1400000000 + bias,
+            max_runtime_bytes: 16384,
+        },
+        PreparedRegistry::new(vec![], 0).unwrap(),
+        None,
+    )
+    .unwrap();
+    assert!(Arc::ptr_eq(g.image().plan(), &plan));
+    assert!(!g.entry_ready());
+    assert!(!g.has_timing());
+    assert!(g.blockers().contains(&EntryBlocker::RecoveryAdapterMissing));
+    assert!(
+        g.blockers()
+            .iter()
+            .any(|b| matches!(b, EntryBlocker::PendingRelocations { .. }))
+    );
+    assert_eq!(g.context().rsp % 16, 8);
+    g.release().unwrap();
+    assert_eq!(g.state(), EntryState::Released);
+    assert_eq!(o.active_reservations(), 0);
+    assert!(obs.iter().all(|o| o.active_reservations() == 0));
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn preparation_refusal_drops_consumed_image() {
+    use astero_core::input::entry::*;
+    let (image, o) = entry_fixture(0x10000);
+    assert!(
+        prepare(
+            image,
+            RuntimeLimits {
+                stack_base: 0x1500000000,
+                stack_bytes: 8192,
+                tls_base: 0x1600000000,
+                max_runtime_bytes: 1
+            },
+            PreparedRegistry::new(vec![], 0).unwrap(),
+            None
+        )
+        .is_err()
+    );
+    assert_eq!(o.active_reservations(), 0);
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn released_native_image_cannot_prepare() {
+    use astero_core::input::entry::*;
+    let (mut image, _) = entry_fixture(0x20000);
+    image.release().unwrap();
+    assert!(matches!(
+        prepare(
+            image,
+            RuntimeLimits {
+                stack_base: 0,
+                stack_bytes: 0,
+                tls_base: 0,
+                max_runtime_bytes: 0
+            },
+            PreparedRegistry::new(vec![], 0).unwrap(),
+            None
+        ),
+        Err(EntryError::Released)
+    ));
+}

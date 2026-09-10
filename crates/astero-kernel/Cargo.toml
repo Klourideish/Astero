@@ -6,3 +6,7 @@ publish.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+astero-memory = { path = "../astero-memory" }
+astero-abi = { path = "../astero-abi" }

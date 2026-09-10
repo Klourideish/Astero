@@ -11,3 +11,5 @@ workspace = true
 astero-loader = { path = "../astero-loader" }
 astero-timing = { path = "../astero-timing" }
 astero-memory = { path = "../astero-memory" }
+astero-kernel = { path = "../astero-kernel" }
+astero-hle = { path = "../astero-hle" }

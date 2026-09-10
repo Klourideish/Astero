@@ -5,3 +5,5 @@ pub use plan::*;
 pub mod link;
 
 pub mod staging;
+
+pub mod bootstrap;
