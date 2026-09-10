@@ -1313,7 +1313,8 @@
       ],
       "evidence": [
         "knowledge/architecture/native_entry_closure.md",
-        "knowledge/architecture/first_native_entry.md"
+        "knowledge/architecture/first_native_entry.md",
+        "knowledge/architecture/startup_foundation.md"
       ],
       "provenance": "_init_env: exact selected artifact key; callable through synthetic native bridge. Experimental instrumented zero-return no-op, not complete environment initialization M31 real call observed; _init_env returned zero; atexit rejected host landing then accepted guest fini. No callback executed."
     },
@@ -1332,9 +1333,10 @@
       ],
       "evidence": [
         "knowledge/architecture/native_entry_closure.md",
-        "knowledge/architecture/first_native_entry.md"
+        "knowledge/architecture/first_native_entry.md",
+        "knowledge/architecture/startup_foundation.md"
       ],
-      "provenance": "atexit: exact selected artifact key; callable through synthetic native bridge. Bounded registration only; no callback execution or full process-exit semantics M31 real call observed; _init_env returned zero; atexit rejected host landing then accepted guest fini. No callback executed."
+      "provenance": "atexit: exact selected artifact key; callable through synthetic native bridge. Bounded registration only; no callback execution or full process-exit semantics M31 real call observed; _init_env returned zero; atexit rejected host landing then accepted guest fini. No callback executed. M32 exact owned return callback identity accepted; both real registrations succeed. No callbacks invoked."
     },
     {
       "id": "nid:observed.7fbb8ec58f663355",
@@ -1342,15 +1344,480 @@
         "numeric_hex": "0x7FBB8EC58F663355",
         "encoded": "f7uOxY9mM1U"
       },
-      "guest_library": "libkernel (artifact identity correlation)",
-      "guest_module": "libkernel (artifact identity correlation)",
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::startup::stack_guard",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/first_native_entry.md",
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "M31 observation retained; M32 process-owned read-only guard, PS5Rust deterministic policy, runtime read progressed. Not a callable provider or firmware security value."
+    },
+    {
+      "id": "nid:m32.7c99e9b955416ca9",
+      "nid": {
+        "numeric_hex": "0x7C99E9B955416CA9",
+        "encoded": "fJnpuVVBbKk"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "operator new: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.85d9b461f31aed34",
+      "nid": {
+        "numeric_hex": "0x85D9B461F31AED34",
+        "encoded": "hdm0YfMa7TQ"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "operator new[]: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.cfe3fec429d62c19",
+      "nid": {
+        "numeric_hex": "0xCFE3FEC429D62C19",
+        "encoded": "z+P+xCnWLBk"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "operator delete: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.30b5a5f7448558d1",
+      "nid": {
+        "numeric_hex": "0x30B5A5F7448558D1",
+        "encoded": "MLWl90SFWNE"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "operator delete[]: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.9580f3055139999b",
+      "nid": {
+        "numeric_hex": "0x9580F3055139999B",
+        "encoded": "lYDzBVE5mZs"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "operator delete sized: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.8105fee060d08e93",
+      "nid": {
+        "numeric_hex": "0x8105FEE060D08E93",
+        "encoded": "gQX+4GDQjpM"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "malloc: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.b4886caa3d2ab051",
+      "nid": {
+        "numeric_hex": "0xB4886CAA3D2AB051",
+        "encoded": "tIhsqj0qsFE"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "free: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.d97e5a8058cac4c7",
+      "nid": {
+        "numeric_hex": "0xD97E5A8058CAC4C7",
+        "encoded": "2X5agFjKxMc"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "calloc: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.63b689d6ec9d3cca",
+      "nid": {
+        "numeric_hex": "0x63B689D6EC9D3CCA",
+        "encoded": "Y7aJ1uydPMo"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "realloc: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.437541c425e1507b",
+      "nid": {
+        "numeric_hex": "0x437541C425E1507B",
+        "encoded": "Q3VBxCXhUHs"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "memcpy: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.f8fe854461f82df0",
+      "nid": {
+        "numeric_hex": "0xF8FE854461F82DF0",
+        "encoded": "+P6FRGH4LfA"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "memmove: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.f334c5bc120020df",
+      "nid": {
+        "numeric_hex": "0xF334C5BC120020DF",
+        "encoded": "8zTFvBIAIN8"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "memset: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.0df8af3c0ae1b9c8",
+      "nid": {
+        "numeric_hex": "0x0DF8AF3C0AE1B9C8",
+        "encoded": "DfivPArhucg"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "memcmp: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.8f856258d1c4830c",
+      "nid": {
+        "numeric_hex": "0x8F856258D1C4830C",
+        "encoded": "j4ViWNHEgww"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "strlen: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.e6336e6f0e2f9400",
+      "nid": {
+        "numeric_hex": "0xE6336E6F0E2F9400",
+        "encoded": "5jNubw4vlAA"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "strnlen: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.3af6f675224e02e1",
+      "nid": {
+        "numeric_hex": "0x3AF6F675224E02E1",
+        "encoded": "Ovb2dSJOAuE"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "strcmp: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.69eb328eb1d55b2e",
+      "nid": {
+        "numeric_hex": "0x69EB328EB1D55B2E",
+        "encoded": "aesyjrHVWy4"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "strncmp: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.a1be71016e259ffd",
+      "nid": {
+        "numeric_hex": "0xA1BE71016E259FFD",
+        "encoded": "ob5xAW4ln-0"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "strchr: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.f720d63311057495",
+      "nid": {
+        "numeric_hex": "0xF720D63311057495",
+        "encoded": "9yDWMxEFdJU"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "strrchr: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.f41703ca43e6a352",
+      "nid": {
+        "numeric_hex": "0xF41703CA43E6A352",
+        "encoded": "9BcDykPmo1I"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::process::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "__error: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.f79f6aadaccf22b8",
+      "nid": {
+        "numeric_hex": "0xF79F6AADACCF22B8",
+        "encoded": "959qrazPIrg"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::process::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "sceKernelGetProcParam: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.b266d0ba47f16093",
+      "nid": {
+        "numeric_hex": "0xB266D0BA47F16093",
+        "encoded": "smbQukfxYJM"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::process::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "getenv: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.3386186d215f27c8",
+      "nid": {
+        "numeric_hex": "0x3386186D215F27C8",
+        "encoded": "M4YYbSFfJ8g"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::process::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "setenv: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.b8c7a2d56f6ec8da",
+      "nid": {
+        "numeric_hex": "0xB8C7A2D56F6EC8DA",
+        "encoded": "uMei1W9uyNo"
+      },
+      "guest_library": "libc and libkernel",
+      "guest_module": "libc and libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::process::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "exit: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.e99f37b18585940f",
+      "nid": {
+        "numeric_hex": "0xE99F37B18585940F",
+        "encoded": "6Z83sYWFlA8"
+      },
+      "guest_library": "libc and libkernel",
+      "guest_module": "libc and libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::process::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "_exit: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.2f54814e40be0afc",
+      "nid": {
+        "numeric_hex": "0x2F54814E40BE0AFC",
+        "encoded": "L1SBTkC+Cvw"
+      },
+      "guest_library": "libc and libkernel",
+      "guest_module": "libc and libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::process::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "abort: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.3aede22f569bbe78",
+      "nid": {
+        "numeric_hex": "0x3AEDE22F569BBE78",
+        "encoded": "Ou3iL1abvng"
+      },
+      "guest_library": "libc and libkernel",
+      "guest_module": "libc and libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::process::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "__stack_chk_fail: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.b6cbc49a77a7cf8f",
+      "nid": {
+        "numeric_hex": "0xB6CBC49A77A7CF8F",
+        "encoded": "tsvEmnenz48"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::startup::cxa_registration",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/startup_foundation.md"
+      ],
+      "provenance": "__cxa_atexit: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+    },
+    {
+      "id": "nid:m32.e942c06b47eae230",
+      "nid": {
+        "numeric_hex": "0xE942C06B47EAE230",
+        "encoded": "6ULAa0fq4jA"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
       "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/first_native_entry.md"
+        "knowledge/architecture/startup_foundation.md"
       ],
-      "provenance": "M31 first real fault read guarded symbol 7; unchanged-source offline identity f7uOxY9mM1U#k#P correlates numeric NID. Object contents and provider remain unimplemented; no function-name or HLE claim."
+      "provenance": "scePthreadRwlockInit: PS5Rust-adapted bounded M32 contract. Runtime encountered after startup cluster; known catalogue identity, no Astero implementation."
     }
   ],
   "abi": [

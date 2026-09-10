@@ -75,6 +75,7 @@ pub struct ClosureGuest {
     keys: Vec<Option<ProviderKey>>,
     startup: Rc<RefCell<astero_libs::libc::startup::StartupState>>,
     report: ClosureReport,
+    foundation: Option<super::foundation::Foundation>,
 }
 /// Future execution must consume this authority, not a loose readiness Boolean.
 /// No public constructor; unresolved closure never manufactures the capability.
@@ -87,6 +88,24 @@ impl EntryReadyGuest {
     }
 }
 impl ClosureGuest {
+    pub fn startup_data(&self) -> Option<&astero_hle::providers::data::DataExport> {
+        self.foundation.as_ref().map(|f| &f.guard)
+    }
+    pub fn startup_observer(
+        &self,
+    ) -> Option<astero_memory::mapping::windows_native::NativeObserver> {
+        self.foundation.as_ref().map(|f| f.image.observer())
+    }
+    pub fn read_startup_data(
+        &self,
+    ) -> Result<Vec<u8>, astero_memory::mapping::windows_native::NativeError> {
+        let f = self
+            .foundation
+            .as_ref()
+            .ok_or(astero_memory::mapping::windows_native::NativeError::Unreadable)?;
+        f.image.read(GuestAddress(f.guard.address), f.guard.size)
+    }
+
     pub fn import_key(&self, ordinal: u32) -> Option<&ProviderKey> {
         self.keys.get(ordinal as usize).and_then(|k| k.as_ref())
     }
@@ -158,9 +177,25 @@ impl ClosureGuest {
 /// Runtime byte cap includes the landing pages, placed deterministically after TLS.
 /// Fixed callback capacity 256 is the named M30 startup policy, not a full libc exit ABI.
 pub fn close_entry(
+    guest: PreparedGuest,
+    max_runtime_bytes: u64,
+    policy: StartupPolicy,
+) -> Result<ClosureGuest, ClosureError> {
+    close_impl(guest, max_runtime_bytes, policy, false)
+}
+/// M32 migrated startup capability; retains the preparation-only stop boundary.
+pub fn close_startup(
+    guest: PreparedGuest,
+    max_runtime_bytes: u64,
+    policy: StartupPolicy,
+) -> Result<ClosureGuest, ClosureError> {
+    close_impl(guest, max_runtime_bytes, policy, true)
+}
+fn close_impl(
     mut guest: PreparedGuest,
     max_runtime_bytes: u64,
     policy: StartupPolicy,
+    migrate: bool,
 ) -> Result<ClosureGuest, ClosureError> {
     if !guest.registry.is_empty() {
         return Err(ClosureError::ExistingProviders {
@@ -339,6 +374,23 @@ pub fn close_entry(
         available.checked_sub(size).ok_or(ClosureError::Budget)?,
         &groups,
     )?;
+    let foundation_base = trap_start
+        .checked_add(traps.bytes)
+        .and_then(|v| v.checked_add(gran - 1))
+        .ok_or(ClosureError::Budget)?
+        & !(gran - 1);
+    let foundation = if migrate {
+        Some(super::foundation::Foundation::build(
+            foundation_base,
+            page,
+            available
+                .checked_sub(size)
+                .and_then(|v| v.checked_sub(traps.bytes))
+                .ok_or(ClosureError::Budget)?,
+        )?)
+    } else {
+        None
+    };
     for &(index, symbol, addend) in &object_writes {
         let t = traps
             .records
@@ -347,6 +399,26 @@ pub fn close_entry(
             .ok_or(ClosureError::Budget)?;
         let value = u64::try_from(i128::from(t.anchor) + i128::from(addend))
             .map_err(|_| ClosureError::Budget)?;
+        let key = plan
+            .reference_identity(symbol as u64)
+            .and_then(|(nid, l, m)| {
+                Some(ProviderKey {
+                    nid,
+                    library: source.read(&l).ok()?.to_vec(),
+                    module: source.read(&m).ok()?.to_vec(),
+                })
+            });
+        let value = if let Some(f) = &foundation {
+            if key.as_ref() == Some(&f.guard.key) {
+                f.guard
+                    .address_with_addend(addend)
+                    .ok_or(ClosureError::Budget)?
+            } else {
+                value
+            }
+        } else {
+            value
+        };
         patches.push((plan.relocations()[index].place.unwrap().0, value));
     }
     remaining.retain(|b|!matches!(b,MustClose::PendingWrite{relocation,..} if object_writes.iter().any(|(i,_,_)|i==relocation)));
@@ -365,15 +437,39 @@ pub fn close_entry(
             error: e,
         })?;
     guest.context.gpr[4] = bridge.return_landing();
-    let executable = guest
+    let executable: Vec<_> = guest
         .image
         .pages()
         .iter()
         .filter(|p| p.protection.execute)
         .map(|p| (p.range.start.0, p.range.size))
         .collect();
-    let (registrations, startup) = astero_libs::libc::startup::registrations(256, executable);
-    guest.registry = PreparedRegistry::new(registrations, 2).map_err(ClosureError::Registry)?;
+    let (mut registrations, startup) = astero_libs::libc::startup::owned_registrations(
+        256,
+        executable.clone(),
+        migrate.then_some(bridge.return_landing()),
+    );
+    if migrate {
+        registrations.push(astero_libs::libc::startup::cxa_registration(
+            startup.clone(),
+            executable,
+        ));
+        registrations.extend(astero_libs::libc::process::registrations(
+            guest.thread.layout().thread_pointer + 8,
+            guest.bootstrap.procparam.as_ref().map_or(0, |p| p.start.0),
+        ));
+        registrations.extend(astero_libs::libc::primitives::registrations_with_errno(
+            b"libc",
+            b"libc",
+            Some(guest.thread.layout().thread_pointer + 8),
+        ));
+        registrations.extend(astero_libs::libc::primitives::registrations_with_errno(
+            b"libkernel",
+            b"libkernel",
+            Some(guest.thread.layout().thread_pointer + 8),
+        ));
+    }
+    guest.registry = PreparedRegistry::new(registrations, 64).map_err(ClosureError::Registry)?;
     let startup_matches = keys
         .iter()
         .flatten()
@@ -501,6 +597,7 @@ pub fn close_entry(
         keys,
         startup,
         report,
+        foundation,
     })
 }
 
@@ -515,6 +612,8 @@ pub enum FirstEntryStop {
     IllegalInstruction,
     SupervisorExpired,
     BridgeFailure,
+    ProviderStopped,
+    ProviderRefused,
 }
 #[derive(Clone, Debug)]
 pub struct StartupCall {
@@ -535,7 +634,11 @@ pub struct FirstEntryReport {
     pub guarded_relocations:
         Vec<astero_loader::elf::dynamic::relocations::observation::RawRelocation>,
     pub callback_count: usize,
+    pub provider_failure: Option<astero_hle::calls::memory::AccessError>,
+    pub registry_failure: Option<RegistryError>,
     pub elapsed_micros: u128,
+    pub heap: Option<astero_memory::allocation::heap::HeapSnapshot>,
+    pub data_export: Option<astero_hle::providers::data::DataExport>,
 }
 impl EntryReadyGuest {
     /// Consumes authority on the dedicated owning thread. Does not invoke initializers/fini.
@@ -547,10 +650,14 @@ impl EntryReadyGuest {
         let registry = &owner.guest.registry;
         let mut calls = Vec::new();
         calls
-            .try_reserve_exact(3)
+            .try_reserve_exact(super::foundation::MAX_PROVIDER_CALLS)
             .map_err(|_| BridgeError::Validation)?;
         let mut counts = [0, 0];
         let mut exhausted = false;
+        let mut stopped = false;
+        let mut refused = false;
+        let mut provider_failure = None;
+        let mut registry_failure = None;
         let started = std::time::Instant::now();
         let native = owner.bridge.execute_prepared(
             owner.guest.image.native_owner(),
@@ -561,35 +668,64 @@ impl EntryReadyGuest {
                 let Some(key) = keys.get(ordinal as usize).and_then(|k| k.as_ref()) else {
                     return false;
                 };
-                let slot = match key.nid {
-                    astero_libs::libc::startup::INIT_ENV_NID => 0,
-                    astero_libs::libc::startup::ATEXIT_NID => 1,
-                    _ => return false,
-                };
-                if counts[slot] >= if slot == 0 { 1 } else { 2 } {
+                if calls.len() >= super::foundation::MAX_PROVIDER_CALLS {
                     exhausted = true;
                     return false;
                 }
-                let args = frame.arguments;
-                if !matches!(
-                    registry.invoke_host_model(key, frame),
-                    Ok(astero_hle::dispatch::prepared::CallResult::Returned)
-                ) {
-                    return false;
+                if owner.foundation.is_none() {
+                    let slot = match key.nid {
+                        astero_libs::libc::startup::INIT_ENV_NID => 0,
+                        astero_libs::libc::startup::ATEXIT_NID => 1,
+                        _ => return false,
+                    };
+                    if counts[slot] >= if slot == 0 { 1 } else { 2 } {
+                        exhausted = true;
+                        return false;
+                    }
+                    counts[slot] += 1;
                 }
-                counts[slot] += 1;
+                let args = frame.arguments;
+                let result = if let Some(f) = &mut owner.foundation {
+                    let mut access = super::foundation::Access {
+                        guest: &owner.guest,
+                        foundation: f,
+                    };
+                    registry.invoke(key, frame, &mut access)
+                } else {
+                    registry.invoke_host_model(key, frame)
+                };
+                match result {
+                    Ok(astero_hle::dispatch::prepared::CallResult::Returned) => {}
+                    Ok(astero_hle::dispatch::prepared::CallResult::StopRequested) => {
+                        stopped = true;
+                    }
+                    Ok(astero_hle::dispatch::prepared::CallResult::Unsupported) => {
+                        refused = true;
+                    }
+                    Ok(astero_hle::dispatch::prepared::CallResult::AccessFailure(e)) => {
+                        refused = true;
+                        provider_failure = Some(e);
+                    }
+                    Err(RegistryError::Missing) => return false,
+                    Err(e) => {
+                        registry_failure = Some(e);
+                        refused = true;
+                    }
+                }
                 calls.push(StartupCall {
                     ordinal,
                     key: key.clone(),
                     arguments: args,
                     returned: frame.rax,
                 });
-                true
+                !stopped && !refused
             },
         )?;
         let object = owner.trapped_object(native.fault_address).cloned();
         let stop = match native.reason {
             0 => FirstEntryStop::Returned,
+            2 if stopped => FirstEntryStop::ProviderStopped,
+            2 if refused => FirstEntryStop::ProviderRefused,
             2 if exhausted => FirstEntryStop::StartupAllowanceExhausted,
             2 => FirstEntryStop::UnresolvedFunction,
             4 => FirstEntryStop::SupervisorExpired,
@@ -598,7 +734,7 @@ impl EntryReadyGuest {
             3 if native.exception == 0xc0000005 => FirstEntryStop::AccessViolation,
             _ => FirstEntryStop::BridgeFailure,
         };
-        let unresolved = if native.reason == 2 {
+        let unresolved = if stop == FirstEntryStop::UnresolvedFunction {
             owner.import_key(native.import_ordinal).cloned()
         } else {
             None
@@ -630,7 +766,11 @@ impl EntryReadyGuest {
             guarded_object: object,
             guarded_relocations,
             callback_count,
+            provider_failure,
+            registry_failure,
             elapsed_micros: started.elapsed().as_micros(),
+            heap: owner.foundation.as_ref().map(|f| f.heap.snapshot()),
+            data_export: owner.foundation.as_ref().map(|f| f.guard.clone()),
         })
     }
 }
@@ -660,6 +800,9 @@ where
             observers.push(ready.owner.landings.observer());
             if let Some(i) = &ready.owner.traps.image {
                 observers.push(i.observer());
+            }
+            if let Some(f) = &ready.owner.foundation {
+                observers.push(f.image.observer());
             }
             let first = ready
                 .execute_first(millis)

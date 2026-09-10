@@ -64,3 +64,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Native entry closure](native_entry_closure.md): synthetic-tested bridge/recovery, startup registrations and controlled unresolved traps; no real entry.
 
 - [M31 first native entry](first_native_entry.md): owned execution thread, asynchronous stop and first runtime evidence.
+
+- [M32 startup foundation](startup_foundation.md): migrated object, heap and libc runtime cluster.

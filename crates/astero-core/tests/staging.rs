@@ -1,3 +1,4 @@
+static CLOSURE_TEST: std::sync::Mutex<()> = std::sync::Mutex::new(());
 use astero_loader::{
     artifact::SourceArtifact,
     elf::dynamic::{
@@ -497,6 +498,7 @@ fn released_native_image_cannot_prepare() {
 #[cfg(all(windows, target_arch = "x86_64"))]
 #[test]
 fn closure_preserves_blocked_authority_and_accepts_only_closed_synthetic_image() {
+    let _guard = CLOSURE_TEST.lock().unwrap();
     use astero_core::input::{entry::*, native};
     for closed in [false, true] {
         let mut b = image();
@@ -620,4 +622,92 @@ fn worker_containment_distinguishes_completion_crash_and_hang() {
         contain_worker(c, 30).unwrap(),
         ContainmentExit::TimeoutKilled
     );
+}
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn startup_foundation_residency_is_owned_and_tears_down_with_capability() {
+    let _guard = CLOSURE_TEST.lock().unwrap();
+    use astero_core::input::{entry::*, native};
+    for closed in [false, true] {
+        let mut b = image();
+        put32(&mut b, 68, 5);
+        // No write targets in the ready fixture. Original symbols and identity remain.
+        if closed {
+            put64(&mut b, 0x668, 0);
+            put64(&mut b, 0x698, 0);
+        } else {
+            // Unsupported relocation is retained without attempting a write into RX memory.
+            for i in 0..4 {
+                put64(&mut b, 0x548 + i * 24, 0xffffeeee);
+            }
+        }
+        let p = plan(
+            report(b),
+            vec![],
+            VirtualAddress(0x2400000000),
+            PlanningLimits {
+                max_providers: 1,
+                max_plan_records: 256,
+            },
+        )
+        .unwrap();
+        let (s, _) = staged(p);
+        let (n, observer) = native::realize(
+            &s,
+            native::NativeLimits {
+                max_reserved_bytes: 65536,
+                max_committed_bytes: 65536,
+            },
+        );
+        let (g, storage) = prepare(
+            n.unwrap(),
+            RuntimeLimits {
+                stack_base: 0x2500000000,
+                stack_bytes: 8192,
+                tls_base: 0x2600000000,
+                max_runtime_bytes: 20480,
+            },
+            PreparedRegistry::new(vec![], 0).unwrap(),
+            None,
+        )
+        .unwrap();
+        let source = g.image().plan().headers().source().identity();
+        let result = close_startup(
+            g,
+            8 * 1024 * 1024,
+            StartupPolicy::ExperimentalEntryOwnedInit,
+        )
+        .unwrap();
+        assert_eq!(
+            result
+                .prepared()
+                .image()
+                .plan()
+                .headers()
+                .source()
+                .identity(),
+            source
+        );
+        let data = result.startup_data().unwrap();
+        assert_eq!(data.key.nid, 0x7fbb8ec58f663355);
+        assert!(data.read_only);
+        assert_eq!(
+            result.read_startup_data().unwrap(),
+            0x9e3779b97f4a7c15u64.to_le_bytes()
+        );
+        let residency = result.startup_observer().unwrap();
+        assert_eq!(residency.active_reservations(), 1);
+        assert!(result.bridge_validated());
+        assert!(result.landing_mapping_active());
+        assert_eq!(result.entry_ready(), closed);
+        if closed {
+            assert!(result.try_ready().is_ok());
+        } else {
+            assert!(result.try_ready().is_err());
+        }
+        assert_eq!(observer.active_reservations(), 0);
+        assert_eq!(residency.active_reservations(), 0);
+        assert!(storage.iter().all(|s| s.active_reservations() == 0));
+    }
 }

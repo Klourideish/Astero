@@ -17,8 +17,10 @@ pub enum CallResult {
     Returned,
     StopRequested,
     Unsupported,
+    AccessFailure(crate::calls::memory::AccessError),
 }
-pub type HostHandler = dyn Fn(&mut CallFrame) -> CallResult;
+pub type HostHandler =
+    dyn Fn(&mut CallFrame, &mut dyn crate::calls::memory::GuestMemory) -> CallResult;
 pub struct Registration {
     pub key: ProviderKey,
     pub kind: ProviderKind,
@@ -71,14 +73,23 @@ impl PreparedRegistry {
         key: &ProviderKey,
         frame: &mut CallFrame,
     ) -> Result<CallResult, RegistryError> {
+        self.invoke(key, frame, &mut crate::calls::memory::Unavailable)
+    }
+    pub fn invoke(
+        &self,
+        key: &ProviderKey,
+        frame: &mut CallFrame,
+        memory: &mut dyn crate::calls::memory::GuestMemory,
+    ) -> Result<CallResult, RegistryError> {
         let f = self
             .find(key)?
             .handler
             .as_ref()
             .ok_or(RegistryError::NoHostHandler)?;
         let mut local = frame.clone();
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut local)))
-            .map_err(|_| RegistryError::HandlerPanicked)?;
+        let result =
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut local, memory)))
+                .map_err(|_| RegistryError::HandlerPanicked)?;
         // Arguments are observations; providers publish return lanes only.
         frame.rax = local.rax;
         frame.xmm0 = local.xmm0;

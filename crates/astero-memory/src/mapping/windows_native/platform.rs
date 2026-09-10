@@ -215,7 +215,7 @@ impl NativeImage {
     /// Writes only existing owned RW/NX pages, with complete preflight and readback.
     /// No permission elevation, executable patching, or arbitrary pointer is exposed.
     pub fn write(
-        &mut self,
+        &self,
         address: crate::mapping::GuestAddress,
         bytes: &[u8],
     ) -> Result<(), NativeError> {
@@ -243,7 +243,9 @@ impl NativeImage {
         if bytes.is_empty() {
             return Ok(());
         }
-        // SAFETY: exclusive owned live RW/NX page coverage checked above. Source is a Rust slice.
+        // SAFETY: owned live RW/NX coverage checked; !Send/!Sync owner, no guest references
+        // escape, and native execution is suspended at this synchronous HLE boundary.
+        // Protection/release require exclusive ownership; source is an independent Rust slice.
         unsafe {
             ptr::copy_nonoverlapping(bytes.as_ptr(), address.0 as *mut u8, bytes.len());
         }

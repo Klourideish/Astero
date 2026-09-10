@@ -27,3 +27,5 @@ M28 mapping/windows_native owns exact identity reservation, commitment, final pr
 M29 adds exact-page write removal/query for RELRO closure in the existing private Windows leaf. Guarded stack/TLS owners reuse native realization; memory does not decide guest entry readiness.
 
 M30 adds checked writes to already-owned RW/NX pages, without elevating protections. Native closure seals present RELRO pages and leaves reserved holes inaccessible.
+
+M32 allocation/heap provides bounded reusable guest arena allocation. Native owners support scoped checked HLE copies. See [startup foundation](../../knowledge/architecture/startup_foundation.md).

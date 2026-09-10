@@ -10,3 +10,7 @@ workspace = true
 [dependencies]
 astero-hle = { path = "../astero-hle" }
 astero-kernel = { path = "../astero-kernel" }
+
+[dev-dependencies]
+astero-abi = { path = "../astero-abi" }
+astero-memory = { path = "../astero-memory" }

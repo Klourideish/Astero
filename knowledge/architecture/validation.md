@@ -1766,3 +1766,27 @@ policy/state/structure, supplemental whitespace (616 files) and git diff --check
 M31 is ready_for_cleanup awaiting user approval; M32 has not started. HEAD and origin/main remain
 41421b88bc961eb95f923d651ca4f59960ec0be5; no commit/push/history changes. Source paths, active state,
 AGENTS.md, corpus configuration and generated JSON remain local-only/ignored.
+
+
+## M32 startup foundation migration — 2026-09-10
+
+Full cargo fmt/check/build/Clippy -D warnings/workspace tests passed: 402 executable Rust tests,
+23 doctests. 14 added tests (libs 11, memory 2, core 1). Existing CLI integration coverage remains
+included. Python: 53 passing tests, comprising policy 21, structure 9, native policy 2 and indexes 21.
+Policy: 16 workspace members, 21 internal dependency edges, 250 module homes. Two added edges
+are libs test-only ABI/memory; no new runtime/external dependency. Whitespace: 626 files and
+Git diff --check pass. Source-backed indexes: 1154 implementation, 137 subsystems, 536 modules,
+522 source records, 480 tests, 36 diagnostics, 34 NIDs and 2 ABI; total 2901.
+
+Before real execution: complete Rust checks and synthetic supervision passed; 50 ms loop observed
+52,204 us with one suspend/resume, restored FS/GS and joined thread. Three controlled real runs,
+all on primary_real_elf with required wall-ms 250 and containment-ms 15000, were authorized by
+M32's within-cluster adaptation rule. First stopped at __cxa_atexit (306 us), second at operator
+new (241 us); existing prototype behavior was adapted and focused checks rerun before continuing.
+Third stopped at scePthreadRwlockInit (947 us), outside this startup wave. 52 completed HLE calls;
+15 live allocations/1664 aligned bytes before teardown, 16 retained callbacks, none invoked.
+All runs exit 0 with Clean containment, joined thread, zero reservations/release errors and unchanged
+SHA256 A15E44CAF80BE1D86B72C2C1A6D1F93A171128962390CB28080507202F6E914A.
+No fourth runtime run. Later ENOMEM propagation refinement is synthetic-tested only.
+Full context, evidence, limits and hypothesis outcomes: startup_foundation.md. Local raw logs
+remain ignored under target/m32-validation. M33 is not started; no commit/push/history changes.

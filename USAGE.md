@@ -548,7 +548,7 @@ cargo build -p astero-cli
 The first command executes only Astero-owned loop assembly, interrupts it, restores host state,
 joins and prints `SYNTHETIC LOOP STOPPED` (exit 0). The real command announces
 `REAL GUEST CODE WILL EXECUTE`, constructs readiness on a dedicated thread in an isolated child,
-and permits one _init_env plus two atexit calls. It stops at the next unknown import, object trap,
+and permits the migrated startup/libc cluster (at most 4096 calls). It stops at an unknown import, object trap,
 fault, return or deadline. It never invokes callbacks/fini or automatically retries.
 
 `--wall-ms` is required (1..500): the deadline requests native interruption, subject to host scheduling
@@ -556,11 +556,22 @@ latency, not an instruction count. `--containment-ms` is required (1000..30000) 
 it kills/waits a stuck child as **containment failure**, not clean guest recovery. Host/HLE PCs are
 never forcibly unwound as guest PCs. Ordinary `entry-readiness` remains nonexecuting.
 
-Observed one real run: `GuardedObject`, read fault at RIP 0x100332abf, RSP 0x200800f00,
-address 0x210021000 (symbol 7), after three startup calls. Duration 406 us including controller work;
-no supervisor intervention. Exit 0, joined thread, native/runtime reservations zero, source unchanged.
-One atexit was rejected; one callback retained and not invoked. This is runtime evidence, not game boot.
-The report distinguishes actual fault/preemption context from landing PCs and last import return
-addresses. `Returned` is normal controlled return; `UnresolvedFunction`/`StartupAllowanceExhausted`
-stop dispatch; AV/illegal instruction/guarded object stop immediately; `SupervisorExpired` captures
-an actual suspended PC. `WorkerFailure`/`TimeoutKilled` mean failed containment/recovery, not success.
+M32's validated result advances beyond the old guarded-object stop: the owned __stack_chk_guard
+is readable, both atexit registrations succeed, and 15 guest heap allocations, 17 memcpy calls,
+three memcmp calls and 14 __cxa_atexit registrations complete. The next boundary is unresolved
+scePthreadRwlockInit (0xe942c06b47eae230), with return address 0x1001c25b6 and RSP 0x200800e58.
+The captured RIP is an Astero import landing, not that guest return address. Exit 0 means clean
+controlled stop/teardown, not game boot. All native/runtime reservations were released; source
+SHA256 was unchanged. Callback records are retained but never invoked in this experiment.
+
+Named startup policy: 4 MiB guest heap/4096 live allocations, 1 MiB per primitive operation,
+128 environment entries, 8192 bytes per environment string, 256 callbacks and 4096 provider calls.
+Heap and owned data pages count against --max-runtime-bytes. Allocation exhaustion, invalid guest
+access and policy refusal remain explicit. Throwing operator new refuses on exhaustion; no C++
+unwinding is implemented. The environment starts empty and stores values in guest memory.
+
+`Returned` is normal controlled return; `UnresolvedFunction` stops at a missing provider;
+`ProviderStopped` is supported termination; `ProviderRefused` retains a provider/access refusal;
+`StartupAllowanceExhausted` means the bounded call policy was exhausted. AV/illegal instruction/
+guarded object stops immediately; `SupervisorExpired` captures an actual suspended PC.
+`WorkerFailure`/`TimeoutKilled` mean failed containment/recovery, not success.

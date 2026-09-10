@@ -7,7 +7,7 @@ fn key() -> ProviderKey {
         module: b"test".to_vec(),
     }
 }
-fn handler(f: &mut CallFrame) -> CallResult {
+fn handler(f: &mut CallFrame, _: &mut dyn astero_hle::calls::memory::GuestMemory) -> CallResult {
     f.rax = f.arguments[0] + f.stack_arguments[0];
     f.arguments.fill(999);
     f.xmm0 = [42; 16];
@@ -34,9 +34,9 @@ fn host_model_publishes_returns_only() {
     let calls = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
     let captured = calls.clone();
     let mut e = registration();
-    e.handler = Some(Box::new(move |f| {
+    e.handler = Some(Box::new(move |f, m| {
         captured.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        handler(f)
+        handler(f, m)
     }));
     let r = PreparedRegistry::new(vec![e], 1).unwrap();
     let mut f = CallFrame::default();
@@ -75,7 +75,10 @@ fn declarations_cannot_be_invoked_or_mislabelled() {
 }
 #[test]
 fn panic_never_publishes_partial_frame() {
-    fn panic_handler(f: &mut CallFrame) -> CallResult {
+    fn panic_handler(
+        f: &mut CallFrame,
+        _: &mut dyn astero_hle::calls::memory::GuestMemory,
+    ) -> CallResult {
         f.rax = 8;
         panic!("synthetic")
     }

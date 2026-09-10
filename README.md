@@ -4,7 +4,7 @@
 
 Astero is a Rust PS5 emulator workspace informed by lessons from PS5Rust.
 M1 implements a real host session â†’ read-only observation â†’ debugger â†’ CLI/GUI slice.
-No emulator implementation has been migrated. M27 stages real guest images into owned byte memory; M31 now performs one supervised real native entry; emulated GPU remains absent.
+M32 migrates the PS5Rust libkernel/libc startup foundation. M27 stages real guest images into owned byte memory; M31 now performs one supervised real native entry; emulated GPU remains absent.
 
 - `cargo run -p astero-cli`: create an unloaded host session and print state/capabilities.
 - `cargo run -p astero-gui`: real Winit/ImGui window using an independent Ash/Vulkan context.
@@ -53,3 +53,5 @@ M29 [entry preparation](knowledge/architecture/runtime_entry_preparation.md) own
 M30 [native closure](knowledge/architecture/native_entry_closure.md) can issue experimental EntryReadyGuest after installing controlled unresolved-reference traps. Only Astero-owned synthetic bridge routines execute; real guest entry remains absent.
 
 [M31](knowledge/architecture/first_native_entry.md) captures a first guarded-object read from real guest execution, with synthetic asynchronous-stop proof and joined teardown. This is not game boot.
+
+[M32 startup foundation](knowledge/architecture/startup_foundation.md) adds owned data providers, reusable guest heap and a bounded native libc cluster.

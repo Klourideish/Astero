@@ -174,8 +174,10 @@ dependencies = [
 name = "astero-libs"
 version = "0.1.0"
 dependencies = [
+ "astero-abi",
  "astero-hle",
  "astero-kernel",
+ "astero-memory",
 ]
 
 [[package]]

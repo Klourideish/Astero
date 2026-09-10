@@ -56,3 +56,5 @@ M29 input/entry owns NativeBackedGuestImage, kernel thread storage/context, host
 M30 input/entry/closure owns validated bridge, RX import landings and NOACCESS unresolved-object traps alongside PreparedGuest. Explicit experimental closure can issue EntryReadyGuest; no artifact transfer method exists. See [native closure](../../knowledge/architecture/native_entry_closure.md).
 
 M31 input/entry owns a dedicated first-entry thread and additional worker-process containment; preparation stays independent. See [first entry](../../knowledge/architecture/first_native_entry.md).
+
+M32 entry/foundation composes residency and scoped HLE access; close_startup integrates the migrated startup cluster. See [startup foundation](../../knowledge/architecture/startup_foundation.md).

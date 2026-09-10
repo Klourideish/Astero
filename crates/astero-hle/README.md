@@ -21,3 +21,5 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 and [repository contract](../../AGENTS.md).
 
 M29 dispatch/prepared implements a bounded immutable exact-key host-model registry consuming ABI call frames. Artifact declarations are not callable; native guest dispatch and registrations remain absent.
+
+M32 calls/memory provides scoped checked copies to handlers; providers/data is distinct from callable registrations. See [startup foundation](../../knowledge/architecture/startup_foundation.md).

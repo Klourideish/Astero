@@ -20,3 +20,6 @@ pub use closure::*;
 mod traps;
 #[cfg(all(windows, target_arch = "x86_64"))]
 pub use traps::{ObjectTrap, trap_geometry};
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod foundation;

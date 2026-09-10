@@ -121,6 +121,18 @@ impl ThreadStorage {
         self.stack
             .write(GuestAddress(self.layout.rsp), &landing.to_le_bytes())
     }
+    /// Checked copies only; no reference to guest bytes escapes.
+    pub fn write(&self, address: u64, bytes: &[u8]) -> Result<(), NativeError> {
+        if address >= self.layout.stack.start.0
+            && address - self.layout.stack.start.0 < self.layout.stack.size
+        {
+            self.stack
+                .write(astero_memory::mapping::GuestAddress(address), bytes)
+        } else {
+            self.tls
+                .write(astero_memory::mapping::GuestAddress(address), bytes)
+        }
+    }
     pub fn release(&mut self) -> Result<(), NativeError> {
         let a = self.stack.release();
         let b = self.tls.release();

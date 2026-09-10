@@ -90,7 +90,7 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
                 None,
             )
             .map_err(|e| e.to_string())?;
-            let closed = entry::close_entry(
+            let closed = entry::close_startup(
                 guest,
                 r.limits.max_runtime_bytes,
                 entry::StartupPolicy::ExperimentalEntryOwnedInit,
@@ -144,6 +144,18 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
         n.host_gs_preserved,
         n.supervision
     );
+    writeln!(
+        s,
+        "Startup residency: {:?}; heap: {:?}",
+        f.data_export, f.heap
+    )
+    .unwrap();
+    writeln!(
+        s,
+        "Provider failure: {:?}; registry failure: {:?}",
+        f.provider_failure, f.registry_failure
+    )
+    .unwrap();
     for c in &f.startup_calls {
         writeln!(
             s,
