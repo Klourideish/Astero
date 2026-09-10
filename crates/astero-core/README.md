@@ -48,3 +48,5 @@ M25 Session::with_timing explicitly receives a TimingEngine. Ordinary sessions a
 M26 input/load_plan delegates offline load/link planning without constructing a session or timing worker.
 
 M27 input/staging composes loader plan application with astero-memory byte regions. The new core -> memory edge is already policy-permitted. It creates no Session/timer or execution state.
+
+M28 input/native realizes an existing M27 staged image and retains its plan/diagnostics. It neither restages nor reapplies relocations; no session/timer/entry is created.

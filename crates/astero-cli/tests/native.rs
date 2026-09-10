@@ -1,0 +1,133 @@
+use astero_cli::native;
+use astero_loader::elf::dynamic::identity::synthetic::identity_image;
+#[cfg(all(windows, target_arch = "x86_64"))]
+use std::process::Command;
+use std::{ffi::OsString, fs, path::PathBuf};
+struct Fixture(PathBuf);
+impl Fixture {
+    fn new() -> Self {
+        let root =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/m28-input-fixtures");
+        fs::create_dir_all(&root).unwrap();
+        for i in 0..1000 {
+            let p = root.join(format!("{}-{i}", std::process::id()));
+            match fs::create_dir(&p) {
+                Ok(()) => return Self(p),
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(e) => panic!("{e}"),
+            }
+        }
+        panic!("fixture namespace exhausted")
+    }
+    fn file(&self, bytes: &[u8]) -> PathBuf {
+        let p = self.0.join("input");
+        fs::write(&p, bytes).unwrap();
+        p
+    }
+}
+impl Drop for Fixture {
+    fn drop(&mut self) {
+        fs::remove_dir_all(&self.0).unwrap();
+    }
+}
+
+fn args(path: &std::path::Path, max: &str) -> Vec<OsString> {
+    let mut a: Vec<OsString> = vec!["--path".into(), path.as_os_str().into()];
+    for (k, v) in [
+        ("--max-bytes", "4096"),
+        ("--max-read-calls", "4"),
+        ("--max-program-headers", "2"),
+        ("--max-dynamic-entries", "32"),
+        ("--max-hash-words", "64"),
+        ("--max-descriptors", "2"),
+        ("--max-symbols", "3"),
+        ("--max-name-lookups", "16"),
+        ("--max-name-scan-bytes", "64"),
+        ("--max-total-name-scan-bytes", "256"),
+        ("--max-relocations", "4"),
+        ("--max-identity-records", max),
+    ] {
+        a.extend([k.into(), v.into()]);
+    }
+    a
+}
+
+fn plan_args(path: &std::path::Path) -> Vec<OsString> {
+    let mut a = args(path, "16");
+    a.extend(
+        [
+            "--image-bias",
+            "65536",
+            "--max-providers",
+            "1",
+            "--max-plan-records",
+            "128",
+        ]
+        .map(OsString::from),
+    );
+    a
+}
+
+#[test]
+fn native_limits_required_and_path_preserved() {
+    let f = Fixture::new();
+    let path = f.file(&identity_image());
+    let mut a = plan_args(&path);
+    a.extend(["--max-mapped-bytes".into(), "65536".into()]);
+    assert!(native::parse(a.clone()).is_err());
+    a.extend(["--max-native-bytes".into(), "131072".into()]);
+    let r = native::parse(a).unwrap();
+    assert_eq!(r.max_native_bytes, 131072);
+    assert_eq!(
+        r.staging.plan.identity.linkage.symbols.acquisition.path,
+        path
+    );
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn native_cli_realizes_without_execution_and_refuses_budget() {
+    use astero_loader::elf::dynamic::synthetic::{put32, put64};
+    let f = Fixture::new();
+    let mut b = identity_image();
+    put32(&mut b, 68, 6);
+    put64(&mut b, 104, 0xa00);
+    for i in 0..4 {
+        put64(&mut b, 0x540 + i * 24, 0x1800 + i as u64 * 8);
+    }
+    put64(&mut b, 0x580, 4);
+    let path = f.file(&b);
+    let mut a = plan_args(&path);
+    let i = a.iter().position(|s| s == "--image-bias").unwrap();
+    a[i + 1] = "38654705664".into();
+    a.extend([
+        "--max-mapped-bytes".into(),
+        "65536".into(),
+        "--max-native-bytes".into(),
+        "65536".into(),
+    ]);
+    let o = Command::new(env!("CARGO_BIN_EXE_astero-cli"))
+        .arg("native-map")
+        .args(&a)
+        .output()
+        .unwrap();
+    assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
+    let text = String::from_utf8(o.stdout).unwrap();
+    for s in [
+        "NATIVE VM RESULT",
+        "exact identity",
+        "OS protections verified: true",
+        "NO GUEST CODE EXECUTED",
+        "Teardown: 0 native reservations",
+    ] {
+        assert!(text.contains(s), "{text}");
+    }
+    *a.last_mut().unwrap() = "1".into();
+    let o = Command::new(env!("CARGO_BIN_EXE_astero-cli"))
+        .arg("native-map")
+        .args(a)
+        .output()
+        .unwrap();
+    assert_eq!(o.status.code(), Some(1));
+    assert!(String::from_utf8(o.stderr).unwrap().contains("Budget"));
+    assert_eq!(fs::read(path).unwrap(), b);
+}

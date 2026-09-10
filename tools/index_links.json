@@ -1201,6 +1201,20 @@
       "evidence": [
         "knowledge/architecture/guest_image_staging.md"
       ]
+    },
+    {
+      "id": "diagnostic:memory.native_vm",
+      "implementation": "impl:astero-memory/lib:astero_memory/mapping::windows_native::model::NativeError",
+      "consumers": [
+        "impl:astero-memory/lib:astero_memory/mapping::windows_native::platform::realize"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/native::execute"
+      ],
+      "description": "Exact identity placement, protection/readback and cleanup errors; no execution claim.",
+      "evidence": [
+        "knowledge/architecture/windows_native_vm.md"
+      ]
     }
   ],
   "nids": [

@@ -93,3 +93,5 @@ M25 adds a dependency-free timing foundation. Core owns optional TimingEngine in
 M26 loader-owned load_plan/link matches immutable provider declarations, not live HLE registration or dispatch. Future HLE adapters may supply documentary declarations; no loader -> HLE/memory/timing edge is added. Existing synthetic admission remains unchanged.
 
 M27 adds core -> memory for explicit image composition. Loader defines the plan-consumer/backend contract and eligibility; memory owns checked storage. Core translates loader virtual-address intents to memory guest addresses. Neither loader nor memory depends on the other. Native VM mechanisms must remain private behind the memory backend, with platform execution integration under kernel/execution.
+
+M28 Windows VM allocation/protection is a memory backend mechanism. The narrow unsafe exception is memory/mapping/windows_native/platform.rs; memory denies unsafe elsewhere. Kernel/execution still owns future entry, ABI, exception and execution host integration. Core only composes native realization; dependency edges are unchanged.

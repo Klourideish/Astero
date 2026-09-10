@@ -56,3 +56,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Guest load/link planning](guest_load_link_plan.md): M26 explicit provider evidence, mappings, relocation values and readiness blockers; no runtime mutation.
 
 - [Guest image staging](guest_image_staging.md): transactional owned byte mappings, planned writes, pending references and native execution constraints.
+
+- [Windows native VM](windows_native_vm.md): exact placement and protection proof from staged bytes, without execution.

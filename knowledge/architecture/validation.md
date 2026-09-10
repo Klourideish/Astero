@@ -1558,3 +1558,53 @@ tests 405 (+16), diagnostics 32 (+1), NIDs 2 unchanged observation-only/unregist
 Total 2412 (+91). No external dependency; only core -> memory activated. Existing loader and timing
 remain dependency-free. No history mutation/commit/push: HEAD and origin/main remain a9f3e77.
 M27 awaits approval for tracker removal; M28 has not started.
+
+## M28 results - 2026-09-09
+
+[Windows native VM](windows_native_vm.md) records the narrow unsafe exception, exact placement,
+page-sharing constraints, catalogue/Microsoft evidence, real results and remaining native-entry work.
+No guest instructions were executed.
+
+| Check | Result |
+|---|---|
+| cargo fmt --all -- --check | passed |
+| cargo check --workspace --all-targets | passed |
+| cargo build --workspace --all-targets | passed |
+| cargo clippy --workspace --all-targets -- -D warnings | passed |
+| cargo test --workspace | 345 executable Rust tests and 23 doctests passed |
+| CLI integration tests | 52 included above; passed |
+| Python discovery | 52 passed: 22 policy/state/safety, 9 structure, 21 index/extraction |
+| policy/structure | 16 crates, 11 internal edges, 244 homes; passed |
+| indexes | two generations byte-identical across 16 files; fresh |
+| whitespace | supplemental scan and git diff --check passed |
+
+Added 16 Rust tests: 12 memory layout/Windows ownership tests, two core composition tests and two
+CLI tests. Coverage includes exact/refused budgets, page union/padding and W+X refusal, holes,
+collision ownership, query/readback, protected reads, repeat release/drop and separate owners.
+Private fault checkpoints after actual commit, before protection and after protection prove rollback
+and address reuse; these simulate transaction failures, not forced Windows API failures. A new
+Python test pins the memory unsafe exception to the private Windows leaf. Final full validation
+followed zero-initialization of FFI output storage, including reserved fields.
+
+Manual commands exactly match USAGE.md's native-map block, reusing its corpus and plan limits:
+`cargo build -p astero-cli`, then `.\target\debug\astero-cli.exe native-map --path <role.path>
+@planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864` with PowerShell call operator.
+
+| Role | Reserved / committed bytes | Pending relocations | Exit / teardown |
+|---|---|---:|---|
+| linkage_sample | 53248 / 16384 | 9 | 0 / zero native and byte owners |
+| utility_build_comparison | 53248 / 16384 | 9 | 0 / zero native and byte owners |
+| primary_real_elf | 17457152 / 17432576 | 1107 | 0 / zero native and byte owners |
+
+Expected and actual: exact placement at 0x100000000, OS protections verified, readback verified,
+instruction cache flushed, NativeBackedWithPendingWork, no execution. All three input SHA256 hashes
+were unchanged. Replacing --max-native-bytes with 1 for linkage_sample returned reservation Budget
+(required 53248, maximum 1), exit 1 and zero reservations/release errors. Collision and injected
+rollback checks use synthetic OS-backed tests. RELRO remains explicitly deferred until pending
+writes/provider closure; ordinary page protections are enforced now. Logs remain ignored under target.
+
+Indexes: implementation 920 (+50), subsystems 136 (+2), modules 502 (+12), sources 489 (+10),
+tests 422 (+17), diagnostics 33 (+1), NIDs 2 unchanged observation-only/unregistered, ABI 0.
+Total 2504 (+92). No dependency/edge additions. Local AGENTS policy exception remains ignored.
+HEAD and origin/main remain 0179c2093b3e9e8a12a29916bf6c158a05fde76b; no commit/push/history changes.
+M28 awaits approval for active-item removal. M29 has not started.

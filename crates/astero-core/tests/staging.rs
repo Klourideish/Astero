@@ -325,3 +325,64 @@ fn bad_alignment_and_overlapping_relocations_are_stage_blockers() {
     assert!(r.is_err());
     assert_eq!(o.active_mappings(), 0);
 }
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn native_realization_preserves_staged_bytes_plan_and_pending_writes() {
+    use astero_core::input::native;
+    let mut b = image();
+    put32(&mut b, 68, 6);
+    let bias = 0x900000000 + (std::process::id() as u64) * 0x100000;
+    let p = plan(
+        report(b),
+        vec![],
+        VirtualAddress(bias),
+        PlanningLimits {
+            max_providers: 1,
+            max_plan_records: 256,
+        },
+    )
+    .unwrap();
+    let (mut staged, bo) = staged(p);
+    let before = staged.snapshot();
+    let base = staged.plan().segments()[0].mapping.range.start;
+    let (r, o) = native::realize(
+        &staged,
+        native::NativeLimits {
+            max_reserved_bytes: 65536,
+            max_committed_bytes: 65536,
+        },
+    );
+    let mut image = r.unwrap();
+    assert!(Arc::ptr_eq(image.plan(), staged.plan()));
+    assert_eq!(image.staging_snapshot(), before);
+    assert_eq!(
+        image.read(base.0, 0xa00).unwrap(),
+        staged.read(base, 0xa00).unwrap()
+    );
+    assert_eq!(
+        image.state(),
+        native::NativeState::NativeBackedWithPendingWork
+    );
+    image.release().unwrap();
+    assert_eq!(image.state(), native::NativeState::Released);
+    assert_eq!(o.active_reservations(), 0);
+    staged.release();
+    assert_eq!(bo.active_mappings(), 0);
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn released_staging_cannot_be_realized() {
+    use astero_core::input::native;
+    let (mut s, _) = staged(run(image(), vec![]));
+    s.release();
+    let (r, o) = native::realize(
+        &s,
+        native::NativeLimits {
+            max_reserved_bytes: 65536,
+            max_committed_bytes: 65536,
+        },
+    );
+    assert!(matches!(r, Err(native::NativeError::Released)));
+    assert_eq!(o.active_reservations(), 0);
+}

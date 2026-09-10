@@ -21,7 +21,8 @@
       "input/ps5_identity",
       "session/timing",
       "input/load_plan",
-      "input/staging"
+      "input/staging",
+      "input/native"
     ],
     "astero-loader": [
       "admission",
@@ -95,7 +96,8 @@
       "allocation",
       "mapping",
       "protection",
-      "regions"
+      "regions",
+      "mapping/windows_native"
     ],
     "astero-kernel": [
       "errno",
@@ -264,7 +266,8 @@
       "linkage_evidence",
       "ps5_identity",
       "load_plan",
-      "staging"
+      "staging",
+      "native"
     ],
     "astero-timing": [
       "time",

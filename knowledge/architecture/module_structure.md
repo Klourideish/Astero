@@ -136,3 +136,5 @@ M25 adds astero-timing/time, clock, scheduler and diagnostics, plus core/session
 M26 nests capability planning under loader/load_plan/link, core/input/load_plan and CLI/load_plan. MappingIntent/VirtualAddress/source tokens are reused; no new parser or runtime owner.
 
 M27 introduces loader/load_plan/staging, core/input/staging and CLI/staging. Existing memory/mapping owns byte-backed regions; no new crate or broad helper root.
+
+M28 adds memory/mapping/windows_native, core/input/native and CLI/native. Layout/model are safe; only the private Windows platform leaf opts into unsafe.

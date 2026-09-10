@@ -454,3 +454,26 @@ Replace it with `1` to see explicit Budget refusal (exit 1, zero active mappings
 are identical to load-plan, including optional explicit providers. Provider plans do not make those
 providers resident. The byte backend has no executable host mapping; native execution requires a
 future backend with proven placement/protection. The CLI releases all image storage before exiting.
+
+## Windows native VM realization (no execution)
+
+On x86-64 Windows, reuse `$corpus` and `$planLimits` from the load-plan block:
+
+```powershell
+cargo build -p astero-cli
+& .\target\debug\astero-cli.exe native-map --path $corpus.artifacts.linkage_sample.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864
+& .\target\debug\astero-cli.exe native-map --path $corpus.artifacts.utility_build_comparison.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864
+& .\target\debug\astero-cli.exe native-map --path $corpus.artifacts.primary_real_elf.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864
+```
+
+Validated on the current host: exact guest/host identity at bias 0x100000000, enforced OS page
+protections, NativeBackedWithPendingWork, exit 0 and zero native reservations/byte mappings after
+teardown. Utilities commit 16,384 bytes each; executable commits 17,432,576 bytes. Pending relocation
+counts remain 9/9/1,107. No guest code executes. RELRO and execution readiness remain deferred.
+
+`--max-native-bytes` is required and bounds both the reserved envelope (including holes) and committed
+pages, independently of the logical M27 byte budget. Replace it with `1` for Budget refusal (exit 1,
+zero native reservations). Exact placement collision also fails without choosing another address.
+Output distinguishes logical segment permissions from effective shared-page protections and marks
+widening. No writable-executable page is permitted. Other host architectures refuse explicitly.
+This is separate from the unchanged byte-backed stage-image command and synthetic linkage demo.

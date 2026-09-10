@@ -69,7 +69,7 @@ out-of-date recreate size-dependent resources; suspend/resume recreates the cont
 timeout. A fence protects command/renderer reuse; present semaphores are per swapchain image.
 Device idle precedes resize/destruction. Failures return errors, without graphics API fallback.
 
-Unsafe remains forbidden in other crates. GUI denies it except in the private renderer::vulkan module because Ash
+M28 adds a separate private Windows VM FFI exception in astero-memory; unsafe remains forbidden elsewhere. GUI denies it except in the private renderer::vulkan module because Ash
 requires unsafe FFI. Window lifetime exceeds surface/context lifetime; renderer/swapchain/sync objects
 are destroyed before pool/device/instance. Partial initialization retains ownership guards for cleanup.
 Runtime smoke validation is not Vulkan conformance or a driver-loss test.
