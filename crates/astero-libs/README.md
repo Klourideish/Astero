@@ -21,3 +21,5 @@ Allowed dependencies are permissions, not a requirement to add dependencies.
 See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),
 and [repository contract](../../AGENTS.md).
+
+M30 libc/startup implements exact libc/libc startup registrations: instrumented experimental _init_env no-op and bounded atexit retention. Kernel owns callback storage. No callback executes. See [native closure](../../knowledge/architecture/native_entry_closure.md).

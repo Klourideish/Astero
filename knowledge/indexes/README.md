@@ -27,8 +27,8 @@ metadata supplies workspace membership/targets. No database, daemon, network or 
 | Implementation | implementation.json | [IMPLEMENTATION_INDEX.md](IMPLEMENTATION_INDEX.md): Rust declarations and methods, source spans, logical owners, reviewed relations |
 | Subsystems | subsystems.json | [SUBSYSTEM_INDEX.md](SUBSYSTEM_INDEX.md): crate/category -> subsystem -> modules and definitions |
 | Modules | modules.json | [MODULE_INDEX.md](MODULE_INDEX.md): logical modules, source owner, implementation home, documented responsibility/forbidden responsibility |
-| NIDs | nids.json | [NID_INDEX.md](NID_INDEX.md): reviewed observed NID correlations; unregistered does not mean HLE implementation |
-| ABI | abi.json | [ABI_INDEX.md](ABI_INDEX.md): reviewed process-entry argument contract; scaffold directories are not ABI support |
+| NIDs | nids.json | [NID_INDEX.md](NID_INDEX.md): observed correlations and explicitly scoped startup registrations; unregistered does not mean HLE implementation |
+| ABI | abi.json | [ABI_INDEX.md](ABI_INDEX.md): process-entry arguments and tested synthetic native boundary; neither is a complete PS5 ABI |
 | Diagnostics | diagnostics.json | [DIAGNOSTIC_INDEX.md](DIAGNOSTIC_INDEX.md): deliberate host snapshot, support inventory and loader error surfaces |
 | Tests | tests.json | [TEST_INDEX.md](TEST_INDEX.md): Rust test functions/doctests and Python unittest declarations; never a passing-test report |
 | Source files | SOURCE_INDEX.json | Complete crate Rust inventory plus top-level Python tooling: logical module paths, line counts, declarations, hashes, extraction notes |

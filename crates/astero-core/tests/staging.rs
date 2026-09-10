@@ -494,3 +494,87 @@ fn released_native_image_cannot_prepare() {
         Err(EntryError::Released)
     ));
 }
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn closure_preserves_blocked_authority_and_accepts_only_closed_synthetic_image() {
+    use astero_core::input::{entry::*, native};
+    for closed in [false, true] {
+        let mut b = image();
+        put32(&mut b, 68, 5);
+        // No write targets in the ready fixture. Original symbols and identity remain.
+        if closed {
+            put64(&mut b, 0x668, 0);
+            put64(&mut b, 0x698, 0);
+        } else {
+            // Unsupported relocation is retained without attempting a write into RX memory.
+            for i in 0..4 {
+                put64(&mut b, 0x548 + i * 24, 0xffffeeee);
+            }
+        }
+        let p = plan(
+            report(b),
+            vec![],
+            VirtualAddress(0x2400000000),
+            PlanningLimits {
+                max_providers: 1,
+                max_plan_records: 256,
+            },
+        )
+        .unwrap();
+        let (s, _) = staged(p);
+        let (n, observer) = native::realize(
+            &s,
+            native::NativeLimits {
+                max_reserved_bytes: 65536,
+                max_committed_bytes: 65536,
+            },
+        );
+        let (g, storage) = prepare(
+            n.unwrap(),
+            RuntimeLimits {
+                stack_base: 0x2500000000,
+                stack_bytes: 8192,
+                tls_base: 0x2600000000,
+                max_runtime_bytes: 20480,
+            },
+            PreparedRegistry::new(vec![], 0).unwrap(),
+            None,
+        )
+        .unwrap();
+        let source = g.image().plan().headers().source().identity();
+        let result = close_entry(g, 20480, StartupPolicy::ExperimentalEntryOwnedInit).unwrap();
+        assert_eq!(
+            result
+                .prepared()
+                .image()
+                .plan()
+                .headers()
+                .source()
+                .identity(),
+            source
+        );
+        assert!(result.bridge_validated());
+        assert!(result.landing_mapping_active());
+        assert_eq!(result.entry_ready(), closed);
+        if closed {
+            assert!(result.try_ready().is_ok());
+        } else {
+            assert!(result.try_ready().is_err());
+        }
+        assert_eq!(observer.active_reservations(), 0);
+        assert!(storage.iter().all(|s| s.active_reservations() == 0));
+    }
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn signed_object_trap_geometry_refuses_overflow_and_preserves_addends() {
+    use astero_core::input::entry::trap_geometry;
+    let (s, n) = trap_geometry(0x10000, -16, 4000, 4096).unwrap();
+    assert_eq!(n, 4096);
+    assert_eq!(s, 0x10010);
+    assert_eq!(s - 16, 0x10000);
+    assert!(s + 4000 < 0x11000);
+    assert!(trap_geometry(u64::MAX - 10, 0, 4096, 4096).is_none());
+    assert!(trap_geometry(0, i64::MIN, i64::MAX, 4096).is_none());
+    assert!(trap_geometry(0, 1, 2, 4096).is_none());
+}

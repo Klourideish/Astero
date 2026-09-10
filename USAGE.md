@@ -499,3 +499,35 @@ entry is safe. Output identifies 1,107 pending relocations, unresolved providers
 experimental TLS and missing native recovery/entry adapters. No timing worker is requested.
 Image, stack, TLS and byte-storage ownership counters return to zero on teardown.
 **NO GUEST CODE EXECUTED.** Constructors and synthetic linkage behavior remain unchanged.
+
+## Experimental native entry closure (preparation only)
+
+Reuse `$corpus` and `$planLimits` above on x86-64 Windows with FSGSBASE support:
+
+```powershell
+cargo build -p astero-cli
+& .\target\debug\astero-cli.exe entry-readiness --close-entry --path $corpus.artifacts.primary_real_elf.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216
+```
+
+The explicit flag selects and prints `ExperimentalEntryOwnedInit`. This selected real workload
+reports `EntryReady: true`: 836 function landings, 271 writes to 17 guarded unresolved object
+identities, two startup registrations and no untreated pre-entry writes. This is permission for a
+future controlled attempt, not proof the guest works. Unknown functions and object accesses stop
+for diagnosis; the TCB/environment and initializer policy remain experimental. RELRO's committed
+pages are read-only; its 12 KiB unmapped gap remains inaccessible. Exit 0 produces the report and
+drops the ready token. **NO REAL GUEST ARTIFACT CODE EXECUTED.** No constructors or callbacks run.
+
+For M30-specific resource refusal, repeat the command with `--max-runtime-bytes 8396800`:
+M29 preparation fits, but closure's additional mappings refuse with `Budget` and exit 1.
+The combined cap covers stack/TLS, RX landings and NOACCESS object traps. Without `--close-entry`,
+the previous preparation command remains `PreparedBlocked`.
+
+To exercise only Astero-owned synthetic assembly (no input file):
+
+```powershell
+cargo run -p astero-kernel --example bridge_smoke
+```
+
+This validates register/stack and FS/GS preservation, return/import landings, and controlled
+illegal-instruction/access-violation recovery. It prints probe results and exits 0 on success.
+It is distinct from real-artifact preparation and from the synthetic linkage demonstration.

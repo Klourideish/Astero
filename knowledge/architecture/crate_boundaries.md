@@ -97,3 +97,5 @@ M27 adds core -> memory for explicit image composition. Loader defines the plan-
 M28 Windows VM allocation/protection is a memory backend mechanism. The narrow unsafe exception is memory/mapping/windows_native/platform.rs; memory denies unsafe elsewhere. Kernel/execution still owns future entry, ABI, exception and execution host integration. Core only composes native realization; dependency edges are unchanged.
 
 M29 activates core -> kernel/HLE, kernel -> memory/ABI, HLE -> ABI. Kernel owns initial-thread preparation; ABI owns process-entry values; HLE owns host-model registry; core owns the aggregate runtime. No loader runtime dependency or new unsafe exception. See [entry preparation](runtime_entry_preparation.md).
+
+M30 activates core -> libs and libs -> kernel. Guest startup contracts remain in libs; kernel owns native bridge/recovery and callback storage, memory owns VM. Kernel denies unsafe except its private execution/host/platform.rs leaf. This does not authorize real guest entry. See [native closure](native_entry_closure.md).

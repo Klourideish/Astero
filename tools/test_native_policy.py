@@ -17,3 +17,13 @@ class NativePolicyTests(unittest.TestCase):
         self.assertIn("mod platform;", module)
         self.assertNotIn("pub mod platform", module)
         self.assertIn('unsafe_code = "forbid"', (ROOT / "Cargo.toml").read_text(encoding="utf-8"))
+    def test_kernel_unsafe_opt_in_is_only_private_native_bridge_leaf(self):
+        manifest = (ROOT / "crates/astero-kernel/Cargo.toml").read_text(encoding="utf-8")
+        self.assertIn('unsafe_code = "deny"', manifest)
+        source = ROOT / "crates/astero-kernel/src"
+        opt_ins = [p.relative_to(source).as_posix() for p in source.rglob("*.rs") if "allow(unsafe_code)" in p.read_text(encoding="utf-8")]
+        self.assertEqual(opt_ins, ["execution/host/mod.rs"])
+        module = (source / opt_ins[0]).read_text(encoding="utf-8")
+        self.assertIn('cfg(all(windows, target_arch = "x86_64"))', module)
+        self.assertIn("mod platform;", module)
+        self.assertNotIn("pub mod platform", module)

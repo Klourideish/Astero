@@ -10,3 +10,13 @@ pub use astero_kernel::execution::preparation::{
 };
 #[cfg(all(windows, target_arch = "x86_64"))]
 pub use owner::*;
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod closure;
+#[cfg(all(windows, target_arch = "x86_64"))]
+pub use closure::*;
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod traps;
+#[cfg(all(windows, target_arch = "x86_64"))]
+pub use traps::{ObjectTrap, trap_geometry};

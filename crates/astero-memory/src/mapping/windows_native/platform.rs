@@ -209,6 +209,46 @@ impl NativeImage {
         }
         Ok(())
     }
+    /// Writes only existing owned RW/NX pages, with complete preflight and readback.
+    /// No permission elevation, executable patching, or arbitrary pointer is exposed.
+    pub fn write(
+        &mut self,
+        address: crate::mapping::GuestAddress,
+        bytes: &[u8],
+    ) -> Result<(), NativeError> {
+        if self.reservation.base.is_null() {
+            return Err(NativeError::Released);
+        }
+        let end = address
+            .0
+            .checked_add(bytes.len() as u64)
+            .ok_or(NativeError::Overflow)?;
+        let page = self.layout.geometry.page_size;
+        let mut at = address.0 & !(page - 1);
+        while at < end {
+            let p = self
+                .layout
+                .pages
+                .iter()
+                .find(|p| p.range.start.0 == at)
+                .ok_or(NativeError::Unreadable)?;
+            if !p.protection.write || p.protection.execute {
+                return Err(NativeError::Unreadable);
+            }
+            at = at.checked_add(page).ok_or(NativeError::Overflow)?;
+        }
+        if bytes.is_empty() {
+            return Ok(());
+        }
+        // SAFETY: exclusive owned live RW/NX page coverage checked above. Source is a Rust slice.
+        unsafe {
+            ptr::copy_nonoverlapping(bytes.as_ptr(), address.0 as *mut u8, bytes.len());
+        }
+        if self.read(address, bytes.len() as u64)? != bytes {
+            return Err(NativeError::Readback { address: address.0 });
+        }
+        Ok(())
+    }
     pub fn read(
         &self,
         address: crate::mapping::GuestAddress,

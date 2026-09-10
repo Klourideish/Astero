@@ -80,3 +80,5 @@ M26 `load_plan::link::plan` composes source-bound M24 evidence and explicit prov
 M27 load_plan/staging consumes M26 plans through a trusted isolated backend interface; it owns stage admission and relocation write eligibility. Loader retains zero dependencies. See [staging](../../knowledge/architecture/guest_image_staging.md).
 
 M29 load_plan/bootstrap exposes existing PH/dynamic-plan evidence for TLS templates, RELRO, procparam and init/fini. No runtime allocation or execution is owned here.
+
+M30 exposes the existing exact reference-identity matcher for runtime composition; offline planning and its immutable reports remain unchanged.

@@ -291,3 +291,13 @@ pub(super) fn collect(p: &mut GuestLoadPlan, b: &mut Budget) -> Result<(), Plann
     }
     Ok(())
 }
+
+impl GuestLoadPlan {
+    /// Reuses the planner's exact, unambiguous import context; no new name matching.
+    pub fn reference_identity(
+        &self,
+        symbol: u64,
+    ) -> Option<(u64, BoundSourceRange, BoundSourceRange)> {
+        key(self.input(), symbol, false).map(|(n, l, m, _, _)| (n, l, m))
+    }
+}

@@ -52,3 +52,5 @@ M27 input/staging composes loader plan application with astero-memory byte regio
 M28 input/native realizes an existing M27 staged image and retains its plan/diagnostics. It neither restages nor reapplies relocations; no session/timer/entry is created.
 
 M29 input/entry owns NativeBackedGuestImage, kernel thread storage/context, host-model HLE registry, recovery state and optional timing. EntryReady remains false until native adapter/provider prerequisites are met.
+
+M30 input/entry/closure owns validated bridge, RX import landings and NOACCESS unresolved-object traps alongside PreparedGuest. Explicit experimental closure can issue EntryReadyGuest; no artifact transfer method exists. See [native closure](../../knowledge/architecture/native_entry_closure.md).

@@ -284,3 +284,24 @@ fn relro_seal_is_exact_and_os_verified() {
     image.release().unwrap();
     assert_eq!(o.active_reservations(), 0);
 }
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn owned_native_writes_refuse_rx_and_cross_boundary_before_mutation() {
+    let b = vec![0u8; 4096];
+    let base = 0x2700000000;
+    let (image, _) = realize(
+        &[
+            region(base, &b, protection(true, true, false)),
+            region(base + 4096, &b, protection(true, false, true)),
+        ],
+        limits(),
+    );
+    let mut image = image.unwrap();
+    image.write(GuestAddress(base + 8), &[1, 2, 3]).unwrap();
+    assert_eq!(image.read(GuestAddress(base + 8), 3).unwrap(), [1, 2, 3]);
+    assert!(image.write(GuestAddress(base + 4095), &[9, 9]).is_err());
+    assert_eq!(image.read(GuestAddress(base + 4095), 1).unwrap(), [0]);
+    assert!(image.write(GuestAddress(base + 4096), &[1]).is_err());
+    image.release().unwrap();
+    assert!(image.write(GuestAddress(base), &[]).is_err());
+}

@@ -60,3 +60,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Windows native VM](windows_native_vm.md): exact placement and protection proof from staged bytes, without execution.
 
 - [Native entry preparation](runtime_entry_preparation.md): owned stack/context/TLS, explicit unresolved entry blockers, no execution.
+
+- [Native entry closure](native_entry_closure.md): synthetic-tested bridge/recovery, startup registrations and controlled unresolved traps; no real entry.

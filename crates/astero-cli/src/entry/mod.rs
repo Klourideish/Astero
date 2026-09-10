@@ -5,10 +5,12 @@ use crate::{
 };
 use std::ffi::OsString;
 pub struct Request {
+    pub close_entry: bool,
     pub native: native::Request,
     pub limits: astero_core::input::entry::RuntimeLimits,
 }
 pub fn parse(args: impl IntoIterator<Item = OsString>) -> Result<Request, ArgumentError> {
+    let mut close_entry = false;
     let mut a = args.into_iter();
     let mut lower = Vec::new();
     let mut values = [None; 4];
@@ -19,6 +21,13 @@ pub fn parse(args: impl IntoIterator<Item = OsString>) -> Result<Request, Argume
         "--max-runtime-bytes",
     ];
     while let Some(o) = a.next() {
+        if o == "--close-entry" {
+            if close_entry {
+                return Err(ArgumentError::Duplicate("--close-entry"));
+            }
+            close_entry = true;
+            continue;
+        }
         if let Some(i) = names.iter().position(|n| o == *n) {
             if values[i].is_some() {
                 return Err(ArgumentError::Duplicate(names[i]));
@@ -39,6 +48,7 @@ pub fn parse(args: impl IntoIterator<Item = OsString>) -> Result<Request, Argume
         v[i] = values[i].ok_or(ArgumentError::Missing(names[i]))?;
     }
     Ok(Request {
+        close_entry,
         native: native::parse(lower)?,
         limits: astero_core::input::entry::RuntimeLimits {
             stack_base: v[0],
@@ -80,7 +90,7 @@ fn run_windows(r: &Request) -> Result<String, String> {
     let (mut guest, obs) =
         entry::prepare(n, r.limits, registry, None).map_err(|e| e.to_string())?;
     let mut text = format!(
-        "ENTRY READINESS\nArtifact: {:?}\nNative mapping: {:?}\nRaw entry: {:#x} Selected RIP: {:#x}\nContext RSP: {:#x} RDI: {:#x} FS planned: {:#x}\nStack: {:?} Guard: {:?}\nStack alignment: RSP modulo 16 = {}\nTLS: {:?}\nTCB: experimental self-pointer block; FS not activated\nProvider registrations: {} (no native installations)\nExternal references: {}\nEntry-critical conservative relocation count: {}\nException boundary: {:?}; native adapter NOT installed\nConstructors/init: {:?} (not invoked)\nProcparam: {:?}\nTiming injected: {}\nStatus: {:?} EntryReady: {}\n",
+        "ENTRY READINESS / PRE-CLOSURE EVIDENCE\nArtifact: {:?}\nNative mapping: {:?}\nRaw entry: {:#x} Selected RIP: {:#x}\nContext RSP: {:#x} RDI: {:#x} FS planned: {:#x}\nStack: {:?} Guard: {:?}\nStack alignment: RSP modulo 16 = {}\nTLS: {:?}\nTCB: experimental self-pointer block; FS not activated\nProvider registrations: {} (no native installations)\nExternal references: {}\nEntry-critical conservative relocation count: {}\nException boundary: {:?}; native adapter NOT installed\nConstructors/init: {:?} (not invoked)\nProcparam: {:?}\nTiming injected: {}\nStatus: {:?} EntryReady: {}\n",
         guest.image().plan().headers().source().identity(),
         guest.image().state(),
         guest.bootstrap().raw_entry,
@@ -135,7 +145,89 @@ fn run_windows(r: &Request) -> Result<String, String> {
         )
         .unwrap();
     }
-    guest.release().map_err(|e| e.to_string())?;
+    for r in guest.image().plan().references().iter().take(2) {
+        if let Some((nid, l, m)) = guest.image().plan().reference_identity(r.symbol) {
+            let source = guest.image().plan().headers().source();
+            writeln!(
+                text,
+                "startup identity nid={nid:#x} library={:?} module={:?}",
+                source.read(&l),
+                source.read(&m)
+            )
+            .unwrap();
+        }
+    }
+    if r.close_entry {
+        let closed = entry::close_entry(
+            guest,
+            r.limits.max_runtime_bytes,
+            entry::StartupPolicy::ExperimentalEntryOwnedInit,
+        )
+        .map_err(|e| format!("Closure: {e:?}"))?;
+        let report = closed.report();
+        writeln!(text,"M30 CLOSURE: pending_before={} treated={} pending_after={} landings={} providers={} startup_matches={} bridge_validated={} RELRO finalized={} pending={} landing_bytes={} policy={:?}",report.pending_before,report.treated,report.pending_after,report.landings,report.providers,report.startup_matches,report.bridge_validated,report.relro_finalized,report.relro_pending,report.landing_bytes,report.policy).unwrap();
+        writeln!(text,"Unresolved OBJECT traps: writes={} symbols={} bytes={}; RELRO inaccessible hole bytes={}",report.object_trap_writes,report.guarded_objects,report.object_trap_bytes,report.relro_hole_bytes).unwrap();
+        writeln!(
+            text,
+            "Unresolved function landings: {}",
+            report.unresolved_function_landings
+        )
+        .unwrap();
+        for risk in &report.early_runtime {
+            writeln!(text, "EARLY RUNTIME / EXPERIMENTAL: {risk}").unwrap();
+        }
+        let mut categories = std::collections::BTreeMap::new();
+        for b in &report.remaining {
+            if let entry::MustClose::PendingWrite { symbol, .. } = b {
+                let ty = closed
+                    .prepared()
+                    .image()
+                    .plan()
+                    .input()
+                    .linkage()
+                    .symbols()
+                    .entries()
+                    .find(|(_, s)| s.fields().index == u64::from(*symbol))
+                    .map(|(_, s)| format!("{:?}", s.fields().symbol_type))
+                    .unwrap_or("Missing".into());
+                *categories.entry(ty).or_insert(0usize) += 1;
+            }
+        }
+        writeln!(text, "Pending write symbol categories: {categories:?}").unwrap();
+        for b in report.remaining.iter().take(16) {
+            writeln!(text, "MUST CLOSE: {b:?}").unwrap();
+        }
+        if report.remaining.len() > 16 {
+            writeln!(
+                text,
+                "{} additional blockers retained in API",
+                report.remaining.len() - 16
+            )
+            .unwrap();
+        }
+        writeln!(
+            text,
+            "EntryReady after closure: {}\nNO REAL GUEST ARTIFACT CODE EXECUTED",
+            closed.entry_ready()
+        )
+        .unwrap();
+        match closed.try_ready() {
+            Ok(ready) => {
+                writeln!(
+                    text,
+                    "EntryReadyGuest capability issued; no execution method invoked"
+                )
+                .unwrap();
+                drop(ready);
+            }
+            Err(blocked) => {
+                writeln!(text, "PreparedBlocked retained; no capability issued").unwrap();
+                drop(blocked);
+            }
+        }
+    } else {
+        guest.release().map_err(|e| e.to_string())?;
+    }
     s.release();
     writeln!(text,"Teardown: image={} stack={} tls={} byte mappings={}; release errors={}/{}/{}\nNO GUEST CODE EXECUTED",image_observer.active_reservations(),obs[0].active_reservations(),obs[1].active_reservations(),bytes.active_mappings(),image_observer.release_error(),obs[0].release_error(),obs[1].release_error()).unwrap();
     Ok(text)

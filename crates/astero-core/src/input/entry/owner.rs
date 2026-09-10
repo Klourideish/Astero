@@ -66,17 +66,17 @@ impl std::error::Error for EntryError {}
 /// Owns all runtime allocations and immutable plan. No public native transfer method exists.
 /// The M30 adapter must satisfy the reported blockers; a Boolean cannot grant entry authority.
 pub struct PreparedGuest {
-    image: NativeBackedGuestImage,
-    thread: ThreadStorage,
-    context: InitialContext,
-    bootstrap: BootstrapEvidence,
-    registry: PreparedRegistry,
-    recovery: RecoveryBoundary,
-    timing: Option<TimingEngine>,
-    blockers: Vec<EntryBlocker>,
-    early: Vec<EarlyRuntimeBlocker>,
-    relro: Vec<RelroState>,
-    state: EntryState,
+    pub(super) image: NativeBackedGuestImage,
+    pub(super) thread: ThreadStorage,
+    pub(super) context: InitialContext,
+    pub(super) bootstrap: BootstrapEvidence,
+    pub(super) registry: PreparedRegistry,
+    pub(super) recovery: RecoveryBoundary,
+    pub(super) timing: Option<TimingEngine>,
+    pub(super) blockers: Vec<EntryBlocker>,
+    pub(super) early: Vec<EarlyRuntimeBlocker>,
+    pub(super) relro: Vec<RelroState>,
+    pub(super) state: EntryState,
 }
 impl PreparedGuest {
     pub fn state(&self) -> EntryState {

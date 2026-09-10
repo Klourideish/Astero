@@ -217,3 +217,72 @@ fn entry_cli_refuses_runtime_budget_without_execution() {
     let err = String::from_utf8(output.stderr).unwrap();
     assert!(err.contains("Budget"), "{err}");
 }
+#[test]
+fn closure_opt_in_is_separate_and_duplicates_refuse() {
+    let f = Fixture::new();
+    let path = f.file(&identity_image());
+    let mut a = plan_args(&path);
+    a.extend(
+        [
+            "--max-mapped-bytes",
+            "65536",
+            "--max-native-bytes",
+            "131072",
+            "--stack-base",
+            "8589934592",
+            "--stack-bytes",
+            "8192",
+            "--tls-base",
+            "8858370048",
+            "--max-runtime-bytes",
+            "20480",
+        ]
+        .map(OsString::from),
+    );
+    assert!(!astero_cli::entry::parse(a.clone()).unwrap().close_entry);
+    a.push("--close-entry".into());
+    assert!(astero_cli::entry::parse(a.clone()).unwrap().close_entry);
+    a.push("--close-entry".into());
+    assert!(astero_cli::entry::parse(a).is_err());
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn closure_cli_issues_synthetic_ready_capability_without_executing_fixture() {
+    let f = Fixture::new();
+    let mut b = identity_image();
+    use astero_loader::elf::dynamic::synthetic::{put32, put64};
+    put32(&mut b, 68, 5);
+    put64(&mut b, 24, 0x1100);
+    put64(&mut b, 0x668, 0);
+    put64(&mut b, 0x698, 0);
+    let path = f.file(&b);
+    let mut a = plan_args(&path);
+    a.extend(
+        [
+            "--max-mapped-bytes",
+            "65536",
+            "--max-native-bytes",
+            "131072",
+            "--stack-base",
+            "8589934592",
+            "--stack-bytes",
+            "8192",
+            "--tls-base",
+            "8858370048",
+            "--max-runtime-bytes",
+            "20480",
+            "--close-entry",
+        ]
+        .map(OsString::from),
+    );
+    let o = Command::new(env!("CARGO_BIN_EXE_astero-cli"))
+        .arg("entry-readiness")
+        .args(&a)
+        .output()
+        .unwrap();
+    assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
+    let t = String::from_utf8(o.stdout).unwrap();
+    assert!(t.contains("EntryReadyGuest capability issued"), "{t}");
+    assert!(t.contains("NO REAL GUEST ARTIFACT CODE EXECUTED"));
+    assert_eq!(fs::read(path).unwrap(), b);
+}

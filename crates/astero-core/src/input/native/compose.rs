@@ -42,6 +42,9 @@ impl NativeBackedGuestImage {
     pub fn plan(&self) -> &Arc<GuestLoadPlan> {
         &self.plan
     }
+    pub(crate) fn write(&mut self, address: u64, bytes: &[u8]) -> Result<(), NativeError> {
+        self.image.write(GuestAddress(address), bytes)
+    }
     pub(crate) fn seal_read_only(&mut self, range: GuestRange) -> Result<(), NativeError> {
         self.image.seal_read_only(range)
     }

@@ -1235,6 +1235,20 @@
         "knowledge/architecture/runtime_entry_preparation.md"
       ],
       "description": "Structured runtime preparation refusal and explicit uninstalled entry/recovery prerequisites; no execution."
+    },
+    {
+      "id": "diagnostic:runtime.entry_closure",
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::ClosureError",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::close_entry"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::execute"
+      ],
+      "evidence": [
+        "knowledge/architecture/native_entry_closure.md"
+      ],
+      "description": "Structured experimental entry closure refusal; readiness permits a future controlled attempt, never proves successful guest execution."
     }
   ],
   "nids": [
@@ -1269,6 +1283,42 @@
         "knowledge/architecture/ps5_identity_evidence.md"
       ],
       "provenance": "P330P3dFF68; canonical numeric correlation observed in both M24 utility builds; decoder implementation only, no HLE implementation or registration"
+    },
+    {
+      "id": "nid:startup.6f3404c72d7cf592",
+      "nid": {
+        "numeric_hex": "0x6F3404C72D7CF592",
+        "encoded": "bzQExy189ZI"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::startup::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/native_entry_closure.md"
+      ],
+      "provenance": "_init_env: exact selected artifact key; callable through synthetic native bridge. Experimental instrumented zero-return no-op, not complete environment initialization"
+    },
+    {
+      "id": "nid:startup.f06d8b07e037af38",
+      "nid": {
+        "numeric_hex": "0xF06D8B07E037AF38",
+        "encoded": "8G2LB+A3rzg"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::startup::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/native_entry_closure.md"
+      ],
+      "provenance": "atexit: exact selected artifact key; callable through synthetic native bridge. Bounded registration only; no callback execution or full process-exit semantics"
     }
   ],
   "abi": [
@@ -1279,6 +1329,15 @@
       "implementation": "impl:astero-abi/lib:astero_abi/layouts::entry::process_arguments",
       "evidence": [
         "knowledge/architecture/runtime_entry_preparation.md"
+      ]
+    },
+    {
+      "id": "abi:native.synthetic_bridge",
+      "guest_concept": "Synthetic x86-64 guest-like entry/import/return and Windows host preservation; not complete PS5 runtime ABI",
+      "guest_library": "native boundary",
+      "implementation": "impl:astero-kernel/lib:astero_kernel/execution::host::platform::impl[Bridge]::synthetic",
+      "evidence": [
+        "knowledge/architecture/native_entry_closure.md"
       ]
     }
   ]

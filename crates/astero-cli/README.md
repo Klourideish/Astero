@@ -52,3 +52,5 @@ M27 stage-image explicitly composes acquisition/planning/staging, prints bounded
 M28 native-map explicitly realizes M27 bytes with a visible native envelope/commit budget, reports effective protections, and releases both images. Windows x86-64 only; no guest execution.
 
 M29 entry-readiness explicitly composes native mapping and runtime preparation with required stack/TLS/capacity inputs. PreparedBlocked is not runnable; all storage is released before exit.
+
+M30 entry-readiness --close-entry explicitly runs experimental closure and Astero-owned bridge probes; without the flag M29 preparation remains unchanged. No real guest artifact instructions execute.

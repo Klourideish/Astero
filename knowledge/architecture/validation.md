@@ -1662,3 +1662,55 @@ Total 2626 (+122). ABI record is the legacy-correlated process-argument encoder,
 Five already-allowed edges activated; no external dependency, new crate or unsafe-policy relaxation.
 HEAD and origin/main remain 0b19a5fc18c0920dcaf678838ef4ec70b8554989. No commit/push/history changes.
 M29 awaits approval for active-item removal; M30 has not started.
+
+
+## M30 native entry closure validation
+
+On x86-64 Windows: cargo fmt --all -- --check; cargo check --workspace --all-targets;
+cargo build --workspace --all-targets; cargo clippy --workspace --all-targets -- -D warnings;
+cargo test --workspace. All pass. 381 executable Rust tests and 23 doctests pass;
+56 CLI tests are included (also run separately). 16 Rust tests added: kernel 9 (including
+one internal classifier test), libs 2, core 2, memory 1 and CLI 2. Direct synthetic assembly
+checks eight Windows nonvolatile GPRs and XMM6-XMM15 across return/import/fault paths, FS/GS
+restoration, illegal instruction/access violation and NOACCESS recovery, provider panic/refusal,
+ordinal dispatch, exclusive handler lifetime, callback limits/duplicates and token refusal.
+No timing tolerances or real guest execution are involved. Core tests prepare, never execute,
+synthetic ELF fixtures. RW writes preflight an entire range before modifying memory.
+
+All 53 Python tests pass: policy 21, structure 9, native unsafe ownership 2, index tests 21.
+Policy reports 16 crates, 18 internal dependency edges, 250 declared module homes. Existing
+allowed core-to-libs and libs-to-kernel edges activated; no external dependency or new crate.
+Unsafe is isolated to the new private kernel native leaf, enforced by the added policy test.
+Initial Clippy caught two context-pointer test assignments; explicit refreshed pointer handoffs
+fixed them and warnings-denied validation passed. No warnings were suppressed.
+
+Manual commands are the exact USAGE.md closure and bridge_smoke blocks. With local corpus role
+primary_real_elf, existing plan limits, --close-entry, and --max-runtime-bytes 16777216:
+expected/actual exit 0, experimental EntryReady=true and token issued then dropped. RIP
+0x100000070, RSP 0x200800fb8, FS 0x210000000. 1107 writes treated: 836 function landings
+(two exact startup matches; 834 unresolved) and 271 object writes to 17 guarded identities.
+20,480 RX landing bytes plus 69,632 NOACCESS bytes; existing runtime storage 8,396,800 bytes.
+RELRO finalized on committed pages, 12,288-byte inaccessible gap preserved, zero untreated writes.
+Image/stack/TLS/byte ownership counters and release-error counts are zero after teardown.
+Unknown object contents, unknown function implementations, TCB/environment completeness and
+initializer policy remain explicit early-runtime risks, not silently resolved providers.
+
+Repeat with --max-runtime-bytes 8396800: expected/actual structured Closure: Budget, exit 1.
+The cap fits M29 but refuses M30 additional mappings. `cargo run -p astero-kernel --example
+bridge_smoke` returns exit 0 and SYNTHETIC BRIDGE VALIDATED, including controlled codes
+0xc000001d and 0xc0000005 with host_fs_restored=true and host_gs_preserved=true.
+No file argument exists for the synthetic bridge. Source SHA256 before/after both real
+preparations: A15E44CAF80BE1D86B72C2C1A6D1F93A171128962390CB28080507202F6E914A.
+Logs are local under ignored target/m30-validation. No source bytes are modified or executed.
+
+Index counts: implementation 1057, subsystems 137, modules 525, source files 511, tests 459,
+diagnostics 35, NIDs 4, ABI 2; total 2730. Two old NIDs stay observation-only/unregistered;
+two new startup registrations describe their narrow implementations (experimental _init_env,
+registration-only atexit). The new ABI record covers synthetic native transitions, not a complete
+PS5 ABI. The process-argument record remains unchanged. Index discovery is not runtime proof.
+
+Two regenerations were byte-identical across all 17 index-directory files; freshness passed.
+Policy/state/structure and supplemental whitespace (613 files), plus git diff --check, pass.
+HEAD and origin/main remain 542006b5d0efc0da981be0fa453c913131dc38a8. No commit, push or history
+change. M30 is ready_for_cleanup awaiting approval; M31 has not started. Local corpus, generated
+JSON, AGENTS.md and PROJECT_STATE.json remain ignored/local-only.

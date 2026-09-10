@@ -49,3 +49,5 @@ M27 adds [bounded guest-image staging](knowledge/architecture/guest_image_stagin
 M28 [native VM realization](knowledge/architecture/windows_native_vm.md) reserves exact guest addresses and enforces Windows page protections. Executable mappings are not permission to execute; all guest entry remains absent.
 
 M29 [entry preparation](knowledge/architecture/runtime_entry_preparation.md) owns a guarded native stack and experimental TLS/context for one real executable. It reports explicit blockers and never enters guest code.
+
+M30 [native closure](knowledge/architecture/native_entry_closure.md) can issue experimental EntryReadyGuest after installing controlled unresolved-reference traps. Only Astero-owned synthetic bridge routines execute; real guest entry remains absent.

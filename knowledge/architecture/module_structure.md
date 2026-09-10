@@ -140,3 +140,5 @@ M27 introduces loader/load_plan/staging, core/input/staging and CLI/staging. Exi
 M28 adds memory/mapping/windows_native, core/input/native and CLI/native. Layout/model are safe; only the private Windows platform leaf opts into unsafe.
 
 M29 moves the empty ABI layouts.rs to layouts/mod.rs and adds layouts/entry. Kernel execution/preparation owns layout/storage/boundary; loader load_plan/bootstrap supplies existing structural evidence; core input/entry and CLI entry compose/present. HLE dispatch/prepared remains a host-model registry, not native dispatch.
+
+M30 extends existing execution/host, process, libc and input/entry homes with focused leaves; no new crate or growth root. Assembly is embedded in the private platform.rs leaf so source fingerprints include it.

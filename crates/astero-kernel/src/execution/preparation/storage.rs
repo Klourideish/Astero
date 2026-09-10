@@ -111,6 +111,13 @@ impl ThreadStorage {
     pub fn read_tls(&self, address: u64, size: u64) -> Result<Vec<u8>, NativeError> {
         self.tls.read(GuestAddress(address), size)
     }
+    pub fn install_return(&mut self, landing: u64) -> Result<(), NativeError> {
+        if landing == 0 {
+            return Err(NativeError::Unreadable);
+        }
+        self.stack
+            .write(GuestAddress(self.layout.rsp), &landing.to_le_bytes())
+    }
     pub fn release(&mut self) -> Result<(), NativeError> {
         let a = self.stack.release();
         let b = self.tls.release();
