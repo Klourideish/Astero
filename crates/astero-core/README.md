@@ -54,3 +54,5 @@ M28 input/native realizes an existing M27 staged image and retains its plan/diag
 M29 input/entry owns NativeBackedGuestImage, kernel thread storage/context, host-model HLE registry, recovery state and optional timing. EntryReady remains false until native adapter/provider prerequisites are met.
 
 M30 input/entry/closure owns validated bridge, RX import landings and NOACCESS unresolved-object traps alongside PreparedGuest. Explicit experimental closure can issue EntryReadyGuest; no artifact transfer method exists. See [native closure](../../knowledge/architecture/native_entry_closure.md).
+
+M31 input/entry owns a dedicated first-entry thread and additional worker-process containment; preparation stays independent. See [first entry](../../knowledge/architecture/first_native_entry.md).

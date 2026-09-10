@@ -29,3 +29,5 @@ M25 separates the generic asynchronous mechanism into astero-timing. This crate 
 M29 execution/preparation implements guarded native stack/TLS storage, layout, explicit context and recovery/import-encoding contracts. No thread, FS switch or native transfer occurs. Dependencies on memory/ABI are now active.
 
 M30 execution/host owns the private Windows x64 synthetic-tested bridge, FS restoration and process-exclusive VEH/TLS lifecycle. process/exit_callbacks owns bounded callback storage; it does not invoke callbacks. The only new unsafe exception is execution/host/platform.rs. See [native closure](../../knowledge/architecture/native_entry_closure.md).
+
+M31 uses astero-timing deadlines for exact-thread native supervision in the existing private host leaf. See [first entry](../../knowledge/architecture/first_native_entry.md).

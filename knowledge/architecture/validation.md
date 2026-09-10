@@ -1714,3 +1714,55 @@ Policy/state/structure and supplemental whitespace (613 files), plus git diff --
 HEAD and origin/main remain 542006b5d0efc0da981be0fa453c913131dc38a8. No commit, push or history
 change. M30 is ready_for_cleanup awaiting approval; M31 has not started. Local corpus, generated
 JSON, AGENTS.md and PROJECT_STATE.json remain ignored/local-only.
+
+
+## M31 first controlled native entry validation
+
+Before real entry: formatting, workspace check/build, warnings-denied Clippy, all 386 then-current
+Rust tests and 23 doctests passed; policy/state/structure and fresh indexes passed. Synthetic
+supervisor_smoke returned exit 0 under independent 5-second process containment: 50 ms deadline,
+51,607 us observed, actual RIP inside the exact infinite-loop range, one SuspendThread and one
+ResumeThread, host FS restored/GS preserved, execution thread joined and bridge re-acquired.
+This was the mandatory gate. No real corpus bytes ran in that proof.
+
+ONE real execution followed, using the exact USAGE.md first-entry command: primary_real_elf,
+existing explicit plan/native/runtime limits, --wall-ms 250 --containment-ms 15000. Expected: first
+controlled boundary and joined teardown. Actual: exit 0, GuardedObject read AV 0xc0000005 at RIP
+0x100332abf, RSP 0x200800f00, address 0x210021000, symbol 7. Execution thread 25816, core interval
+406 us, armed supervisor interval 150 us, no intervention/suspension. _init_env returned 0; two
+atexit calls returned 0xffffffff for host landing and 0 for guest fini 0x100524270. One callback
+retained, none invoked. All image/stack/TLS/landing/trap reservations zero, no release errors,
+thread joined and parent process containment Clean. This is real guest execution and controlled
+recovery, not game boot. Full context and assumptions are in first_native_entry.md.
+
+Source SHA256 before/after:
+A15E44CAF80BE1D86B72C2C1A6D1F93A171128962390CB28080507202F6E914A.
+A separate existing ps5-identity read-only command (same acquisition/observation limits, no execution)
+correlated symbol 7 with f7uOxY9mM1U#k#P, 0x7fbb8ec58f663355, libkernel metadata indexes 144/57.
+No missing object or startup behavior was implemented after observing it. No second real run.
+
+Post-run: formatting, workspace check/build, Clippy -D warnings and workspace tests pass:
+388 executable Rust tests, 23 doctests. 58 CLI tests are included and also pass separately.
+Seven tests added: kernel 3 (loop/preemption, supervised stop paths, refusal), core 2 (authority
+and process containment), CLI 2 (explicit limits/refusal). Existing concurrent-adapter test now
+checks another thread too. Synthetic cases cover normal return, HLE, unknown import, AV, illegal
+instruction, guarded read and deadline. Child tests distinguish success, nonzero failure and a
+killed/joined hung worker; no TerminateThread. Compact report formatting and associated relocation
+retention were added after the one real run and validated synthetically, not by replaying the guest.
+
+53 Python tests pass: policy 21, structure 9, native ownership 2, indexes 21. 16 crates, 19 internal
+edges and 250 declared homes. Only new dependency edge is kernel -> timing; no external dependency.
+An initial anonymous-const logical-ID collision was resolved by one combined layout assertion;
+no index-generator exception or weakened validation was introduced. An initial clone-on-Copy
+Clippy failure was corrected without lint suppression. Index discovery is not execution proof.
+
+Indexes: implementation 1080, subsystems 137, modules 527, sources 513, tests 466, diagnostics 36,
+NIDs 5, ABI 2; total 2766. Three NIDs are observation-only/unregistered, two are the existing narrow
+startup registrations. ABI contracts unchanged in scope. Local logs under target/m31-validation
+retain raw first-stop output; paths and generated JSON remain local-only.
+
+Two index regenerations were byte-identical across all 17 index-directory files. Freshness,
+policy/state/structure, supplemental whitespace (616 files) and git diff --check pass.
+M31 is ready_for_cleanup awaiting user approval; M32 has not started. HEAD and origin/main remain
+41421b88bc961eb95f923d651ca4f59960ec0be5; no commit/push/history changes. Source paths, active state,
+AGENTS.md, corpus configuration and generated JSON remain local-only/ignored.

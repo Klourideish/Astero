@@ -99,3 +99,5 @@ M28 Windows VM allocation/protection is a memory backend mechanism. The narrow u
 M29 activates core -> kernel/HLE, kernel -> memory/ABI, HLE -> ABI. Kernel owns initial-thread preparation; ABI owns process-entry values; HLE owns host-model registry; core owns the aggregate runtime. No loader runtime dependency or new unsafe exception. See [entry preparation](runtime_entry_preparation.md).
 
 M30 activates core -> libs and libs -> kernel. Guest startup contracts remain in libs; kernel owns native bridge/recovery and callback storage, memory owns VM. Kernel denies unsafe except its private execution/host/platform.rs leaf. This does not authorize real guest entry. See [native closure](native_entry_closure.md).
+
+M31 activates kernel -> timing for native deadlines. Core owns execution-thread/process coordination; loader remains offline and timing-independent. Unsafe stays in the existing private native leaf.

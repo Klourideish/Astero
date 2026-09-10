@@ -8,7 +8,8 @@
     "astero-loader": [],
     "astero-kernel": [
       "astero-abi",
-      "astero-memory"
+      "astero-memory",
+      "astero-timing"
     ],
     "astero-hle": [
       "astero-abi"

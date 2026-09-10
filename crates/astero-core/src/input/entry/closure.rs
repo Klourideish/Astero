@@ -503,3 +503,242 @@ pub fn close_entry(
         report,
     })
 }
+
+/// First-entry policy permits one _init_env and two atexit calls, then stops.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum FirstEntryStop {
+    Returned,
+    UnresolvedFunction,
+    StartupAllowanceExhausted,
+    GuardedObject,
+    AccessViolation,
+    IllegalInstruction,
+    SupervisorExpired,
+    BridgeFailure,
+}
+#[derive(Clone, Debug)]
+pub struct StartupCall {
+    pub ordinal: u32,
+    pub key: ProviderKey,
+    pub arguments: [u64; 6],
+    pub returned: u64,
+}
+#[derive(Debug)]
+pub struct FirstEntryReport {
+    pub source: astero_loader::artifact::SourceId,
+    pub initial: InitialContext,
+    pub stop: FirstEntryStop,
+    pub native: astero_kernel::execution::host::NativeExit,
+    pub startup_calls: Vec<StartupCall>,
+    pub unresolved: Option<ProviderKey>,
+    pub guarded_object: Option<super::traps::ObjectTrap>,
+    pub guarded_relocations:
+        Vec<astero_loader::elf::dynamic::relocations::observation::RawRelocation>,
+    pub callback_count: usize,
+    pub elapsed_micros: u128,
+}
+impl EntryReadyGuest {
+    /// Consumes authority on the dedicated owning thread. Does not invoke initializers/fini.
+    fn execute_first(mut self, millis: u64) -> Result<FirstEntryReport, BridgeError> {
+        let owner = &mut self.owner;
+        let initial = owner.guest.context.clone();
+        let source = owner.report.source;
+        let keys = &owner.keys;
+        let registry = &owner.guest.registry;
+        let mut calls = Vec::new();
+        calls
+            .try_reserve_exact(3)
+            .map_err(|_| BridgeError::Validation)?;
+        let mut counts = [0, 0];
+        let mut exhausted = false;
+        let started = std::time::Instant::now();
+        let native = owner.bridge.execute_prepared(
+            owner.guest.image.native_owner(),
+            &owner.guest.thread,
+            &initial,
+            millis,
+            &mut |ordinal, frame| {
+                let Some(key) = keys.get(ordinal as usize).and_then(|k| k.as_ref()) else {
+                    return false;
+                };
+                let slot = match key.nid {
+                    astero_libs::libc::startup::INIT_ENV_NID => 0,
+                    astero_libs::libc::startup::ATEXIT_NID => 1,
+                    _ => return false,
+                };
+                if counts[slot] >= if slot == 0 { 1 } else { 2 } {
+                    exhausted = true;
+                    return false;
+                }
+                let args = frame.arguments;
+                if !matches!(
+                    registry.invoke_host_model(key, frame),
+                    Ok(astero_hle::dispatch::prepared::CallResult::Returned)
+                ) {
+                    return false;
+                }
+                counts[slot] += 1;
+                calls.push(StartupCall {
+                    ordinal,
+                    key: key.clone(),
+                    arguments: args,
+                    returned: frame.rax,
+                });
+                true
+            },
+        )?;
+        let object = owner.trapped_object(native.fault_address).cloned();
+        let stop = match native.reason {
+            0 => FirstEntryStop::Returned,
+            2 if exhausted => FirstEntryStop::StartupAllowanceExhausted,
+            2 => FirstEntryStop::UnresolvedFunction,
+            4 => FirstEntryStop::SupervisorExpired,
+            3 if object.is_some() => FirstEntryStop::GuardedObject,
+            3 if native.exception == 0xc000001d => FirstEntryStop::IllegalInstruction,
+            3 if native.exception == 0xc0000005 => FirstEntryStop::AccessViolation,
+            _ => FirstEntryStop::BridgeFailure,
+        };
+        let unresolved = if native.reason == 2 {
+            owner.import_key(native.import_ordinal).cloned()
+        } else {
+            None
+        };
+        let mut guarded_relocations = Vec::new();
+        if let Some(t) = &object {
+            for r in owner
+                .guest
+                .image
+                .plan()
+                .relocations()
+                .iter()
+                .filter(|r| r.raw.record.symbol_index() == t.symbol)
+            {
+                guarded_relocations
+                    .try_reserve(1)
+                    .map_err(|_| BridgeError::Validation)?;
+                guarded_relocations.push(r.raw.clone());
+            }
+        }
+        let callback_count = owner.retained_callback_count();
+        Ok(FirstEntryReport {
+            source,
+            initial,
+            stop,
+            native,
+            startup_calls: calls,
+            unresolved,
+            guarded_object: object,
+            guarded_relocations,
+            callback_count,
+            elapsed_micros: started.elapsed().as_micros(),
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct ExecutionReport {
+    pub first: FirstEntryReport,
+    pub thread_joined: bool,
+    pub active_reservations: u64,
+    pub release_errors: Vec<u32>,
+}
+/// Preparation happens on its final owning thread; !Send native resources never migrate.
+/// Only the factory's privately constructed EntryReadyGuest can enter the bridge.
+pub fn execute_first_entry<F>(prepare: F, millis: u64) -> Result<ExecutionReport, String>
+where
+    F: FnOnce() -> Result<EntryReadyGuest, String> + Send + 'static,
+{
+    if !(1..=500).contains(&millis) {
+        return Err("execution limit must be 1..=500 ms".into());
+    }
+    std::thread::Builder::new()
+        .name("astero-first-guest".into())
+        .spawn(move || {
+            let ready = prepare()?;
+            let mut observers = ready.owner.guest.thread.observers().to_vec();
+            observers.push(ready.owner.guest.image.native_owner().observer());
+            observers.push(ready.owner.landings.observer());
+            if let Some(i) = &ready.owner.traps.image {
+                observers.push(i.observer());
+            }
+            let first = ready
+                .execute_first(millis)
+                .map_err(|e| format!("Bridge: {e:?}"))?;
+            let active_reservations = observers.iter().map(|o| o.active_reservations()).sum();
+            let release_errors = observers
+                .iter()
+                .map(|o| o.release_error())
+                .filter(|e| *e != 0)
+                .collect();
+            Ok(ExecutionReport {
+                first,
+                thread_joined: true,
+                active_reservations,
+                release_errors,
+            })
+        })
+        .map_err(|e| format!("Guest thread start: {e}"))?
+        .join()
+        .map_err(|_| "Guest thread panicked".to_string())?
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum ContainmentExit {
+    Clean,
+    WorkerFailure(Option<i32>),
+    TimeoutKilled,
+}
+/// Additional process containment, never reported as clean native recovery.
+pub fn contain_worker(
+    child: std::process::Child,
+    maximum_ms: u64,
+) -> Result<ContainmentExit, String> {
+    struct OwnedChild(std::process::Child);
+    impl Drop for OwnedChild {
+        fn drop(&mut self) {
+            if !matches!(self.0.try_wait(), Ok(Some(_))) {
+                let _ = self.0.kill();
+                let _ = self.0.wait();
+            }
+        }
+    }
+    let mut owned = OwnedChild(child);
+    let child = &mut owned.0;
+    use astero_timing::{
+        scheduler::{Config, Label, TimingEngine},
+        time::Span,
+    };
+    let engine = TimingEngine::real(Config {
+        max_pending: 2,
+        max_snapshot_entries: 2,
+    })
+    .map_err(|e| format!("Containment timer: {e:?}"))?;
+    let scheduler = engine.scheduler();
+    let end = scheduler
+        .after(
+            Span::from_millis(maximum_ms).map_err(|e| format!("{e:?}"))?,
+            Label::new("entry containment").unwrap(),
+        )
+        .map_err(|e| format!("{e:?}"))?;
+    loop {
+        if let Some(status) = child.try_wait().map_err(|e| e.to_string())? {
+            return Ok(if status.success() {
+                ContainmentExit::Clean
+            } else {
+                ContainmentExit::WorkerFailure(status.code())
+            });
+        }
+        if end.poll().is_some() {
+            child.kill().map_err(|e| e.to_string())?;
+            child.wait().map_err(|e| e.to_string())?;
+            return Ok(ContainmentExit::TimeoutKilled);
+        }
+        scheduler
+            .after(
+                Span::from_millis(10).unwrap(),
+                Label::new("worker completion").unwrap(),
+            )
+            .map_err(|e| format!("{e:?}"))?
+            .wait();
+    }
+}

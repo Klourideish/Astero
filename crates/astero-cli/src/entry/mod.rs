@@ -232,3 +232,5 @@ fn run_windows(r: &Request) -> Result<String, String> {
     writeln!(text,"Teardown: image={} stack={} tls={} byte mappings={}; release errors={}/{}/{}\nNO GUEST CODE EXECUTED",image_observer.active_reservations(),obs[0].active_reservations(),obs[1].active_reservations(),bytes.active_mappings(),image_observer.release_error(),obs[0].release_error(),obs[1].release_error()).unwrap();
     Ok(text)
 }
+
+pub mod first;

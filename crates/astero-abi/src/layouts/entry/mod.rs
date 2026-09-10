@@ -1,5 +1,5 @@
 //! M29 legacy-correlated process-entry value contract; not Windows host ABI.
-//! No transfer routine consumes this context yet. See runtime_entry_preparation.md.
+//! M31 consumes this exact context policy; see first_native_entry.md for its narrow runtime evidence.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InitialContext {
     pub rip: u64,
@@ -39,7 +39,7 @@ pub fn process_arguments(argv0: u64) -> [u8; 32] {
     out[8..16].copy_from_slice(&argv0.to_le_bytes());
     out
 }
-/// Captured scalar and vector lanes for a *host-only* provider contract test.
+/// Captured scalar and vector lanes for provider contract tests and the native import boundary.
 /// Native assembly/Windows shadow space and preserved register saves are separate.
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct CallFrame {

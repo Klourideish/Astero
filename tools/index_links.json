@@ -1249,6 +1249,20 @@
         "knowledge/architecture/native_entry_closure.md"
       ],
       "description": "Structured experimental entry closure refusal; readiness permits a future controlled attempt, never proves successful guest execution."
+    },
+    {
+      "id": "diagnostic:runtime.first_entry",
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryStop",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::execute_first_entry"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "First real stop distinguishes guest fault, guarded object, import and preemption; containment failure is not clean recovery.",
+      "evidence": [
+        "knowledge/architecture/first_native_entry.md"
+      ]
     }
   ],
   "nids": [
@@ -1298,9 +1312,10 @@
         "abi:native.synthetic_bridge"
       ],
       "evidence": [
-        "knowledge/architecture/native_entry_closure.md"
+        "knowledge/architecture/native_entry_closure.md",
+        "knowledge/architecture/first_native_entry.md"
       ],
-      "provenance": "_init_env: exact selected artifact key; callable through synthetic native bridge. Experimental instrumented zero-return no-op, not complete environment initialization"
+      "provenance": "_init_env: exact selected artifact key; callable through synthetic native bridge. Experimental instrumented zero-return no-op, not complete environment initialization M31 real call observed; _init_env returned zero; atexit rejected host landing then accepted guest fini. No callback executed."
     },
     {
       "id": "nid:startup.f06d8b07e037af38",
@@ -1316,9 +1331,26 @@
         "abi:native.synthetic_bridge"
       ],
       "evidence": [
-        "knowledge/architecture/native_entry_closure.md"
+        "knowledge/architecture/native_entry_closure.md",
+        "knowledge/architecture/first_native_entry.md"
       ],
-      "provenance": "atexit: exact selected artifact key; callable through synthetic native bridge. Bounded registration only; no callback execution or full process-exit semantics"
+      "provenance": "atexit: exact selected artifact key; callable through synthetic native bridge. Bounded registration only; no callback execution or full process-exit semantics M31 real call observed; _init_env returned zero; atexit rejected host landing then accepted guest fini. No callback executed."
+    },
+    {
+      "id": "nid:observed.7fbb8ec58f663355",
+      "nid": {
+        "numeric_hex": "0x7FBB8EC58F663355",
+        "encoded": "f7uOxY9mM1U"
+      },
+      "guest_library": "libkernel (artifact identity correlation)",
+      "guest_module": "libkernel (artifact identity correlation)",
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
+      "registration_status": "unregistered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/first_native_entry.md"
+      ],
+      "provenance": "M31 first real fault read guarded symbol 7; unchanged-source offline identity f7uOxY9mM1U#k#P correlates numeric NID. Object contents and provider remain unimplemented; no function-name or HLE claim."
     }
   ],
   "abi": [

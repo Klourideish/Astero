@@ -8,5 +8,5 @@ Discovery and lexical references do not prove passing tests, runtime support or 
 
 | Logical ID | Owner / symbol | Status / evidence | Source / knowledge |
 |---|---|---|---|
-| abi:native.synthetic_bridge | astero-kernel / synthetic | implemented | [crates/astero-kernel/src/execution/host/platform.rs](../../crates/astero-kernel/src/execution/host/platform.rs) : 209-341 |
+| abi:native.synthetic_bridge | astero-kernel / synthetic | implemented | [crates/astero-kernel/src/execution/host/platform.rs](../../crates/astero-kernel/src/execution/host/platform.rs) : 225-234 |
 | abi:process_entry.arguments | astero-abi / process_arguments | implemented | [crates/astero-abi/src/layouts/entry/mod.rs](../../crates/astero-abi/src/layouts/entry/mod.rs) : 36-41 |

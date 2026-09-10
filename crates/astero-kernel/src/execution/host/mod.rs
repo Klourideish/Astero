@@ -1,6 +1,6 @@
-//! Native bridge ownership. Public execution is restricted to built-in synthetic probes.
+//! Native bridge ownership, synthetic probes and checked native-owner execution leases.
 #[cfg(all(windows, target_arch = "x86_64"))]
 #[allow(unsafe_code)]
 mod platform;
 #[cfg(all(windows, target_arch = "x86_64"))]
-pub use platform::{Bridge, BridgeError, NativeExit, SyntheticProbe};
+pub use platform::{Bridge, BridgeError, NativeExit, Supervision, SyntheticProbe};

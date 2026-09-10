@@ -531,3 +531,36 @@ cargo run -p astero-kernel --example bridge_smoke
 This validates register/stack and FS/GS preservation, return/import landings, and controlled
 illegal-instruction/access-violation recovery. It prints probe results and exits 0 on success.
 It is distinct from real-artifact preparation and from the synthetic linkage demonstration.
+
+
+## First real native entry (trusted experimental workload only)
+
+This executes real guest instructions. It is **not a security sandbox**; use only the configured
+`primary_real_elf`, not arbitrary binaries. Reuse `$corpus` and `$planLimits` from the load-plan
+block. Validate the synthetic nonreturning-loop supervisor first:
+
+```powershell
+cargo run -p astero-kernel --example supervisor_smoke
+cargo build -p astero-cli
+& .\target\debug\astero-cli.exe first-entry --path $corpus.artifacts.primary_real_elf.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --wall-ms 250 --containment-ms 15000
+```
+
+The first command executes only Astero-owned loop assembly, interrupts it, restores host state,
+joins and prints `SYNTHETIC LOOP STOPPED` (exit 0). The real command announces
+`REAL GUEST CODE WILL EXECUTE`, constructs readiness on a dedicated thread in an isolated child,
+and permits one _init_env plus two atexit calls. It stops at the next unknown import, object trap,
+fault, return or deadline. It never invokes callbacks/fini or automatically retries.
+
+`--wall-ms` is required (1..500): the deadline requests native interruption, subject to host scheduling
+latency, not an instruction count. `--containment-ms` is required (1000..30000) and includes preparation;
+it kills/waits a stuck child as **containment failure**, not clean guest recovery. Host/HLE PCs are
+never forcibly unwound as guest PCs. Ordinary `entry-readiness` remains nonexecuting.
+
+Observed one real run: `GuardedObject`, read fault at RIP 0x100332abf, RSP 0x200800f00,
+address 0x210021000 (symbol 7), after three startup calls. Duration 406 us including controller work;
+no supervisor intervention. Exit 0, joined thread, native/runtime reservations zero, source unchanged.
+One atexit was rejected; one callback retained and not invoked. This is runtime evidence, not game boot.
+The report distinguishes actual fault/preemption context from landing PCs and last import return
+addresses. `Returned` is normal controlled return; `UnresolvedFunction`/`StartupAllowanceExhausted`
+stop dispatch; AV/illegal instruction/guarded object stop immediately; `SupervisorExpired` captures
+an actual suspended PC. `WorkerFailure`/`TimeoutKilled` mean failed containment/recovery, not success.

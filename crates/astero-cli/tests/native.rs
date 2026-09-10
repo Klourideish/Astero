@@ -286,3 +286,35 @@ fn closure_cli_issues_synthetic_ready_capability_without_executing_fixture() {
     assert!(t.contains("NO REAL GUEST ARTIFACT CODE EXECUTED"));
     assert_eq!(fs::read(path).unwrap(), b);
 }
+
+#[test]
+fn first_entry_requires_explicit_execution_limits_before_input() {
+    let o = Command::new(env!("CARGO_BIN_EXE_astero-cli"))
+        .arg("first-entry")
+        .output()
+        .unwrap();
+    assert!(!o.status.success());
+    assert!(!String::from_utf8_lossy(&o.stdout).contains("REAL GUEST CODE WILL EXECUTE"));
+}
+#[test]
+fn first_entry_refuses_oversized_and_duplicate_deadlines() {
+    for a in [
+        vec!["--wall-ms", "501", "--containment-ms", "1000"],
+        vec![
+            "--wall-ms",
+            "1",
+            "--wall-ms",
+            "2",
+            "--containment-ms",
+            "1000",
+        ],
+    ] {
+        let o = Command::new(env!("CARGO_BIN_EXE_astero-cli"))
+            .arg("first-entry")
+            .args(a)
+            .output()
+            .unwrap();
+        assert!(!o.status.success());
+        assert!(!String::from_utf8_lossy(&o.stdout).contains("REAL GUEST CODE WILL EXECUTE"));
+    }
+}

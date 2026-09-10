@@ -12,3 +12,4 @@ all = "warn"
 [dependencies]
 astero-memory = { path = "../astero-memory" }
 astero-abi = { path = "../astero-abi" }
+astero-timing = { path = "../astero-timing" }

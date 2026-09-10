@@ -578,3 +578,46 @@ fn signed_object_trap_geometry_refuses_overflow_and_preserves_addends() {
     assert!(trap_geometry(0, i64::MIN, i64::MAX, 4096).is_none());
     assert!(trap_geometry(0, 1, 2, 4096).is_none());
 }
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn first_entry_requires_factory_to_produce_ready_authority() {
+    use astero_core::input::entry::execute_first_entry;
+    assert!(
+        execute_first_entry(|| Err("not ready".into()), 25)
+            .unwrap_err()
+            .contains("not ready")
+    );
+    assert!(execute_first_entry(|| panic!("must not construct"), 0).is_err());
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+#[test]
+fn worker_containment_distinguishes_completion_crash_and_hang() {
+    use astero_core::input::entry::{ContainmentExit, contain_worker};
+    use std::process::{Command, Stdio};
+    for (code, expected) in [
+        (0, ContainmentExit::Clean),
+        (7, ContainmentExit::WorkerFailure(Some(7))),
+    ] {
+        let c = Command::new("cmd.exe")
+            .args(["/d", "/c", &format!("exit {code}")])
+            .stdout(Stdio::null())
+            .spawn()
+            .unwrap();
+        assert_eq!(contain_worker(c, 1000).unwrap(), expected);
+    }
+    let c = Command::new("powershell.exe")
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "Start-Sleep -Seconds 30",
+        ])
+        .stdout(Stdio::null())
+        .spawn()
+        .unwrap();
+    assert_eq!(
+        contain_worker(c, 30).unwrap(),
+        ContainmentExit::TimeoutKilled
+    );
+}

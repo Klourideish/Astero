@@ -54,3 +54,5 @@ M28 native-map explicitly realizes M27 bytes with a visible native envelope/comm
 M29 entry-readiness explicitly composes native mapping and runtime preparation with required stack/TLS/capacity inputs. PreparedBlocked is not runnable; all storage is released before exit.
 
 M30 entry-readiness --close-entry explicitly runs experimental closure and Astero-owned bridge probes; without the flag M29 preparation remains unchanged. No real guest artifact instructions execute.
+
+M31 first-entry is explicit trusted-input execution with required wall/containment limits; entry-readiness remains preparation only. See [first entry](../../knowledge/architecture/first_native_entry.md).

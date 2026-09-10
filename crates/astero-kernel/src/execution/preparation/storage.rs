@@ -102,6 +102,9 @@ impl ThreadStorage {
         let tls = t?;
         Ok((Self { stack, tls, layout }, [so, to]))
     }
+    pub fn observers(&self) -> [NativeObserver; 2] {
+        [self.stack.observer(), self.tls.observer()]
+    }
     pub fn layout(&self) -> &ThreadLayout {
         &self.layout
     }

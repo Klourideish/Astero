@@ -1,6 +1,6 @@
-//! M30 sole native-execution unsafe leaf. See native_entry_closure.md.
+//! M30/M31 sole native-execution unsafe leaf. See native_entry_closure.md and first_native_entry.md.
 //! A process-exclusive, thread-affine adapter owns its VEH and TLS slot. Public calls
-//! run only statically linked Astero probes, never caller pointers or artifact bytes.
+//! use static probes or a checked live native-owner lease; core gates real entry on EntryReadyGuest.
 use astero_abi::layouts::entry::CallFrame;
 use astero_memory::mapping::GuestAddress;
 use astero_memory::mapping::windows_native::{
@@ -33,6 +33,7 @@ pub enum SyntheticProbe {
     AccessViolation,
     FsRead,
     GuardRead,
+    InfiniteLoop,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NativeExit {
@@ -46,6 +47,11 @@ pub struct NativeExit {
     pub host_fs_restored: bool,
     pub host_gs_preserved: bool,
     pub registers: [u64; 16],
+    pub supervision: Option<Supervision>,
+    pub access_kind: u64,
+    pub arguments: [u64; 6],
+    pub return_address: u64,
+    pub xmm0: [u8; 16],
 }
 #[repr(C, align(16))]
 struct Frame<'a> {
@@ -61,6 +67,8 @@ struct Frame<'a> {
     fault_rsp: u64,
     code: u64,
     address: u64,
+    access_kind: u64,
+    return_address: u64,
     args: [u64; 6],
     xmm: [[u8; 16]; 8],
     out_xmm: [u8; 16],
@@ -97,8 +105,11 @@ struct ExceptionPointers {
     record: *mut ExceptionRecord,
     context: *mut ContextPrefix,
 }
-const _: () =
-    assert!(offset_of!(ContextPrefix, regs) == 120 && offset_of!(ContextPrefix, rip) == 248);
+const _: () = assert!(
+    offset_of!(ContextPrefix, regs) == 120
+        && offset_of!(ContextPrefix, rip) == 248
+        && std::mem::size_of::<FullContext>() == 1232
+);
 #[link(name = "kernel32")]
 unsafe extern "system" {
     fn TlsAlloc() -> u32;
@@ -122,6 +133,8 @@ unsafe extern "system" {
     fn probe_av();
     fn probe_fs();
     fn probe_guard();
+    fn probe_loop();
+    fn expired_landing();
     fn probes_end();
     fn read_fs() -> u64;
     fn read_gs() -> u64;
@@ -136,6 +149,9 @@ pub struct Bridge {
     _thread: PhantomData<Rc<()>>,
 }
 impl Bridge {
+    pub fn synthetic_loop_contains(rip: u64) -> bool {
+        rip >= probe_loop as *const () as u64 && rip < probe_guard as *const () as u64
+    }
     pub fn new() -> Result<Self, BridgeError> {
         if OWNED
             .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
@@ -204,12 +220,34 @@ impl Bridge {
     pub fn import_landing(&self) -> u64 {
         import_landing as *const () as u64
     }
-    /// Runs only one of five Astero assembly routines, on owned RW/NX stack and TLS.
+    /// Runs only fixed Astero assembly routines, on owned RW/NX stack and TLS.
     /// `true` resumes the synthetic import; `false` produces a controlled unresolved exit.
     pub fn synthetic(
         &mut self,
         probe: SyntheticProbe,
         callback: &mut dyn FnMut(u32, &mut CallFrame) -> bool,
+    ) -> Result<NativeExit, BridgeError> {
+        if probe == SyntheticProbe::InfiniteLoop {
+            return Err(BridgeError::Validation);
+        }
+        self.synthetic_inner(probe, callback, None)
+    }
+    pub fn supervised_synthetic(
+        &mut self,
+        probe: SyntheticProbe,
+        millis: u64,
+        callback: &mut dyn FnMut(u32, &mut CallFrame) -> bool,
+    ) -> Result<NativeExit, BridgeError> {
+        if !(1..=500).contains(&millis) {
+            return Err(BridgeError::Validation);
+        }
+        self.synthetic_inner(probe, callback, Some(millis))
+    }
+    fn synthetic_inner(
+        &mut self,
+        probe: SyntheticProbe,
+        callback: &mut dyn FnMut(u32, &mut CallFrame) -> bool,
+        millis: Option<u64>,
     ) -> Result<NativeExit, BridgeError> {
         let base = 0x0000_0007_3000_0000;
         let mut stack = vec![0u8; 128 * 1024];
@@ -265,6 +303,7 @@ impl Bridge {
             SyntheticProbe::AccessViolation => probe_av,
             SyntheticProbe::FsRead => probe_fs,
             SyntheticProbe::GuardRead => probe_guard,
+            SyntheticProbe::InfiniteLoop => probe_loop,
         } as *const () as u64;
         // SAFETY: feature-gated read-only registers, host GS is never written by this adapter.
         let (old_fs, old_gs) = unsafe { (read_fs(), read_gs()) };
@@ -285,6 +324,8 @@ impl Bridge {
             fault_rsp: 0,
             code: 0,
             address: 0,
+            access_kind: u64::MAX,
+            return_address: 0,
             args: [
                 if probe == SyntheticProbe::GuardRead {
                     tls_base + 4096
@@ -310,19 +351,43 @@ impl Bridge {
             fault_registers: [0; 16],
             callback,
         };
+        self.invoke(&mut frame, millis, old_fs, old_gs)
+    }
+    fn invoke(
+        &mut self,
+        frame: &mut Frame<'_>,
+        millis: Option<u64>,
+        old_fs: u64,
+        old_gs: u64,
+    ) -> Result<NativeExit, BridgeError> {
         // SAFETY: frame and mappings outlive synchronous assembly; no reference to frame is used
         // in Rust during transfer. Only the built-in probe range can be claimed by VEH.
-        if unsafe { TlsSetValue(self.slot, (&mut frame as *mut Frame<'_>).cast()) } == 0 {
+        if unsafe { TlsSetValue(self.slot, (frame as *mut Frame<'_>).cast()) } == 0 {
             return Err(BridgeError::Os("TLS install"));
         }
-        let preservation = unsafe { checked_enter((&mut frame as *mut Frame<'_>).cast()) };
+        struct ActiveTls(u32);
+        impl Drop for ActiveTls {
+            fn drop(&mut self) {
+                unsafe {
+                    TlsSetValue(self.0, std::ptr::null_mut());
+                }
+            }
+        }
+        let _active_tls = ActiveTls(self.slot);
+        let (preservation, supervision) = match millis {
+            Some(ms) => supervised_call(frame, ms)?,
+            None => (
+                unsafe { checked_enter((frame as *mut Frame<'_>).cast()) },
+                None,
+            ),
+        };
         unsafe {
             TlsSetValue(self.slot, std::ptr::null_mut());
         }
         if preservation != (1 << 18) - 1 {
             return Err(BridgeError::Validation);
         }
-        let result = NativeExit {
+        let mut result = NativeExit {
             reason: frame.reason,
             value: frame.result,
             rip: frame.fault_rip,
@@ -333,11 +398,102 @@ impl Bridge {
             host_fs_restored: unsafe { read_fs() } == old_fs,
             host_gs_preserved: unsafe { read_gs() } == old_gs,
             registers: frame.fault_registers,
+            supervision,
+            access_kind: frame.access_kind,
+            arguments: frame.args,
+            return_address: frame.return_address,
+            xmm0: frame.out_xmm,
         };
+        if let Some(sample) = &result.supervision
+            && sample.redirected
+        {
+            result.rip = sample.rip;
+            result.rsp = sample.registers[4];
+            result.registers = sample.registers;
+        }
         if !result.host_fs_restored || !result.host_gs_preserved {
             return Err(BridgeError::Validation);
         }
         Ok(result)
+    }
+    /// Lower-level lease requires live native owners and the exact supported context policy.
+    /// Core exposes real execution only through its consumed EntryReadyGuest authority.
+    pub fn execute_prepared(
+        &mut self,
+        image: &windows_native::NativeImage,
+        thread: &crate::execution::preparation::storage::ThreadStorage,
+        context: &crate::execution::preparation::InitialContext,
+        millis: u64,
+        callback: &mut dyn FnMut(u32, &mut CallFrame) -> bool,
+    ) -> Result<NativeExit, BridgeError> {
+        let layout = thread.layout();
+        let mut expected = crate::execution::preparation::InitialContext::planned(
+            context.rip,
+            layout.rsp,
+            layout.params,
+            layout.thread_pointer,
+        );
+        expected.gpr[4] = self.return_landing();
+        if !self.validated
+            || !(1..=500).contains(&millis)
+            || context != &expected
+            || !image.snapshot().active
+            || !image.pages().iter().any(|p| {
+                p.protection.execute
+                    && context.rip >= p.range.start.0
+                    && context.rip - p.range.start.0 < p.range.size
+            })
+            || !self
+                .ranges
+                .iter()
+                .any(|&(a, n)| context.rip >= a && context.rip - a < n)
+            || thread
+                .read_stack(layout.rsp, 8)
+                .map_err(BridgeError::Memory)?
+                != self.return_landing().to_le_bytes()
+            || thread
+                .read_tls(layout.thread_pointer, 8)
+                .map_err(BridgeError::Memory)?
+                != layout.thread_pointer.to_le_bytes()
+        {
+            return Err(BridgeError::Validation);
+        }
+        let (old_fs, old_gs) = unsafe { (read_fs(), read_gs()) };
+        let ranges = self.ranges.clone();
+        let mut frame = Frame {
+            host_rsp: 0,
+            guest_rsp: context.rsp,
+            target: context.rip,
+            fs: context.fs_base,
+            old_fs,
+            active: 0,
+            reason: 0,
+            result: 0,
+            fault_rip: 0,
+            fault_rsp: 0,
+            code: 0,
+            address: 0,
+            access_kind: u64::MAX,
+            return_address: 0,
+            args: [
+                context.gpr[5],
+                context.gpr[4],
+                context.gpr[3],
+                context.gpr[2],
+                context.gpr[7],
+                context.gpr[8],
+            ],
+            xmm: [[0; 16]; 8],
+            out_xmm: [0; 16],
+            saved: [0; 6],
+            ranges: &ranges,
+            ordinal: 0,
+            stack_start: layout.stack.start.0,
+            stack_end: layout.stack.start.0 + layout.stack.size,
+            fault_registers: [0; 16],
+            callback,
+        };
+        self.invoke(&mut frame, Some(millis), old_fs, old_gs)
     }
     pub fn validate(&mut self) -> Result<(), BridgeError> {
         let r = self.synthetic(SyntheticProbe::Return, &mut |_, _| false)?;
@@ -396,6 +552,9 @@ unsafe extern "system" fn dispatch(frame: *mut Frame<'_>) {
         f.reason = 2;
         return;
     }
+    f.fault_rip = import_landing as *const () as u64;
+    f.fault_rsp = f.guest_rsp;
+    f.return_address = unsafe { std::ptr::read_unaligned(f.guest_rsp as *const u64) };
     // SAFETY: suspended native call, same owned RW stack, preflight above covers all six words.
     for (i, v) in c.stack_arguments.iter_mut().enumerate() {
         *v = unsafe { std::ptr::read_unaligned((f.guest_rsp + 8 + i as u64 * 8) as *const u64) };
@@ -421,6 +580,11 @@ unsafe extern "system" fn handle(info: *mut ExceptionPointers, frame: *mut Frame
     {
         return 0;
     }
+    f.access_kind = if r.code == 0xc0000005 && r.count >= 1 {
+        r.info[0] as u64
+    } else {
+        u64::MAX
+    };
     f.fault_registers = c.regs;
     f.reason = 3;
     f.code = r.code as u64;
@@ -435,13 +599,146 @@ unsafe extern "system" fn handle(info: *mut ExceptionPointers, frame: *mut Frame
     c.regs[4] = f.host_rsp;
     -1
 }
+/// Actual suspended context, not a return-address approximation. Counts expose balanced ownership.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Supervision {
+    pub thread_id: u32,
+    pub limit_ms: u64,
+    pub elapsed_micros: u128,
+    pub redirected: bool,
+    pub rip: u64,
+    pub registers: [u64; 16],
+    pub suspends: u32,
+    pub resumes: u32,
+}
+#[repr(C, align(16))]
+struct FullContext {
+    prefix: ContextPrefix,
+    rest: [u8; 976],
+}
+#[link(name = "kernel32")]
+unsafe extern "system" {
+    fn GetCurrentThreadId() -> u32;
+    fn OpenThread(access: u32, inherit: i32, id: u32) -> *mut c_void;
+    fn CloseHandle(handle: *mut c_void) -> i32;
+    fn SuspendThread(handle: *mut c_void) -> u32;
+    fn ResumeThread(handle: *mut c_void) -> u32;
+    fn GetThreadContext(handle: *mut c_void, context: *mut FullContext) -> i32;
+    fn SetThreadContext(handle: *mut c_void, context: *const FullContext) -> i32;
+}
+// No mutex, allocation, logging or Rust callback while another thread is suspended.
+// API failure cannot imply a clean join. Fatal containment exits the worker process;
+// the CLI parent must classify this separately from a controlled recovery.
+fn supervised_call(
+    frame: &mut Frame<'_>,
+    millis: u64,
+) -> Result<(u64, Option<Supervision>), BridgeError> {
+    use astero_timing::{
+        scheduler::{Completion, Config, Label, TimingEngine},
+        time::Span,
+    };
+    let engine = TimingEngine::real(Config {
+        max_pending: 2,
+        max_snapshot_entries: 2,
+    })
+    .map_err(|_| BridgeError::Os("timing start"))?;
+    let scheduler = engine.scheduler();
+    let ticket = scheduler
+        .after(
+            Span::from_millis(millis).map_err(|_| BridgeError::Validation)?,
+            Label::new("native deadline").map_err(|_| BridgeError::Validation)?,
+        )
+        .map_err(|_| BridgeError::Os("deadline"))?;
+    let id = unsafe { GetCurrentThreadId() };
+    let handle = unsafe { OpenThread(0x0002 | 0x0008 | 0x0010, 0, id) };
+    if handle.is_null() {
+        return Err(BridgeError::Os("OpenThread"));
+    }
+    let raw = handle as usize;
+    let ranges = frame.ranges;
+    let done = AtomicBool::new(false);
+    let started = std::time::Instant::now();
+    let result = std::thread::scope(|scope| {
+        let watch = scope.spawn(|| {
+            let mut report = Supervision {
+                thread_id: id,
+                limit_ms: millis,
+                elapsed_micros: 0,
+                redirected: false,
+                rip: 0,
+                registers: [0; 16],
+                suspends: 0,
+                resumes: 0,
+            };
+            if matches!(ticket.wait(), Completion::Fired(_)) {
+                while !done.load(Ordering::Acquire) {
+                    // Fully initialize the aligned buffer before suspension.
+                    let mut ctx: FullContext = unsafe { std::mem::zeroed() };
+                    ctx.prefix.flags = 0x100003;
+                    let h = raw as *mut c_void;
+                    let prior = unsafe { SuspendThread(h) };
+                    if prior == u32::MAX {
+                        std::process::abort();
+                    }
+                    report.suspends += 1;
+                    let got = unsafe { GetThreadContext(h, &mut ctx) } != 0;
+                    let in_guest = got
+                        && ranges
+                            .iter()
+                            .any(|&(a, n)| ctx.prefix.rip >= a && ctx.prefix.rip - a < n);
+                    let mut set = true;
+                    if prior == 0 && in_guest {
+                        report.rip = ctx.prefix.rip;
+                        report.registers = ctx.prefix.regs;
+                        ctx.prefix.rip = expired_landing as *const () as u64;
+                        set = unsafe { SetThreadContext(h, &ctx) } != 0;
+                        report.redirected = set;
+                    }
+                    let resumed = unsafe { ResumeThread(h) };
+                    if resumed != u32::MAX {
+                        report.resumes += 1;
+                    }
+                    if !got || !set || prior != 0 || resumed != 1 {
+                        std::process::abort();
+                    }
+                    if report.redirected {
+                        break;
+                    }
+                    // Host/bridge PC is never redirected. Retrying uses the canonical scheduler.
+                    let next = scheduler
+                        .after(
+                            Span::from_millis(1).unwrap(),
+                            Label::new("native retry").unwrap(),
+                        )
+                        .unwrap();
+                    next.wait();
+                }
+            }
+            report.elapsed_micros = started.elapsed().as_micros();
+            report
+        });
+        let preservation = unsafe { checked_enter((frame as *mut Frame<'_>).cast()) };
+        done.store(true, Ordering::Release);
+        let _ = scheduler.cancel(&ticket);
+        let report = watch.join().expect("supervisor thread");
+        (preservation, Some(report))
+    });
+    unsafe {
+        CloseHandle(handle);
+    }
+    engine
+        .shutdown()
+        .map_err(|_| BridgeError::Os("timing shutdown"))?;
+    Ok(result)
+}
+
 global_asm!(r#"// Private M30 x64 bridge. host FXSAVE64 includes XMM0-15 and x87/control state.
 // Windows TEB TLS inline slot offset is installed before VEH and retired after VEH.
 .macro frame reg
  mov \reg, [rip+{slot}]
  mov \reg, gs:[\reg]
 .endm
-.global enter, landing, import_landing, veh, read_fs, read_gs
+.global enter, landing, import_landing, veh, read_fs, read_gs, probe_loop, expired_landing
 .global probe_return, probe_import, probe_illegal, probe_av, probe_fs, probe_guard, probes_end
 .text
 read_fs:
@@ -512,6 +809,13 @@ enter:
 landing:
  frame r11
  mov [r11+{result}],rax
+ cmp qword ptr [r11+{reason}],0
+ jne 7f
+ lea rax,[rip+landing]
+ mov [r11+{fault_rip}],rax
+ mov [r11+{fault_rsp}],rsp
+ movdqu [r11+{outxmm}],xmm0
+7:
  mov qword ptr [r11+{active}],0
  mov rax,[r11+{oldfs}]
  wrfsbase rax
@@ -632,6 +936,13 @@ probe_av:
 probe_fs:
  mov rax,fs:[0]
  ret
+expired_landing:
+ frame r11
+ mov qword ptr [r11+{reason}],4
+ xor eax,eax
+ jmp landing
+probe_loop:
+ jmp probe_loop
 probe_guard:
  mov rax,[rdi]
  ret
@@ -790,6 +1101,7 @@ checked_enter:
  pop rbx
  ret
 "#,
+ fault_rip=const offset_of!(Frame<'static>,fault_rip), fault_rsp=const offset_of!(Frame<'static>,fault_rsp),
  slot=sym SLOT_OFFSET, dispatch=sym dispatch, handle=sym handle,
  host=const offset_of!(Frame<'static>,host_rsp), rsp=const offset_of!(Frame<'static>,guest_rsp), target=const offset_of!(Frame<'static>,target),
  fs=const offset_of!(Frame<'static>,fs), oldfs=const offset_of!(Frame<'static>,old_fs), active=const offset_of!(Frame<'static>,active),
@@ -814,6 +1126,8 @@ mod tests {
             fault_rsp: 0,
             code: 0,
             address: 0,
+            access_kind: u64::MAX,
+            return_address: 0,
             args: [0; 6],
             xmm: [[0; 16]; 8],
             out_xmm: [0; 16],

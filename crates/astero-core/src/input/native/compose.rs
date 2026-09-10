@@ -18,6 +18,9 @@ pub struct NativeBackedGuestImage {
     staging: StagingSnapshot,
 }
 impl NativeBackedGuestImage {
+    pub(crate) fn native_owner(&self) -> &NativeImage {
+        &self.image
+    }
     pub fn state(&self) -> NativeState {
         if !self.image.snapshot().active {
             NativeState::Released

@@ -63,6 +63,11 @@ fn exclusive_adapter_and_deterministic_handler_teardown() {
     let _guard = SERIAL.lock().unwrap();
     let b = Bridge::new().unwrap();
     assert!(matches!(Bridge::new(), Err(BridgeError::Busy)));
+    assert!(
+        std::thread::spawn(|| matches!(Bridge::new(), Err(BridgeError::Busy)))
+            .join()
+            .unwrap()
+    );
     drop(b);
     let mut next = Bridge::new().unwrap();
     next.validate().unwrap();
@@ -75,4 +80,67 @@ fn range_metadata_is_checked_without_granting_transfer() {
     b.prepare_ranges(&[(0x1000, 4096)]).unwrap();
     assert_eq!(b.prepared_ranges(), 1);
     assert!(!b.validated());
+}
+
+#[test]
+fn supervisor_interrupts_loop_and_joins_exact_thread() {
+    let _guard = SERIAL.lock().unwrap();
+    let worker = std::thread::spawn(|| {
+        let mut b = Bridge::new().unwrap();
+        let r = b
+            .supervised_synthetic(SyntheticProbe::InfiniteLoop, 20, &mut |_, _| false)
+            .unwrap();
+        assert_eq!(r.reason, 4);
+        let s = r.supervision.as_ref().unwrap();
+        assert!(s.redirected && Bridge::synthetic_loop_contains(s.rip));
+        assert_eq!(s.suspends, s.resumes);
+        assert!(r.host_fs_restored && r.host_gs_preserved);
+        r
+    });
+    assert_eq!(worker.join().unwrap().reason, 4);
+    assert!(Bridge::new().is_ok());
+}
+#[test]
+fn supervised_boundaries_cancel_deadline_and_preserve_host() {
+    let _guard = SERIAL.lock().unwrap();
+    std::thread::spawn(|| {
+        let mut b = Bridge::new().unwrap();
+        for (p, reason) in [
+            (SyntheticProbe::Return, 0),
+            (SyntheticProbe::Import, 2),
+            (SyntheticProbe::IllegalInstruction, 3),
+            (SyntheticProbe::AccessViolation, 3),
+            (SyntheticProbe::GuardRead, 3),
+        ] {
+            let r = b.supervised_synthetic(p, 100, &mut |_, _| false).unwrap();
+            assert_eq!(r.reason, reason);
+            assert!(r.host_fs_restored && r.host_gs_preserved);
+            let s = r.supervision.unwrap();
+            assert_eq!(s.suspends, s.resumes);
+        }
+        let r = b
+            .supervised_synthetic(SyntheticProbe::Import, 100, &mut |_, c| {
+                c.rax = 42;
+                true
+            })
+            .unwrap();
+        assert_eq!(r.value, 42);
+    })
+    .join()
+    .unwrap();
+}
+#[test]
+fn unbounded_loop_and_invalid_deadline_are_refused() {
+    let _guard = SERIAL.lock().unwrap();
+    let mut b = Bridge::new().unwrap();
+    assert!(
+        b.synthetic(SyntheticProbe::InfiniteLoop, &mut |_, _| false)
+            .is_err()
+    );
+    for ms in [0, 501, u64::MAX] {
+        assert!(
+            b.supervised_synthetic(SyntheticProbe::InfiniteLoop, ms, &mut |_, _| false)
+                .is_err()
+        );
+    }
 }

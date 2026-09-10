@@ -11,6 +11,13 @@ fn main() -> std::process::ExitCode {
 }
 fn run() -> Result<(), String> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args
+        .first()
+        .is_some_and(|a| a == "first-entry" || a == "_first-entry-worker")
+    {
+        let worker = args[0] == "_first-entry-worker";
+        return astero_cli::entry::first::run(args.into_iter().skip(1).collect(), worker);
+    }
     if args.first().is_some_and(|a| a == "entry-readiness") {
         let r=astero_cli::entry::parse(args.into_iter().skip(1)).map_err(|e|format!("{e}; entry-readiness uses native-map arguments plus --stack-base --stack-bytes --tls-base --max-runtime-bytes"))?;
         print!("{}", astero_cli::entry::execute(&r)?);
@@ -326,7 +333,7 @@ fn run() -> Result<(), String> {
     }
     if !args.is_empty() {
         return Err(format!(
-            "Usage: astero-cli entry-readiness <native-map arguments> --stack-base <u64> --stack-bytes <u64> --tls-base <u64> --max-runtime-bytes <u64>\nUsage: astero-cli native-map <stage-image arguments> --max-native-bytes <u64>\nUsage: astero-cli stage-image <load-plan arguments> --max-mapped-bytes <u64>\nUsage: astero-cli load-plan <ps5-identity arguments> --image-bias <u64> --max-providers <u64> --max-plan-records <u64> [--provider <path>]\nUsage: astero-cli ps5-identity <linkage-evidence budgets> --max-identity-records <u64>\nUsage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "Usage: astero-cli first-entry <entry-readiness arguments> --wall-ms <1..500> --containment-ms <1000..30000> (REAL EXECUTION)\nUsage: astero-cli entry-readiness <native-map arguments> --stack-base <u64> --stack-bytes <u64> --tls-base <u64> --max-runtime-bytes <u64>\nUsage: astero-cli native-map <stage-image arguments> --max-native-bytes <u64>\nUsage: astero-cli stage-image <load-plan arguments> --max-mapped-bytes <u64>\nUsage: astero-cli load-plan <ps5-identity arguments> --image-bias <u64> --max-providers <u64> --max-plan-records <u64> [--provider <path>]\nUsage: astero-cli ps5-identity <linkage-evidence budgets> --max-identity-records <u64>\nUsage: astero-cli [--linkage [--synthetic] [--details]]\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             astero_cli::acquisition::USAGE,
             astero_cli::inspection::USAGE,
             astero_cli::dynamic::USAGE,

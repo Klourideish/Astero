@@ -122,6 +122,9 @@ pub struct NativeImage {
     snapshot: NativeSnapshot,
 }
 impl NativeImage {
+    pub fn observer(&self) -> NativeObserver {
+        self.reservation.observer.clone()
+    }
     pub fn snapshot(&self) -> NativeSnapshot {
         let mut s = self.snapshot;
         s.active = !self.reservation.base.is_null();
