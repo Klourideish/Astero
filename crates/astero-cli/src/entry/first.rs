@@ -19,10 +19,13 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
     let mut lower = Vec::new();
     let mut wall = None;
     let mut outer = None;
+    let mut hle = None;
     while let Some(k) = a.next() {
-        if k == "--wall-ms" || k == "--containment-ms" {
+        if k == "--wall-ms" || k == "--containment-ms" || k == "--max-hle-calls" {
             let slot = if k == "--wall-ms" {
                 &mut wall
+            } else if k == "--max-hle-calls" {
+                &mut hle
             } else {
                 &mut outer
             };
@@ -40,6 +43,10 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
         } else {
             lower.push(k);
         }
+    }
+    let hle = hle.unwrap_or(4096);
+    if !(1..=65_536).contains(&hle) {
+        return Err("max-hle-calls must be 1..=65536".into());
     }
     let wall = wall.ok_or("--wall-ms required")?;
     let outer = outer.ok_or("--containment-ms required")?;
@@ -99,9 +106,13 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
             let ready = closed
                 .try_ready()
                 .map_err(|_| "PreparedBlocked; no execution".to_string())?;
-            println!("EntryReady verified; arming {wall} ms execution lease; entry owns DT_INIT");
+            println!(
+                "EntryReady verified; arming {wall} ms execution lease, {hle} HLE calls; entry owns DT_INIT"
+            );
             std::io::stdout().flush().map_err(|e| e.to_string())?;
-            Ok(ready)
+            ready
+                .with_call_budget(hle as usize)
+                .map_err(|e| format!("Call budget: {e:?}"))
         },
         wall,
     )?;
@@ -159,8 +170,8 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
     for c in &f.startup_calls {
         writeln!(
             s,
-            "Startup NID={:#x} library={:?} module={:?} args={:x?} return-lane={:#x} disposition={:?}",
-            c.key.nid, c.key.library, c.key.module, c.arguments, c.returned, c.result
+            "Startup NID={:#x} library={:?} module={:?} args={:x?} return-lane={:#x} disposition={:?} xmm-input={:x?} xmm-return={:x?}",
+            c.key.nid, c.key.library, c.key.module, c.arguments, c.returned, c.result, c.scalar_arguments, c.scalar_returned
         )
         .unwrap();
     }
@@ -187,8 +198,8 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
     for (thread, call) in &f.worker_calls {
         writeln!(
             s,
-            "Worker {} NID={:#x} library={:?} module={:?} args={:x?} return-lane={:#x} disposition={:?}",
-            thread.0, call.key.nid, call.key.library, call.key.module, call.arguments, call.returned, call.result
+            "Worker {} NID={:#x} library={:?} module={:?} args={:x?} return-lane={:#x} disposition={:?} xmm-input={:x?} xmm-return={:x?}",
+            thread.0, call.key.nid, call.key.library, call.key.module, call.arguments, call.returned, call.result, call.scalar_arguments, call.scalar_returned
         )
         .unwrap();
     }

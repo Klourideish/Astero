@@ -156,7 +156,8 @@
       "sysmodule",
       "videoout",
       "user_service",
-      "libc/formatting"
+      "libc/formatting",
+      "libc/math"
     ],
     "astero-gpu": [
       "agc",

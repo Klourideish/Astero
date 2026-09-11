@@ -811,3 +811,69 @@ libc/libc powf, NID0xD43D07D8A363B211. Total29.017ms; all eight workers joined,
 zero pending timing/native resources, source hash unchanged. Guest timing diagnostics distinguish
 requested duration, elapsed duration and lateness. No Windows precision guarantee is implied.
 CPU-time domains are explicitly unsupported. No second-title run occurred.
+
+## M41 scalar math and second-executable smoke
+
+`first-entry` now accepts optional `--max-hle-calls` (1..65536, default 4096). This is a shared
+main/worker provider admission and retention budget, independent of the mandatory wall and
+containment limits. It does not disable supervision or enable execution in preparation commands.
+The first primary experiment hit 4096 after 3737 sincosf calls; continuation explicitly used 65536.
+REAL GUEST CODE WILL EXECUTE for the primary command below. Trusted corpus only; not a sandbox.
+
+Validated primary continuation (no callbacks/fini executed):
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$path = $corpus.artifacts.primary_real_elf.path
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --max-hle-calls 65536 --wall-ms 250 --containment-ms 15000 *> target/m41-primary-2.log
+$result = $LASTEXITCODE
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Exit=$result Before=$before After=$after"
+```
+
+Primary: powf once and sincosf 5086 times returned; next unresolved __cxa_guard_acquire,
+NID 0xDC63E98D0740313C, libc/libc. 96.841 ms overall; eight workers joined, zero native/runtime
+reservations, source SHA unchanged. Scalar diagnostics now preserve XMM inputs and return separately
+from GP lanes. Full numerical/fenv conformance is not claimed.
+
+Exactly one second executable was attempted using named_title_elf. The 32 MiB acquisition limit
+covers its 27,908,888-byte file; execution remains 250 ms/15000 ms. This command is deliberate,
+not the default. It prints load plans for both roles before the contained second preparation:
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$planLimits = @('--max-bytes','33554432','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+foreach ($role in @('primary_real_elf','named_title_elf')) {
+  $path = $corpus.artifacts.$role.path
+  $before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+  & .\target\debug\astero-cli.exe load-plan --path $path @planLimits *> "target/m41-plan-$role.log"
+  "Plan $role exit=$LASTEXITCODE SHA=$before"
+}
+$path = $corpus.artifacts.named_title_elf.path
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --max-hle-calls 65536 --wall-ms 250 --containment-ms 15000 *> target/m41-second-1.log
+$result = $LASTEXITCODE
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Second Exit=$result Before=$before After=$after"
+```
+
+Both load-plan commands return exit 1 because their offline plans preserve unresolved provider
+blockers; acquisition/planning succeeded. The second first-entry command also returns exit 1:
+Windows native exact reservation refused at 0x100000000,size 29134848, error 487. EntryReady was
+not issued; NO SECOND-TITLE GUEST CODE EXECUTED. Parent reports WorkerFailure(Some(1)), not
+clean guest recovery. Do not fix this by overwriting an occupied mapping or adding a title check.
+The exact cause/competing allocation is unmeasured. SourceSHA is unchanged.
+
+Additional validated offline staging diagnostics, using `$corpus` and `$planLimits` above:
+
+```powershell
+foreach ($role in @('primary_real_elf','named_title_elf')) {
+    & .\target\debug\astero-cli.exe stage-image --path $corpus.artifacts.$role.path @planLimits --max-mapped-bytes 67108864
+}
+```
+
+Both exit 0, StagedWithPendingWork, zero byte mappings after teardown. These offline diagnostics
+do not execute guest code and do not prove native placement. See [M41](knowledge/architecture/libc_scalar_math.md)
+for the complete comparison, limitations and recommended next work. No third title was run.

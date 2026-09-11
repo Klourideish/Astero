@@ -11,3 +11,5 @@ pub mod output;
 pub mod strings;
 
 pub mod formatting;
+
+pub mod math;

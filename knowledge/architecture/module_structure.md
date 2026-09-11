@@ -142,3 +142,5 @@ M28 adds memory/mapping/windows_native, core/input/native and CLI/native. Layout
 M29 moves the empty ABI layouts.rs to layouts/mod.rs and adds layouts/entry. Kernel execution/preparation owns layout/storage/boundary; loader load_plan/bootstrap supplies existing structural evidence; core input/entry and CLI entry compose/present. HLE dispatch/prepared remains a host-model registry, not native dispatch.
 
 M30 extends existing execution/host, process, libc and input/entry homes with focused leaves; no new crate or growth root. Assembly is embedded in the private platform.rs leaf so source fingerprints include it.
+
+M41 adds libs/libc/math for the coherent stateless scalar family; exports and numerical adaptations stay separate. The declared module inventory now has 253 homes.

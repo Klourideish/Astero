@@ -300,6 +300,9 @@ fn first_entry_requires_explicit_execution_limits_before_input() {
 fn first_entry_refuses_oversized_and_duplicate_deadlines() {
     for a in [
         vec!["--wall-ms", "501", "--containment-ms", "1000"],
+        vec!["--max-hle-calls", "0"],
+        vec!["--max-hle-calls", "65537"],
+        vec!["--max-hle-calls", "4", "--max-hle-calls", "5"],
         vec![
             "--wall-ms",
             "1",

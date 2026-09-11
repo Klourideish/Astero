@@ -1042,6 +1042,31 @@
         "test:astero-core/test:guest_timing/sleep_conversion_overflow_is_not_wrapped",
         "test:astero-core/test:guest_timing/optional_remainder_preflight_and_success_preservation"
       ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "tests": [
+        "test:astero-core/test:scalar_math/exact_identity_and_capacity",
+        "test:astero-core/test:scalar_math/normal_unary_family",
+        "test:astero-core/test:scalar_math/binary_argument_order_and_width",
+        "test:astero-core/test:scalar_math/float_is_not_double",
+        "test:astero-core/test:scalar_math/negative_zero_and_infinity",
+        "test:astero-core/test:scalar_math/domains_ranges_and_errno_unchanged",
+        "test:astero-core/test:scalar_math/min_max_nan_and_signed_zero",
+        "test:astero-core/test:scalar_math/nearby_even_vs_round_away",
+        "test:astero-core/test:scalar_math/integer_exponent_uses_gp_lane",
+        "test:astero-core/test:scalar_math/scale_extremes_avoid_intermediate_overflow",
+        "test:astero-core/test:scalar_math/frexp_exact_width_and_subnormals",
+        "test:astero-core/test:scalar_math/modf_normal_and_infinity",
+        "test:astero-core/test:scalar_math/modf_negative_integral_zero",
+        "test:astero-core/test:scalar_math/invalid_outputs_do_not_publish_return",
+        "test:astero-core/test:scalar_math/read_only_output_refuses",
+        "test:astero-core/test:scalar_math/sincos_preflights_both_outputs",
+        "test:astero-core/test:scalar_math/sincos_two_checked_outputs",
+        "test:astero-core/test:scalar_math/classification_returns_integer",
+        "test:astero-core/test:scalar_math/nextafter_exact_ieee_steps",
+        "test:astero-core/test:scalar_math/logb_special_and_subnormal"
+      ]
     }
   ],
   "reviews": [
@@ -5955,13 +5980,968 @@
       },
       "guest_library": "libc",
       "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md",
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "powf: implemented and registered; M41 primary runtime-confirmed once, XMM inputs10.0f/0.4f ->2.5118864f; not full numerical/fenv conformance."
+    },
+    {
+      "id": "nid:m41.122324810b0e7d4d",
+      "nid": {
+        "numeric_hex": "0x122324810B0E7D4D",
+        "encoded": "EiMkgQsOfU0"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "__powisf2: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.f4b0a3a56c90e597",
+      "nid": {
+        "numeric_hex": "0xF4B0A3A56C90E597",
+        "encoded": "9LCjpWyQ5Zc"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "pow: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.900fd3762382b1a6",
+      "nid": {
+        "numeric_hex": "0x900FD3762382B1A6",
+        "encoded": "kA-TdiOCsaY"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "frexp: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.69a0cc186917171a",
+      "nid": {
+        "numeric_hex": "0x69A0CC186917171A",
+        "encoded": "aaDMGGkXFxo"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "frexpf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.26bc0520ccca36bd",
+      "nid": {
+        "numeric_hex": "0x26BC0520CCCA36BD",
+        "encoded": "JrwFIMzKNr0"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "ldexp: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.927d32898784c600",
+      "nid": {
+        "numeric_hex": "0x927D32898784C600",
+        "encoded": "kn0yiYeExgA"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "ldexpf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.28628179572a2637",
+      "nid": {
+        "numeric_hex": "0x28628179572A2637",
+        "encoded": "KGKBeVcqJjc"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "scalbn: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.8cc07b105caedf46",
+      "nid": {
+        "numeric_hex": "0x8CC07B105CAEDF46",
+        "encoded": "jMB7EFyu30Y"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "sincos: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.a73b55e00175f222",
+      "nid": {
+        "numeric_hex": "0xA73B55E00175F222",
+        "encoded": "pztV4AF18iI"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "sincosf: implemented and registered; M41 final primary run confirms5086 returned calls with checked guest outputs; not exhaustive numerical conformance."
+    },
+    {
+      "id": "nid:m41.d163070dbe43b7de",
+      "nid": {
+        "numeric_hex": "0xD163070DBE43B7DE",
+        "encoded": "0WMHDb5Dt94"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "modf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.dfe50f33ff44eb16",
+      "nid": {
+        "numeric_hex": "0xDFE50F33FF44EB16",
+        "encoded": "3+UPM-9E6xY"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "modff: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.73ee2bfd3fed1087",
+      "nid": {
+        "numeric_hex": "0x73EE2BFD3FED1087",
+        "encoded": "c+4r-T-tEIc"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "nearbyintf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.b9545c336c8574fe",
+      "nid": {
+        "numeric_hex": "0xB9545C336C8574FE",
+        "encoded": "uVRcM2yFdP4"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "fminf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.2f2c760f350becb7",
+      "nid": {
+        "numeric_hex": "0x2F2C760F350BECB7",
+        "encoded": "Lyx2DzUL7Lc"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "fmaxf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.8b3dac8401852317",
+      "nid": {
+        "numeric_hex": "0x8B3DAC8401852317",
+        "encoded": "iz2shAGFIxc"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "hypotf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.a302ae7a0654e1ec",
+      "nid": {
+        "numeric_hex": "0xA302AE7A0654E1EC",
+        "encoded": "owKuegZU4ew"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "logb: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.87e27ad114657e79",
+      "nid": {
+        "numeric_hex": "0x87E27AD114657E79",
+        "encoded": "h+J60RRlfnk"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "nextafter: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.de6daba3e0e2f829",
+      "nid": {
+        "numeric_hex": "0xDE6DABA3E0E2F829",
+        "encoded": "3m2ro+Di+Ck"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "nextafterf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.35569d7e7cd08474",
+      "nid": {
+        "numeric_hex": "0x35569D7E7CD08474",
+        "encoded": "NVadfnzQhHQ"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "exp: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.f33b2ed385cdb19e",
+      "nid": {
+        "numeric_hex": "0xF33B2ED385CDB19E",
+        "encoded": "8zsu04XNsZ4"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "expf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.76769e1976e33fa1",
+      "nid": {
+        "numeric_hex": "0x76769E1976E33FA1",
+        "encoded": "dnaeGXbjP6E"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "exp2: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.c2e010b7f8fea78a",
+      "nid": {
+        "numeric_hex": "0xC2E010B7F8FEA78A",
+        "encoded": "wuAQt-j+p4o"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "exp2f: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.aed57bfe3582e988",
+      "nid": {
+        "numeric_hex": "0xAED57BFE3582E988",
+        "encoded": "rtV7-jWC6Yg"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "log: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.4505cb6dd4f695ce",
+      "nid": {
+        "numeric_hex": "0x4505CB6DD4F695CE",
+        "encoded": "RQXLbdT2lc4"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "logf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.6390e1b832869674",
+      "nid": {
+        "numeric_hex": "0x6390E1B832869674",
+        "encoded": "Y5DhuDKGlnQ"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "log2: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.86c8bd76bcc74769",
+      "nid": {
+        "numeric_hex": "0x86C8BD76BCC74769",
+        "encoded": "hsi9drzHR2k"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "log2f: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.5ae31b3c128dd535",
+      "nid": {
+        "numeric_hex": "0x5AE31B3C128DD535",
+        "encoded": "WuMbPBKN1TU"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "log10: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.961a5de9693a71cb",
+      "nid": {
+        "numeric_hex": "0x961A5DE9693A71CB",
+        "encoded": "lhpd6Wk6ccs"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "log10f: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.1fcc9ad87d348db2",
+      "nid": {
+        "numeric_hex": "0x1FCC9AD87D348DB2",
+        "encoded": "H8ya2H00jbI"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "sin: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.438ad12f7e0211e1",
+      "nid": {
+        "numeric_hex": "0x438AD12F7E0211E1",
+        "encoded": "Q4rRL34CEeE"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "sinf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.d96137053615c0a3",
+      "nid": {
+        "numeric_hex": "0xD96137053615C0A3",
+        "encoded": "2WE3BTYVwKM"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "cos: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.fcfe8534cce4d8a7",
+      "nid": {
+        "numeric_hex": "0xFCFE8534CCE4D8A7",
+        "encoded": "-P6FNMzk2Kc"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "cosf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.4fbbb236a3fbbd00",
+      "nid": {
+        "numeric_hex": "0x4FBBB236A3FBBD00",
+        "encoded": "T7uyNqP7vQA"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "tan: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.644e9134bf9e2db9",
+      "nid": {
+        "numeric_hex": "0x644E9134BF9E2DB9",
+        "encoded": "ZE6RNL+eLbk"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "tanf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.ecbcb9db368be384",
+      "nid": {
+        "numeric_hex": "0xECBCB9DB368BE384",
+        "encoded": "7Ly52zaL44Q"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "asin: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.1995a317f6081459",
+      "nid": {
+        "numeric_hex": "0x1995A317F6081459",
+        "encoded": "GZWjF-YIFFk"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "asinf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.24172062e5bc94f5",
+      "nid": {
+        "numeric_hex": "0x24172062E5BC94F5",
+        "encoded": "JBcgYuW8lPU"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "acos: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.408ff1d122fc8e1c",
+      "nid": {
+        "numeric_hex": "0x408FF1D122FC8E1C",
+        "encoded": "QI-x0SL8jhw"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "acosf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.39799ab8b750f246",
+      "nid": {
+        "numeric_hex": "0x39799AB8B750F246",
+        "encoded": "OXmauLdQ8kY"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "atan: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.c1e0ee83c403fe51",
+      "nid": {
+        "numeric_hex": "0xC1E0EE83C403FE51",
+        "encoded": "weDug8QD-lE"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "atanf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.1d46d998e9d3fc38",
+      "nid": {
+        "numeric_hex": "0x1D46D998E9D3FC38",
+        "encoded": "HUbZmOnT-Dg"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "atan2: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.107ff1ef5dc0f7d7",
+      "nid": {
+        "numeric_hex": "0x107FF1EF5DC0F7D7",
+        "encoded": "EH-x713A99c"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "atan2f: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.9e56a88cbf610ed0",
+      "nid": {
+        "numeric_hex": "0x9E56A88CBF610ED0",
+        "encoded": "nlaojL9hDtA"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "round: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.0c31c6d5aebedead",
+      "nid": {
+        "numeric_hex": "0x0C31C6D5AEBEDEAD",
+        "encoded": "DDHG1a6+3q0"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "roundf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.a4ac2c96c3149929",
+      "nid": {
+        "numeric_hex": "0xA4AC2C96C3149929",
+        "encoded": "pKwslsMUmSk"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "fmod: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.f3c56ffc0cc7563f",
+      "nid": {
+        "numeric_hex": "0xF3C56FFC0CC7563F",
+        "encoded": "88Vv-AzHVj8"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "fmodf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.19fc40a7d5f28aab",
+      "nid": {
+        "numeric_hex": "0x19FC40A7D5F28AAB",
+        "encoded": "GfxAp9Xyiqs"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "__isnan: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.940f786604febcc3",
+      "nid": {
+        "numeric_hex": "0x940F786604FEBCC3",
+        "encoded": "lA94ZgT+vMM"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "__isnanf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.7612b5e822b08508",
+      "nid": {
+        "numeric_hex": "0x7612B5E822B08508",
+        "encoded": "dhK16CKwhQg"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "__isfinite: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.43ca6f2629945a2b",
+      "nid": {
+        "numeric_hex": "0x43CA6F2629945A2B",
+        "encoded": "Q8pvJimUWis"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "__isfinitef: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.574da816ffbf2730",
+      "nid": {
+        "numeric_hex": "0x574DA816FFBF2730",
+        "encoded": "V02oFv+-JzA"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "__isinf: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m41.ac333201fd4986e8",
+      "nid": {
+        "numeric_hex": "0xAC333201FD4986E8",
+        "encoded": "rDMyAf1Jhug"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::math::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:native.synthetic_bridge"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_scalar_math.md"
+      ],
+      "provenance": "__isinff: adapted PS5Rust scalar implementation, exact registration; synthetic validation, not runtime-confirmed."
+    },
+    {
+      "id": "nid:observed.dc63e98d0740313c",
+      "nid": {
+        "numeric_hex": "0xDC63E98D0740313C",
+        "encoded": "3GPpjQdAMTw"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
       "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/kernel_timing.md"
+        "knowledge/architecture/libc_scalar_math.md"
       ],
-      "provenance": "M40 real unresolved import ordinal89, exact libc/libc key; PS5Rust kernel/libc/nids.rs:73 identifies powf. Observation only; no Astero math implementation/registration. GP lanes do not establish floating-point arguments."
+      "provenance": "M41 primary unresolved __cxa_guard_acquire,ordinal66; exact key corroborated by PS5Rust kernel/libc/nids.rs:354. No Astero provider implementation/registration."
     }
   ],
   "abi": [

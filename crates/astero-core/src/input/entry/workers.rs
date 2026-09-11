@@ -3,7 +3,7 @@ use super::*;
 use astero_hle::calls::memory::{AccessError, GuestMemory};
 use astero_kernel::{
     execution::{
-        host::{BridgeLease, NativeExit},
+        host::{BridgeError, BridgeLease, NativeExit},
         preparation::storage::ThreadStorage,
     },
     synchronization::owned::Synchronization,
@@ -21,12 +21,14 @@ pub const MAX_REGISTERED_PROVIDERS: usize = 256
     + astero_libs::libc::formatting::exports::EXPORTS.len()
     + astero_libs::audio::exports::LEGACY.len()
     + astero_libs::audio::exports::AUDIO2.len()
-    + astero_libs::kernel::timing::EXPORTS.len();
+    + astero_libs::kernel::timing::EXPORTS.len()
+    + astero_libs::libc::math::exports::EXPORTS.len();
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
     attempts: std::sync::atomic::AtomicUsize,
+    call_budget: std::sync::atomic::AtomicUsize,
     pub table: Arc<ThreadTable>,
     pub guest_timing: Arc<astero_kernel::timing::sleep::GuestTiming>,
     pub audio: Arc<astero_audio::output::service::AudioService>,
@@ -91,6 +93,7 @@ impl Runtime {
             )),
             audio: Arc::new(astero_audio::output::service::AudioService::new(scheduler)),
             attempts: std::sync::atomic::AtomicUsize::new(0),
+            call_budget: std::sync::atomic::AtomicUsize::new(super::foundation::MAX_PROVIDER_CALLS),
             table,
             attrs: Arc::new(AttributeTable::new(256)),
             image: guest.image.shared_owner(),
@@ -134,6 +137,7 @@ impl Runtime {
             self.startup.clone(),
             self.executable.clone(),
         ));
+        entries.extend(astero_libs::libc::math::exports::registrations());
         entries.extend(astero_libs::audio::exports::registrations(
             self.audio.clone(),
         ));
@@ -182,12 +186,26 @@ impl Runtime {
     pub fn access(&self) -> Access<'_> {
         Access(self)
     }
+    /// Called before the owning EntryReady capability enters or creates guest workers.
+    pub(super) fn configure_call_budget(&self, maximum: usize) -> Result<(), BridgeError> {
+        use std::sync::atomic::Ordering::SeqCst;
+        if !(1..=65_536).contains(&maximum) || self.attempts.load(SeqCst) != 0 {
+            return Err(BridgeError::Validation);
+        }
+        self.calls
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .try_reserve_exact(maximum)
+            .map_err(|_| BridgeError::Validation)?;
+        self.call_budget.store(maximum, SeqCst);
+        Ok(())
+    }
     pub fn admit_call(&self) -> bool {
         self.attempts
             .fetch_update(
                 std::sync::atomic::Ordering::AcqRel,
                 std::sync::atomic::Ordering::Acquire,
-                |n| (n < super::foundation::MAX_PROVIDER_CALLS).then(|| n + 1),
+                |n| (n < self.call_budget.load(std::sync::atomic::Ordering::SeqCst)).then(|| n + 1),
             )
             .is_ok()
     }
@@ -334,6 +352,8 @@ impl Runtime {
                                 ordinal,
                                 key: key.clone(),
                                 arguments: args,
+                                scalar_arguments: [frame.xmm[0], frame.xmm[1]],
+                                scalar_returned: frame.xmm0,
                                 returned: frame.rax,
                             },
                         ));
@@ -711,15 +731,21 @@ mod tests {
             engine.scheduler(),
             startup,
             &bridge,
-            vec![Some(if nid == 0x78b743c3a974fdb5 {
-                astero_libs::libc::formatting::exports::key(nid)
-            } else {
-                ProviderKey {
-                    nid,
-                    library: b"libkernel".to_vec(),
-                    module: b"libkernel".to_vec(),
-                }
-            })],
+            vec![Some(
+                if nid == 0x78b743c3a974fdb5
+                    || astero_libs::libc::math::exports::EXPORTS
+                        .iter()
+                        .any(|e| e.nid == nid)
+                {
+                    astero_libs::libc::formatting::exports::key(nid)
+                } else {
+                    ProviderKey {
+                        nid,
+                        library: b"libkernel".to_vec(),
+                        module: b"libkernel".to_vec(),
+                    }
+                },
+            )],
         )
         .unwrap();
         let deadline = astero_timing::time::Deadline::after(
@@ -730,6 +756,73 @@ mod tests {
         sync.arm(deadline).unwrap();
         runtime.table.arm(deadline);
         (guest, bridge, runtime, engine)
+    }
+    #[test]
+    fn execution_call_budget_is_bounded_and_cannot_change_after_admission() {
+        let _serial = SERIAL.lock().unwrap();
+        let (_g, _b, r, _e) = fixture(&[0xc3], 0);
+        assert!(r.configure_call_budget(0).is_err());
+        assert!(r.configure_call_budget(65_537).is_err());
+        r.configure_call_budget(8192).unwrap();
+        for _ in 0..8192 {
+            assert!(r.admit_call());
+        }
+        assert!(!r.admit_call());
+        assert!(r.configure_call_budget(8193).is_err());
+        r.stop_and_join();
+    }
+    #[test]
+    fn native_scalar_math_preserves_float_and_double_lanes() {
+        let _serial = SERIAL.lock().unwrap();
+        for (nid, x, y, want, width) in [
+            (
+                0xD43D07D8A363B211,
+                2f32.to_bits() as u64,
+                3f32.to_bits() as u64,
+                8f32.to_bits() as u64,
+                4,
+            ),
+            (
+                0xF4B0A3A56C90E597,
+                (1.0 + 2f64.powi(-30)).to_bits(),
+                1f64.to_bits(),
+                (1.0 + 2f64.powi(-30)).to_bits(),
+                8,
+            ),
+        ] {
+            // Astero-owned probe: MOVABS RAX, bits; MOVQ XMM0/1,RAX; tail-jump import.
+            let mut code = vec![0x48, 0xb8];
+            code.extend_from_slice(&x.to_le_bytes());
+            code.extend_from_slice(&[0x66, 0x48, 0x0f, 0x6e, 0xc0, 0x48, 0xb8]);
+            code.extend_from_slice(&y.to_le_bytes());
+            code.extend_from_slice(&[0x66, 0x48, 0x0f, 0x6e, 0xc8]);
+            let (g, _b, r, _e) = fixture_impl(&code, nid, true);
+            let slot = g.thread.layout().stack.start.0;
+            r.create(
+                Attributes::default(),
+                0x220001100,
+                0,
+                vec![],
+                slot,
+                &mut r.access(),
+            )
+            .unwrap();
+            assert_eq!(r.table.join(Thread(1), Thread(2)), Ok(0));
+            {
+                let exits = r.exits.lock().unwrap();
+                let exit = &exits[0].1;
+                assert_eq!(exit.xmm0[..width], want.to_le_bytes()[..width]);
+                assert!(exit.host_fs_restored && exit.host_gs_preserved);
+            }
+            r.stop_and_join();
+            assert!(
+                r.observers
+                    .lock()
+                    .unwrap()
+                    .iter()
+                    .all(|o| o.active_reservations() == 0)
+            );
+        }
     }
     #[test]
     fn composed_workers_return_and_exit_through_real_provider_registry() {

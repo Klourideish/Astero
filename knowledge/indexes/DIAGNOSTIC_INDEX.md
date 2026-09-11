@@ -47,7 +47,7 @@ Discovery and lexical references do not prove passing tests, runtime support or 
 | diagnostic:process.user_service | astero-kernel / Snapshot | implemented | [crates/astero-kernel/src/process/users.rs](../../crates/astero-kernel/src/process/users.rs) : 15-21 |
 | diagnostic:runtime.entry | astero-core / EntryError | implemented | [crates/astero-core/src/input/entry/owner.rs](../../crates/astero-core/src/input/entry/owner.rs) : 51-59 |
 | diagnostic:runtime.entry_closure | astero-core / ClosureError | implemented | [crates/astero-core/src/input/entry/closure.rs](../../crates/astero-core/src/input/entry/closure.rs) : 19-36 |
-| diagnostic:runtime.first_entry | astero-core / FirstEntryStop | implemented | [crates/astero-core/src/input/entry/closure.rs](../../crates/astero-core/src/input/entry/closure.rs) : 669-680 |
+| diagnostic:runtime.first_entry | astero-core / FirstEntryStop | implemented | [crates/astero-core/src/input/entry/closure.rs](../../crates/astero-core/src/input/entry/closure.rs) : 681-692 |
 | diagnostic:session.host | astero-core / Diagnostic | implemented | [crates/astero-core/src/session/observation/snapshot.rs](../../crates/astero-core/src/session/observation/snapshot.rs) : 22-25 |
 | diagnostic:session.snapshot | astero-core / SessionSnapshot | implemented | [crates/astero-core/src/session/observation/snapshot.rs](../../crates/astero-core/src/session/observation/snapshot.rs) : 28-36 |
 | diagnostic:timing.scheduler | astero-timing / Snapshot | implemented | [crates/astero-timing/src/diagnostics/mod.rs](../../crates/astero-timing/src/diagnostics/mod.rs) : 46-59 |

@@ -91,8 +91,17 @@ impl Drop for ClosureGuest {
 /// No public constructor; unresolved closure never manufactures the capability.
 pub struct EntryReadyGuest {
     owner: ClosureGuest,
+    call_budget: usize,
 }
 impl EntryReadyGuest {
+    /// Explicit per-run admission/retention bound; no change to wall-clock supervision.
+    pub fn with_call_budget(mut self, maximum: usize) -> Result<Self, BridgeError> {
+        if !(1..=65_536).contains(&maximum) {
+            return Err(BridgeError::Validation);
+        }
+        self.call_budget = maximum;
+        Ok(self)
+    }
     pub fn report(&self) -> &ClosureReport {
         &self.owner.report
     }
@@ -166,7 +175,10 @@ impl ClosureGuest {
     }
     pub fn try_ready(self) -> Result<EntryReadyGuest, Box<Self>> {
         if self.entry_ready() {
-            Ok(EntryReadyGuest { owner: self })
+            Ok(EntryReadyGuest {
+                owner: self,
+                call_budget: super::foundation::MAX_PROVIDER_CALLS,
+            })
         } else {
             Err(Box::new(self))
         }
@@ -684,6 +696,8 @@ pub struct StartupCall {
     pub ordinal: u32,
     pub key: ProviderKey,
     pub arguments: [u64; 6],
+    pub scalar_arguments: [[u8; 16]; 2],
+    pub scalar_returned: [u8; 16],
     pub returned: u64,
 }
 #[derive(Debug)]
@@ -722,14 +736,18 @@ pub struct FirstEntryReport {
 impl EntryReadyGuest {
     /// Consumes authority on the dedicated owning thread. Does not invoke initializers/fini.
     fn execute_first(mut self, millis: u64) -> Result<FirstEntryReport, BridgeError> {
+        let call_budget = self.call_budget;
         let owner = &mut self.owner;
+        if let Some(runtime) = &owner.runtime {
+            runtime.configure_call_budget(call_budget)?;
+        }
         let initial = owner.guest.context.clone();
         let source = owner.report.source;
         let keys = &owner.keys;
         let registry = &owner.guest.registry;
         let mut calls = Vec::new();
         calls
-            .try_reserve_exact(super::foundation::MAX_PROVIDER_CALLS)
+            .try_reserve_exact(call_budget)
             .map_err(|_| BridgeError::Validation)?;
         let mut counts = [0, 0];
         let mut exhausted = false;
@@ -764,7 +782,7 @@ impl EntryReadyGuest {
                 let Some(key) = keys.get(ordinal as usize).and_then(|k| k.as_ref()) else {
                     return false;
                 };
-                if calls.len() >= super::foundation::MAX_PROVIDER_CALLS {
+                if calls.len() >= call_budget {
                     exhausted = true;
                     return false;
                 }
@@ -826,6 +844,8 @@ impl EntryReadyGuest {
                     ordinal,
                     key: key.clone(),
                     arguments: args,
+                    scalar_arguments: [frame.xmm[0], frame.xmm[1]],
+                    scalar_returned: frame.xmm0,
                     returned: frame.rax,
                 });
                 !stopped && !refused

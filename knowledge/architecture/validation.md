@@ -2018,3 +2018,33 @@ diagnostics 43, NIDs 268 (265 registered / 3 observation-only), ABI 5; total 373
 One new timespec representation ABI, not a full kernel clock contract. No new crates/dependencies:
 16 crates, 25 internal edges, 252 module homes. All 53 Python tests passed. Final freshness and policy/state/structure passed; all 17 index files regenerate byte-identically.
 Supplemental whitespace and git diff --check pass. M40 remains active ready_for_cleanup pending approval.
+
+## M41 scalar math and cross-title smoke - 2026-09-11
+
+Final formatting, workspace all-target check/build, warnings-denied Clippy and full Rust suite pass:
+594 executable tests and 23 doctests, zero failures/ignored. Added 22 tests: 20 scalar contract tests,
+one native float/double worker probe, one call-budget lifecycle test; extended CLI limit rejection
+coverage. Existing supervisor, synchronization, workers, checked memory, formatting, AudioOut and
+timing regressions are included. No primary rerun followed Phase B because no runtime fix followed it.
+
+Primary first run: powf succeeded; 3737 sincosf calls then 4096-call allowance exhaustion.
+After adding an explicit bounded --max-hle-calls option, full preflight passed again. Continuation
+with 65536 calls and unchanged 250 ms/15000 ms bounds recorded powf once and sincosf5086 times;
+next unresolved libc/libc __cxa_guard_acquire 0xDC63E98D0740313C. Duration96841 us overall,
+95381 us native; no supervisor redirection. Eight workers joined, zero reservations/waiters,
+FS restored/GS preserved, empty release errors, Clean containment, unchanged source SHA.
+
+One distinct named_title_elf attempt followed the passed Phase A gate. Acquisition/plan and byte
+staging succeeded; native reservation failed at0x100000000,size29134848,Windows487. No EntryReady,
+no second guest code, no second HLE calls/guest workers or runtime-duration claim. Parent reaped
+child exit1 (WorkerFailure), not reported as clean native recovery. No successful failed-branch
+reservation was published; no numeric runtime mapping snapshot is claimed for this failure path.
+Separate offline stage-image commands confirm both byte stages and zero mappings after release.
+The second source SHA is unchanged. Exact plans, hashes, context and evidence limits are in
+libc_scalar_math.md; commands are in USAGE. Logs target/m41-* remain ignored/local-only.
+
+NIDs321:318 registered/3 observation-only;53 scalar registrations,only powf/sincosf runtime-confirmed.
+ABI5 unchanged. One new libs/libc/math home;16 crates/25 edges/253 module homes. All 53 Python tests pass, including policy/state/structure and index freshness.
+All 17 index files regenerate byte-identically. Supplemental whitespace and git diff --check pass.
+Indexes: implementation1497, subsystems138, modules586, sources571, tests672, diagnostics43,
+NIDs321, ABI5; total3833. M41 active ready_for_cleanup pending approval. No commit/push or M42 implementation.
