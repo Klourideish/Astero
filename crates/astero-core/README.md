@@ -66,3 +66,5 @@ M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapt
 M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
 
 M37 composes owned formatting/output state with existing native workers; loader-only paths remain independent.
+
+M38 runtime owns/shuts down AudioService before joining workers; all audio waits share canonical timing.

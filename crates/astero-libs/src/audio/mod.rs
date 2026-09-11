@@ -1,2 +1,2 @@
-//! Planned audio ownership within astero-libs.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Checked AudioOut guest contracts; mechanisms remain in astero-audio.
+pub mod exports;

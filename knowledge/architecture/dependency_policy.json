@@ -37,7 +37,8 @@
     ],
     "astero-audio": [
       "astero-abi",
-      "astero-memory"
+      "astero-memory",
+      "astero-timing"
     ],
     "astero-debug": [
       "astero-abi",

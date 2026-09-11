@@ -4,7 +4,9 @@ Audio processing, mixing and host output.
 
 ## Interfaces and status
 
-M0 scaffold only. Module roots document future ownership; no runtime mechanisms are implemented.
+M38 implements runtime-owned AudioOut ports and AudioOut2 context queues with an astero-timing
+null sink. No host playback, mixing, codecs or audio event delivery is claimed. Guest layouts and
+NID contracts remain in libs; core owns lifetime. See [M38](../../knowledge/architecture/audio_startup.md).
 
 ## Module ownership
 

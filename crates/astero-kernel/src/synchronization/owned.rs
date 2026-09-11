@@ -140,7 +140,11 @@ impl Synchronization {
         if s.stopped {
             return Err(Error::Interrupted);
         }
-        if address == 0 || s.objects.iter().any(|o| o.address == address) {
+        if address == 0
+            || s.objects
+                .iter()
+                .any(|o| o.address == address && (kind != Kind::Mutex || o.kind != Kind::Mutex))
+        {
             return Err(Error::Invalid);
         }
         if s.objects.len() == self.capacity {
@@ -168,7 +172,12 @@ impl Synchronization {
     pub(super) fn index(s: &State, id: u64, address: u64, kind: Kind) -> Result<usize> {
         s.objects
             .iter()
-            .position(|o| o.id == id && o.address == address && o.kind == kind)
+            .position(|o| {
+                o.id == id
+                    && address != 0
+                    && (kind == Kind::Mutex || o.address == address)
+                    && o.kind == kind
+            })
             .ok_or(Error::Invalid)
     }
     pub fn validate(&self, id: u64, address: u64, kind: Kind) -> Result {

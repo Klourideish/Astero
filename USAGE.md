@@ -720,3 +720,38 @@ cargo test -p astero-core native_worker_formatting -- --nocapture
 Results:24 formatting tests and one native two-worker test pass; the latter covers mixed XMM/GP
 and seven overflow arguments with clean joins/mapping release. Real runtime confirms only the
 observed vsnprintf/printf string paths, not every registered conversion/export.
+
+## M38 AudioOut and media startup
+
+REAL GUEST CODE WILL EXECUTE. Trusted configured primary_real_elf only; this is not a security sandbox.
+The same bounded command was validated once:
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$path = $corpus.artifacts.primary_real_elf.path
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --wall-ms 250 --containment-ms 15000 *> target/m38-real-1.log
+$result = $LASTEXITCODE
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Exit=$result Before=$before After=$after"
+```
+
+Expected: previous AudioOut Initialize succeeds, then stop on a different subsystem or unknown ABI.
+Actual: exit0/Clean,16489us overall/15283us native. Initialize, reset/query, context/user/port creation
+all succeeded once. Context1/user2/port3; null sink,512-frame context,48kHz modeled rate. No output
+buffers or audio waits occurred. All four mutex helper creations succeeded; the three failure
+messages disappeared. Next stop: sceAudioOut2GetSpeakerInfo,0x0C89B3D85B7D1368,unregistered.
+It has no prototype implementation and its complete output ABI remains unresolved; no fake response.
+Eight workers joined; audio objects/tickets and native/runtime reservations released,source SHA unchanged.
+Physical playback is not implemented. State/volume/period tests do not establish host audio quality.
+
+Synthetic validation commands (no corpus execution):
+
+```powershell
+cargo test -p astero-audio --test output
+cargo test -p astero-core --test audio --test synchronization
+```
+
+These passed16 audio-service,10 adapter and5 synchronization tests. Exact evidence, NIDs, raw
+context and limitations are in [M38 architecture](knowledge/architecture/audio_startup.md).

@@ -1941,3 +1941,29 @@ Repeated regeneration checks all 17 index files for byte identity; final freshne
 supplemental whitespace and git diff checks are recorded at completion.
 Logs remain ignored under target/m37-{preflight-rust,final-rust,final-python,real-1}.log.
 M37 remains active ready_for_cleanup pending approval; no M38, commit, push or history rewrite.
+
+## M38 AudioOut/media-startup migration — 2026-09-11
+
+Full preflight passed before real execution. Final fmt/check/build (all targets), warnings-denied
+Clippy and workspace Rust suite pass:541 executable tests,23 doctests,zero failures/ignored.
+Added27 tests (16 service,10 core adapters,one mutex regression); refined existing copied-mutex
+identity test. CLI, M31 supervisor, M33 waits, M34 native workers, M35 memory and M37 formatting
+regressions included. Audio manual-clock/cancellation/batch tests pass; actual audio wait/output
+behavior remains unobserved in the real workload. All53 Python tests pass, including index and
+policy/state/structure. Policy:16 crates,25 internal edges,252 module homes.
+
+One primary_real_elf run used the exact M38 USAGE command:250ms wall/15000ms containment,
+exit0/Clean,16489us overall/15283us native. Six AudioOut2 startup calls succeeded; three owned
+objects created/closed; no buffers/waits/events. Four mutex creations now succeed; the three
+failure messages disappear. Next unknown ABI: GetSpeakerInfo0x0C89B3D85B7D1368. No PS5Rust
+implementation or complete firmware output contract; no fabricated response or unrelated fix.
+Eight workers joined, condition waits interrupted, FS restored/GS preserved, zero reservations,
+zero audio objects/tickets, releaseerrors[], identical source SHA. Full context/evidence in
+[audio startup](audio_startup.md); raw logs target/m38-real-1.log remain local/ignored.
+
+Indexes:implementation1434,subsystems138,modules575,sources560,tests619,diagnostics42,
+NIDs249 (246 registered/3 unregistered),ABI3,total3620. Audio family25 registered,only six
+runtime-confirmed; new SpeakerInfo observation unregistered. No new ABI claim.
+Final freshness and repeated generation cover all17 files for byte identity; policy, supplemental
+whitespace and Git diff checks must remain clean. M38 ready_for_cleanup pending approval;
+no M39,commit,push or rewritten history. Logs target/m38-final-{check,build,clippy,rust,policy,python}.log.

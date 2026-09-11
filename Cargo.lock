@@ -101,6 +101,9 @@ version = "0.1.0"
 [[package]]
 name = "astero-audio"
 version = "0.1.0"
+dependencies = [
+ "astero-timing",
+]
 
 [[package]]
 name = "astero-cli"
@@ -116,6 +119,7 @@ name = "astero-core"
 version = "0.1.0"
 dependencies = [
  "astero-abi",
+ "astero-audio",
  "astero-hle",
  "astero-kernel",
  "astero-libs",
@@ -176,6 +180,7 @@ name = "astero-libs"
 version = "0.1.0"
 dependencies = [
  "astero-abi",
+ "astero-audio",
  "astero-hle",
  "astero-kernel",
  "astero-memory",

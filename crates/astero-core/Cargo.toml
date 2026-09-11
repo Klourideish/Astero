@@ -8,6 +8,7 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
+astero-audio = { path = "../astero-audio" }
 astero-loader = { path = "../astero-loader" }
 astero-timing = { path = "../astero-timing" }
 astero-memory = { path = "../astero-memory" }

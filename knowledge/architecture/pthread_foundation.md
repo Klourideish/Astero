@@ -229,3 +229,7 @@ workload replay was needed for this shutdown-only correction.
 
 Final M33 index regeneration was byte-identical across all 17 index-directory files; freshness,
 policy/state/structure, all 53 Python tests and whitespace checks passed after the shutdown fix.
+
+M38 supersedes only the mutex publication-address identity restriction: valid copied opaque mutex
+tokens remain usable and helper output slots may be reused. Kind/stale/ownership checks remain.
+See [correction and real evidence](audio_startup.md). Other object kinds retain their M33 contract.

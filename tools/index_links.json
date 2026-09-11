@@ -962,6 +962,42 @@
         "test:astero-libs/test:formatting/concurrent_output_is_call_atomic",
         "test:astero-libs/test:formatting/output_preflight_avoids_partial_invalid_tail"
       ]
+    },
+    {
+      "implementation": "impl:astero-audio/lib:astero_audio/output::service::impl[AudioService]::submit",
+      "tests": [
+        "test:astero-audio/test:output/lifecycle",
+        "test:astero-audio/test:output/capacity",
+        "test:astero-audio/test:output/formats",
+        "test:astero-audio/test:output/forged_config",
+        "test:astero-audio/test:output/exact_period",
+        "test:astero-audio/test:output/batch_invalid_tail",
+        "test:astero-audio/test:output/ticket_failure_rolls_back",
+        "test:astero-audio/test:output/invalid_size_duplicate",
+        "test:astero-audio/test:output/context_depth",
+        "test:astero-audio/test:output/blocking_completion",
+        "test:astero-audio/test:output/shutdown_interrupts",
+        "test:astero-audio/test:output/deadline_not_completion",
+        "test:astero-audio/test:output/close_interrupts",
+        "test:astero-audio/test:output/child_kind_lifetime",
+        "test:astero-audio/test:output/volume",
+        "test:astero-audio/test:output/concurrent_teardown"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "tests": [
+        "test:astero-core/test:audio/exact_provider_family_keys",
+        "test:astero-core/test:audio/checked_legacy_output_and_null_submission",
+        "test:astero-core/test:audio/invalid_buffer_prevents_admission",
+        "test:astero-core/test:audio/batch_guest_tail_preflight",
+        "test:astero-core/test:audio/state_and_volume_bytes",
+        "test:astero-core/test:audio/reset_query_create_owned_context",
+        "test:astero-core/test:audio/failed_publication_does_not_create",
+        "test:astero-core/test:audio/nonempty_unknown_attributes_are_not_success",
+        "test:astero-core/test:audio/queue_output_pair_preflight",
+        "test:astero-core/test:audio/audio2_port_parent_and_system_state"
+      ]
     }
   ],
   "reviews": [
@@ -1597,6 +1633,20 @@
       "description": "Bounded printf-family operation, required/written counts, truncation and structured refusal; no payload logging by default.",
       "evidence": [
         "knowledge/architecture/libc_formatting.md"
+      ]
+    },
+    {
+      "id": "diagnostic:audio.output",
+      "implementation": "impl:astero-audio/lib:astero_audio/output::service::Snapshot",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "Runtime-owned null-sink ports/configurations,retired identities,submitted/completed/cancelled totals; no host playback claim.",
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
       ]
     }
   ],
@@ -5122,13 +5172,413 @@
       },
       "guest_library": "libSceAudioOut2",
       "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2Initialize: PS5Rust-adapted null-sink implementation, registered; runtime-confirmed successful startup call in M38."
+    },
+    {
+      "id": "nid:m38.25f10f5d5c6116a0",
+      "nid": {
+        "numeric_hex": "0x25F10F5D5C6116A0",
+        "encoded": "JfEPXVxhFqA"
+      },
+      "guest_library": "libSceAudioOut",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOutInit: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.7a436fb13db6aec6",
+      "nid": {
+        "numeric_hex": "0x7A436FB13DB6AEC6",
+        "encoded": "ekNvsT22rsY"
+      },
+      "guest_library": "libSceAudioOut",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOutOpen: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.b35fffb84f66045c",
+      "nid": {
+        "numeric_hex": "0xB35FFFB84F66045C",
+        "encoded": "s1--uE9mBFw"
+      },
+      "guest_library": "libSceAudioOut",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOutClose: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.40e42d6de0eab13e",
+      "nid": {
+        "numeric_hex": "0x40E42D6DE0EAB13E",
+        "encoded": "QOQtbeDqsT4"
+      },
+      "guest_library": "libSceAudioOut",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOutOutput: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.c373dd6924d2c061",
+      "nid": {
+        "numeric_hex": "0xC373DD6924D2C061",
+        "encoded": "w3PdaSTSwGE"
+      },
+      "guest_library": "libSceAudioOut",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOutOutputs: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.6feb8057cf489711",
+      "nid": {
+        "numeric_hex": "0x6FEB8057CF489711",
+        "encoded": "b+uAV89IlxE"
+      },
+      "guest_library": "libSceAudioOut",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOutSetVolume: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.1ab43db3822b35a4",
+      "nid": {
+        "numeric_hex": "0x1AB43DB3822B35A4",
+        "encoded": "GrQ9s4IrNaQ"
+      },
+      "guest_library": "libSceAudioOut",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOutGetPortState: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.b7962b8b3b9fa507",
+      "nid": {
+        "numeric_hex": "0xB7962B8B3B9FA507",
+        "encoded": "t5YrizufpQc"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2ContextResetParam: PS5Rust-adapted null-sink implementation, registered; runtime-confirmed successful startup call in M38."
+    },
+    {
+      "id": "nid:m38.a439a67bb0609ba1",
+      "nid": {
+        "numeric_hex": "0xA439A67BB0609BA1",
+        "encoded": "pDmme7Bgm6E"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2ContextQueryMemory: PS5Rust-adapted null-sink implementation, registered; runtime-confirmed successful startup call in M38."
+    },
+    {
+      "id": "nid:m38.d31ea8d555406126",
+      "nid": {
+        "numeric_hex": "0xD31EA8D555406126",
+        "encoded": "0x6o1VVAYSY"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2ContextCreate: PS5Rust-adapted null-sink implementation, registered; runtime-confirmed successful startup call in M38."
+    },
+    {
+      "id": "nid:m38.a27e991fb01ba35d",
+      "nid": {
+        "numeric_hex": "0xA27E991FB01BA35D",
+        "encoded": "on6ZH7Abo10"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2ContextDestroy: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.3c4db31cca8b487b",
+      "nid": {
+        "numeric_hex": "0x3C4DB31CCA8B487B",
+        "encoded": "PE2zHMqLSHs"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2ContextAdvance: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.68823d8799e58bd5",
+      "nid": {
+        "numeric_hex": "0x68823D8799E58BD5",
+        "encoded": "aII9h5nli9U"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2ContextPush: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.c72c1871107b9db4",
+      "nid": {
+        "numeric_hex": "0xC72C1871107B9DB4",
+        "encoded": "xywYcRB7nbQ"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2UserCreate: PS5Rust-adapted null-sink implementation, registered; runtime-confirmed successful startup call in M38."
+    },
+    {
+      "id": "nid:m38.21a65727d33bf6ea",
+      "nid": {
+        "numeric_hex": "0x21A65727D33BF6EA",
+        "encoded": "IaZXJ9M79uo"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2UserDestroy: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.24adb06a664fcf03",
+      "nid": {
+        "numeric_hex": "0x24ADB06A664FCF03",
+        "encoded": "JK2wamZPzwM"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2PortCreate: PS5Rust-adapted null-sink implementation, registered; runtime-confirmed successful startup call in M38."
+    },
+    {
+      "id": "nid:m38.f174c0ad23f25879",
+      "nid": {
+        "numeric_hex": "0xF174C0AD23F25879",
+        "encoded": "8XTArSPyWHk"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2PortSetAttributes: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.71df91b70f83d71f",
+      "nid": {
+        "numeric_hex": "0x71DF91B70F83D71F",
+        "encoded": "cd+Rtw+D1x8"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2PortDestroy: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.81ab4450a1be11ae",
+      "nid": {
+        "numeric_hex": "0x81AB4450A1BE11AE",
+        "encoded": "gatEUKG+Ea4"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2PortGetState: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.47b774175836aac5",
+      "nid": {
+        "numeric_hex": "0x47B774175836AAC5",
+        "encoded": "R7d0F1g2qsU"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2ContextGetQueueLevel: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.1b560e2832585f66",
+      "nid": {
+        "numeric_hex": "0x1B560E2832585F66",
+        "encoded": "G1YOKDJYX2Y"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2GetSpeakerArrayMemorySize: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.6e404df8230bc117",
+      "nid": {
+        "numeric_hex": "0x6E404DF8230BC117",
+        "encoded": "bkBN+CMLwRc"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2GetSystemState: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.5c7977f193649dbb",
+      "nid": {
+        "numeric_hex": "0x5C7977F193649DBB",
+        "encoded": "XHl38ZNknbs"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2MasteringInit: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m38.e1dab6adb956960d",
+      "nid": {
+        "numeric_hex": "0xE1DAB6ADB956960D",
+        "encoded": "4dq2rblWlg0"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md"
+      ],
+      "provenance": "sceAudioOut2ContextSetAttributes: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:observed.0c89b3d85b7d1368",
+      "nid": {
+        "numeric_hex": "0x0C89B3D85B7D1368",
+        "encoded": "DImz2Ft9E2g"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
       "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/libc_formatting.md"
+        "knowledge/architecture/audio_startup.md"
       ],
-      "provenance": "M37 real unresolved ordinal138, exact artifact identity; observation only, no name/implementation/registration claim."
+      "provenance": "sceAudioOut2GetSpeakerInfo: M38 unresolved runtime import; firmware catalogue name correlation only, no HLE implementation or established complete output ABI."
     }
   ],
   "abi": [

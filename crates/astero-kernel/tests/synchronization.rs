@@ -94,10 +94,10 @@ fn mutex_wrong_owner_and_busy_destroy() {
     assert_eq!(s.destroy(id, 8, Kind::Mutex), Err(Error::Busy));
 }
 #[test]
-fn stale_and_copied_handles_refused() {
+fn copied_mutex_tokens_remain_valid_but_stale_or_wrong_kind_refused() {
     let (_e, _c, s) = setup();
     let id = s.create(8, Kind::Mutex, 1).unwrap();
-    assert_eq!(s.validate(id, 16, Kind::Mutex), Err(Error::Invalid));
+    assert_eq!(s.validate(id, 16, Kind::Mutex), Ok(()));
     assert_eq!(s.validate(id, 8, Kind::Cond), Err(Error::Invalid));
     s.destroy(id, 8, Kind::Mutex).unwrap();
     let newer = s.create(8, Kind::Mutex, 1).unwrap();

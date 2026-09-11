@@ -173,3 +173,71 @@ fn wrong_provider_context_remains_missing() {
     };
     assert!(matches!(r.find(&k), Err(RegistryError::Missing)));
 }
+
+#[test]
+fn mutex_factory_reuses_output_slot_and_publishes_copied_tokens() {
+    let (_e, s, r, mut m) = setup();
+    let mut ids = vec![];
+    for slot in [40, 48, 56, 64] {
+        assert_eq!(
+            call(
+                &r,
+                &mut m,
+                "SCE_PTHREAD_MUTEXATTR_INIT",
+                [16, 0, 0, 0, 0, 0]
+            ),
+            0
+        );
+        assert_eq!(
+            call(
+                &r,
+                &mut m,
+                "SCE_PTHREAD_MUTEXATTR_SETTYPE",
+                [16, 2, 0, 0, 0, 0]
+            ),
+            0
+        );
+        assert_eq!(
+            call(&r, &mut m, "SCE_PTHREAD_MUTEX_INIT", [8, 16, 0, 0, 0, 0]),
+            0
+        );
+        let token = m.read(8, 8).unwrap();
+        m.write(slot, &token).unwrap();
+        ids.push(u64::from_le_bytes(token.try_into().unwrap()));
+        assert_eq!(
+            call(
+                &r,
+                &mut m,
+                "SCE_PTHREAD_MUTEXATTR_DESTROY",
+                [16, 0, 0, 0, 0, 0]
+            ),
+            0
+        );
+        assert_eq!(
+            call(&r, &mut m, "SCE_PTHREAD_MUTEX_LOCK", [slot, 0, 0, 0, 0, 0]),
+            0
+        );
+        assert_eq!(
+            call(
+                &r,
+                &mut m,
+                "SCE_PTHREAD_MUTEX_UNLOCK",
+                [slot, 0, 0, 0, 0, 0]
+            ),
+            0
+        );
+    }
+    assert_eq!(s.snapshot().objects.len(), 4);
+    for (slot, id) in [40, 48, 56, 64].into_iter().zip(ids) {
+        assert_eq!(
+            call(
+                &r,
+                &mut m,
+                "SCE_PTHREAD_MUTEX_DESTROY",
+                [slot, 0, 0, 0, 0, 0]
+            ),
+            0
+        );
+        assert!(s.validate(id, 8, Kind::Mutex).is_err());
+    }
+}

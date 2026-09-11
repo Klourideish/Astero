@@ -101,3 +101,7 @@ M29 activates core -> kernel/HLE, kernel -> memory/ABI, HLE -> ABI. Kernel owns 
 M30 activates core -> libs and libs -> kernel. Guest startup contracts remain in libs; kernel owns native bridge/recovery and callback storage, memory owns VM. Kernel denies unsafe except its private execution/host/platform.rs leaf. This does not authorize real guest entry. See [native closure](native_entry_closure.md).
 
 M31 activates kernel -> timing for native deadlines. Core owns execution-thread/process coordination; loader remains offline and timing-independent. Unsafe stays in the existing private native leaf.
+
+M38 activates audio -> timing and libs/core -> audio. Core owns AudioService lifetime; libs owns
+guest structures/NIDs; audio owns ports, queues and null-sink periods. No loader dependency.
+See [AudioOut](audio_startup.md).

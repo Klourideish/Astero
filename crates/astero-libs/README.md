@@ -36,3 +36,5 @@ M36 [user_service/](src/user_service/mod.rs) delegates exact UserService contrac
 
 M37 implements the checked printf family in `libc/formatting`, with explicit guest varargs,
 raw bytes, truncation semantics and owned console output. See [contract](../../knowledge/architecture/libc_formatting.md).
+
+M38 adds checked legacy AudioOut and AudioOut2 adapters under audio/exports; mechanisms use astero-audio.

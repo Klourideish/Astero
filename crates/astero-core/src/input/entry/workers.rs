@@ -18,13 +18,16 @@ pub const MAX_WORKERS: usize = 32;
 /// Existing 256-entry allowance plus the M36 UserService and M37 formatting clusters.
 pub const MAX_REGISTERED_PROVIDERS: usize = 256
     + astero_libs::user_service::exports::EXPORTS.len()
-    + astero_libs::libc::formatting::exports::EXPORTS.len();
+    + astero_libs::libc::formatting::exports::EXPORTS.len()
+    + astero_libs::audio::exports::LEGACY.len()
+    + astero_libs::audio::exports::AUDIO2.len();
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
     attempts: std::sync::atomic::AtomicUsize,
     pub table: Arc<ThreadTable>,
+    pub audio: Arc<astero_audio::output::service::AudioService>,
     attrs: Arc<AttributeTable>,
     image: Arc<NativeImage>,
     main: Arc<ThreadStorage>,
@@ -61,7 +64,7 @@ impl Runtime {
                 operation: "worker TLS template",
                 error,
             })?;
-        let table = Arc::new(ThreadTable::new(scheduler, MAX_WORKERS));
+        let table = Arc::new(ThreadTable::new(scheduler.clone(), MAX_WORKERS));
         table.initialize_main(guest.context.rip, guest.context.gpr[5], l.clone());
         let mut storage = Vec::new();
         let mut observers = Vec::new();
@@ -80,6 +83,7 @@ impl Runtime {
             .try_reserve_exact(4096)
             .map_err(|_| ClosureError::Allocation)?;
         Ok(Arc::new(Self {
+            audio: Arc::new(astero_audio::output::service::AudioService::new(scheduler)),
             attempts: std::sync::atomic::AtomicUsize::new(0),
             table,
             attrs: Arc::new(AttributeTable::new(256)),
@@ -123,6 +127,9 @@ impl Runtime {
         entries.push(astero_libs::libc::startup::cxa_registration(
             self.startup.clone(),
             self.executable.clone(),
+        ));
+        entries.extend(astero_libs::audio::exports::registrations(
+            self.audio.clone(),
         ));
         let errno = storage.layout().thread_pointer + 8;
         entries.extend(astero_libs::libc::process::shared_registrations(
@@ -176,6 +183,7 @@ impl Runtime {
     pub fn stop_and_join(&self) {
         self.table.request_stop();
         self.synchronization.shutdown();
+        self.audio.shutdown();
         self.table.reap_all();
         self.storage
             .lock()
@@ -356,12 +364,14 @@ impl Runtime {
                 if !normal {
                     self.table.request_stop();
                     self.synchronization.shutdown();
+                    self.audio.shutdown();
                 }
                 Outcome { value, reason }
             }
             Err(error) => {
                 self.table.request_stop();
                 self.synchronization.shutdown();
+                self.audio.shutdown();
                 Outcome {
                     value: 0,
                     reason: if error == Error::Interrupted {
