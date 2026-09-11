@@ -39,3 +39,6 @@ M33 [pthread foundation](../../knowledge/architecture/pthread_foundation.md) imp
 M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.
 
 M36 process/users owns bounded single-user session/event state; no host-account backend.
+
+M37 native call capture retains a checked stack argument address for extended varargs;
+process output supports bounded raw-byte append shared by printf-family and puts.

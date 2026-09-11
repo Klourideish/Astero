@@ -15,8 +15,10 @@ use astero_kernel::{
 use astero_memory::mapping::windows_native::{NativeImage, NativeObserver};
 use std::sync::{Arc, Mutex, Weak};
 pub const MAX_WORKERS: usize = 32;
-/// Existing 256-entry migration allowance plus the complete M36 UserService cluster.
-pub const MAX_REGISTERED_PROVIDERS: usize = 256 + astero_libs::user_service::exports::EXPORTS.len();
+/// Existing 256-entry allowance plus the M36 UserService and M37 formatting clusters.
+pub const MAX_REGISTERED_PROVIDERS: usize = 256
+    + astero_libs::user_service::exports::EXPORTS.len()
+    + astero_libs::libc::formatting::exports::EXPORTS.len();
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
@@ -137,6 +139,9 @@ impl Runtime {
         }
         entries.extend(astero_libs::user_service::exports::registrations(
             self.foundation.users.clone(),
+        ));
+        entries.extend(astero_libs::libc::formatting::exports::registrations(
+            self.foundation.formatting.clone(),
         ));
         entries.push(astero_libs::libc::output::registration(
             self.foundation.output.clone(),
@@ -682,10 +687,14 @@ mod tests {
             engine.scheduler(),
             startup,
             &bridge,
-            vec![Some(ProviderKey {
-                nid,
-                library: b"libkernel".to_vec(),
-                module: b"libkernel".to_vec(),
+            vec![Some(if nid == 0x78b743c3a974fdb5 {
+                astero_libs::libc::formatting::exports::key(nid)
+            } else {
+                ProviderKey {
+                    nid,
+                    library: b"libkernel".to_vec(),
+                    module: b"libkernel".to_vec(),
+                }
             })],
         )
         .unwrap();
@@ -906,6 +915,65 @@ mod tests {
         r.stop_and_join();
         assert_eq!(r.foundation.access_budget.snapshot().large_operations, 2);
         assert_eq!(r.foundation.heap.lock().unwrap().snapshot().live, 0);
+        assert!(
+            r.observers
+                .lock()
+                .unwrap()
+                .iter()
+                .all(|o| o.active_reservations() == 0)
+        );
+    }
+    #[test]
+    fn native_worker_formatting_captures_gp_xmm_and_extended_stack_arguments() {
+        let _serial = SERIAL.lock().unwrap();
+        let mut code = vec![
+            0x48, 0x8d, 0x97, 128, 0, 0, 0, 0xbe, 128, 0, 0, 0, 0xb9, 7, 0, 0, 0, 0x41, 0xb8, 8, 0,
+            0, 0, 0x41, 0xb9, 9, 0, 0, 0,
+        ];
+        for i in 0..7u8 {
+            code.extend([0x48, 0xc7, 0x44, 0x24, 8 + i * 8, 10 + i, 0, 0, 0]);
+        }
+        code.extend([0x48, 0xb8]);
+        code.extend(1.5f64.to_bits().to_le_bytes());
+        code.extend([0x66, 0x48, 0x0f, 0x6e, 0xc0]);
+        let (g, _bridge, r, _engine) = fixture_impl(&code, 0x78b743c3a974fdb5, true);
+        let slot = g.thread.layout().stack.start.0;
+        let expected = b"1.5 7 8 9 10 11 12 13 14 15 16";
+        let mut blocks = vec![];
+        for i in 0..2 {
+            let p = r.access().allocate(256).unwrap();
+            r.access()
+                .write(p + 128, b"%.1f %d %d %d %d %d %d %d %d %d %d\0")
+                .unwrap();
+            blocks.push(p);
+            r.create(
+                Attributes::default(),
+                0x220001100,
+                p,
+                vec![],
+                slot + i * 8,
+                &mut r.access(),
+            )
+            .unwrap();
+        }
+        for (i, p) in blocks.iter().enumerate() {
+            assert_eq!(
+                r.table.join(Thread(1), Thread(i as u64 + 2)),
+                Ok(expected.len() as u64)
+            );
+            let bytes = r.access().read(*p, expected.len() as u64 + 1).unwrap();
+            assert_eq!(&bytes[..expected.len()], expected);
+            assert_eq!(bytes[expected.len()], 0);
+            r.access().free(*p).unwrap();
+        }
+        r.stop_and_join();
+        let observations = r.foundation.formatting.snapshot();
+        assert_eq!(observations.len(), 2);
+        assert!(
+            observations
+                .iter()
+                .all(|o| o.error.is_none() && o.conversions == 11)
+        );
         assert!(
             r.observers
                 .lock()

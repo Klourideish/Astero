@@ -1908,3 +1908,36 @@ NIDs216 (213 registered,3 unregistered), ABI2. All17 index files regenerate byte
 Freshness, policy/state/structure, supplemental whitespace and git diff --check pass after final docs.
 Local logs target/m36-{preflight-rust,final-rust,final-python,worker-regression,real-1}.log stay ignored.
 M36 ready_for_cleanup pending approval; no M37, commit, push or history rewrite.
+
+
+## M37 libc formatting/guest-varargs migration — 2026-09-11
+
+All-target workspace check/build, formatting and warnings-denied Clippy pass. Final full
+Rust suite: 514 executable tests and 23 doctests, no failures/ignored. Added 24 formatting
+integration tests plus one composed native two-worker variadic test. Existing CLI, native
+supervisor, synchronization, lifecycle and checked-memory suites included. All 53 Python
+tests pass, including policy/state/structure and index tests. Policy: 16 crates, 22 internal
+edges, 252 module homes. No extra crate or external dependency.
+
+First synthetic worker probe refused because its old fixture supplied libkernel identity
+for libc snprintf; fixture corrected to exact libc/libc, with no NID fallback. Fresh test and
+both subsequent full suites pass. Clippy caught one inherited collapsible conditional, fixed.
+No real execution happened before full passing preflight and policy/index freshness.
+
+One real primary_real_elf run (exact USAGE M37 command): exit 0, Clean containment,
+250 ms wall/15 s outer bound; elapsed 12,797 us overall /11,743 us native. vsnprintf and
+printf each called three times, returned 36/47/38, no truncation or formatting refusal.
+Output exposes three guest mutex failure messages. Next boundary is outside formatting:
+NID 0x836B558852288471, libSceAudioOut2/libSceAudioOut, unresolved ordinal 138.
+Full pointers, format strings, context distinctions, source SHA and teardown are in
+libc_formatting.md. Eight workers joined, waits interrupted, FS restored/GS preserved,
+zero reservations, no release errors; source SHA unchanged. No additional run or audio fix.
+
+Index counts: implementation 1388, subsystems 138, modules 571, sources 556, tests 592,
+diagnostics 41, NIDs 224 (221 registered, 3 unregistered), ABI 3; total 3513.
+One ABI record adds explicit scalar va_list; unobserved formatting conversions/export paths
+remain synthetically tested, not runtime-confirmed. Generated JSON stays ignored/local-only.
+Repeated regeneration checks all 17 index files for byte identity; final freshness, policy,
+supplemental whitespace and git diff checks are recorded at completion.
+Logs remain ignored under target/m37-{preflight-rust,final-rust,final-python,real-1}.log.
+M37 remains active ready_for_cleanup pending approval; no M38, commit, push or history rewrite.

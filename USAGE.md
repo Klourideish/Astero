@@ -679,3 +679,44 @@ Fifteen UserService exports share process-owned state and checked outputs. Only 
 observed in the real run. Synthetic tests: `cargo test -p astero-libs --test user_service`.
 Full identity table, adaptations, ABI uncertainty and raw context are in
 [M36 evidence](knowledge/architecture/user_service.md). No host user/account details are used.
+
+## M37 libc formatting continuation
+
+REAL GUEST CODE WILL EXECUTE. Use the configured trusted primary_real_elf only;
+this native supervisor is not a security sandbox. Preparation commands remain non-executing.
+Exact validated command (same limits as M36):
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$path = $corpus.artifacts.primary_real_elf.path
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --wall-ms 250 --containment-ms 15000 *> target/m37-real-1.log
+$result = $LASTEXITCODE
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Exit=$result Before=$before After=$after"
+```
+
+Expected: formatting succeeds, then structured stop at the next outside-cluster boundary.
+Actual: one run, exit0/Clean,12,797us; vsnprintf3 and printf3 returned36/47/38 each.
+No truncation, no formatting refusal. Console now exposes three `SCREAM: couldn't create
+mutex` messages for synth/synthClientBatch/effects. These are observations, not diagnosed fixes.
+Next stop: unresolved NID0x836B558852288471, libSceAudioOut2/libSceAudioOut, ordinal138.
+All eight workers joined,all reservations released,source SHA unchanged. No audio implemented.
+
+The existing report adds bounded Formatting records: format/destination addresses,capacity,
+required/written length,conversion count,truncation,stream and structured failure. Buffers preserve
+raw bytes; snprintf returns required length even on valid truncation. Only exact owned stream
+tokens work for fprintf/vfprintf; no host FILE or filesystem. Unsupported wide/long-double/hex-float/
+positional/percent-n formats explicitly refuse. See [M37 contract](knowledge/architecture/libc_formatting.md).
+
+Validated synthetic commands (no corpus execution):
+
+```powershell
+cargo test -p astero-libs --test formatting
+cargo test -p astero-core native_worker_formatting -- --nocapture
+```
+
+Results:24 formatting tests and one native two-worker test pass; the latter covers mixed XMM/GP
+and seven overflow arguments with clean joins/mapping release. Real runtime confirms only the
+observed vsnprintf/printf string paths, not every registered conversion/export.

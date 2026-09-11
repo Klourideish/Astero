@@ -17,6 +17,7 @@ pub enum CallResult {
     Returned,
     StopRequested,
     Unsupported,
+    FormatFailure { offset: usize, reason: &'static str },
     AccessFailure(crate::calls::memory::AccessError),
 }
 pub type HostHandler =

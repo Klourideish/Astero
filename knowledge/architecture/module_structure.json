@@ -155,7 +155,8 @@
       "runtime",
       "sysmodule",
       "videoout",
-      "user_service"
+      "user_service",
+      "libc/formatting"
     ],
     "astero-gpu": [
       "agc",

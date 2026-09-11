@@ -35,6 +35,7 @@ pub(crate) fn access_error(
     }
 }
 pub struct Foundation {
+    pub formatting: std::sync::Arc<astero_libs::libc::formatting::exports::Formatting>,
     pub users: std::sync::Arc<std::sync::Mutex<astero_kernel::process::users::Users>>,
     pub image: NativeImage,
     pub heap: std::sync::Mutex<GuestHeap>,
@@ -50,6 +51,8 @@ impl Foundation {
         }
         let mut guard = vec![0; page as usize];
         guard[..8].copy_from_slice(&astero_libs::libc::startup::STACK_GUARD_VALUE.to_le_bytes());
+        guard[16..24].copy_from_slice(b"STDOUT37");
+        guard[32..40].copy_from_slice(b"STDERR37");
         let heap_base = base.checked_add(page).ok_or(ClosureError::Budget)?;
         let heap_bytes = vec![0; HEAP_BYTES as usize];
         let (image, _) = windows_native::realize(
@@ -84,15 +87,23 @@ impl Foundation {
                 max_committed_bytes: bytes,
             },
         );
+        let output = std::sync::Arc::new(std::sync::Mutex::new(
+            astero_kernel::process::output::Output::new(65536),
+        ));
         Ok(Self {
+            formatting: std::sync::Arc::new(
+                astero_libs::libc::formatting::exports::Formatting::new(
+                    output.clone(),
+                    base + 16,
+                    base + 32,
+                ),
+            ),
             users: std::sync::Arc::new(std::sync::Mutex::new(
                 astero_kernel::process::users::Users::new(
                     astero_libs::user_service::exports::USER_ID,
                 ),
             )),
-            output: std::sync::Arc::new(std::sync::Mutex::new(
-                astero_kernel::process::output::Output::new(65536),
-            )),
+            output,
             access_budget: astero_hle::calls::budget::AccessBudget::new(
                 astero_hle::calls::budget::AccessLimits {
                     max_operation_bytes: astero_hle::calls::memory::MAX_OPERATION_BYTES,

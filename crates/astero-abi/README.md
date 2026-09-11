@@ -4,7 +4,8 @@ Guest ABI layouts, identifiers and constants.
 
 ## Interfaces and status
 
-M0 scaffold only. Module roots document future ownership; no runtime mechanisms are implemented.
+Concrete guest layouts include process-entry arguments, native call-frame evidence and the
+M37 scalar va_list view. This crate owns representations, never runtime mechanisms.
 
 ## Module ownership
 
@@ -18,3 +19,6 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 and [repository contract](../../AGENTS.md).
 
 M29 layouts/entry provides explicit 32-byte process argument encoding and a planned CPU context/captured call frame. The legacy-correlated guest convention is separate from Windows host ABI; no native bridge is implemented.
+
+M37 adds the explicit 24-byte guest va_list layout in `layouts::varargs`; it is not a host va_list.
+See [formatting contract](../../knowledge/architecture/libc_formatting.md).

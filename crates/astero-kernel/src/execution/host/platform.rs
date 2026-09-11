@@ -622,6 +622,7 @@ unsafe extern "system" fn dispatch(frame: *mut Frame<'_>) {
     }
     f.fault_rip = import_landing as *const () as u64;
     f.fault_rsp = f.guest_rsp;
+    c.stack_argument_address = Some(f.guest_rsp + 8);
     f.return_address = unsafe { std::ptr::read_unaligned(f.guest_rsp as *const u64) };
     // SAFETY: suspended native call, same owned RW stack, preflight above covers all six words.
     for (i, v) in c.stack_arguments.iter_mut().enumerate() {

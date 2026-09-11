@@ -15,6 +15,21 @@ impl Output {
             maximum,
         }
     }
+    pub fn append(&mut self, b: &[u8]) -> Result<(), OutputError> {
+        if self
+            .bytes
+            .len()
+            .checked_add(b.len())
+            .is_none_or(|n| n > self.maximum)
+        {
+            return Err(OutputError::Capacity);
+        }
+        self.bytes
+            .try_reserve(b.len())
+            .map_err(|_| OutputError::Allocation)?;
+        self.bytes.extend_from_slice(b);
+        Ok(())
+    }
     pub fn append_line(&mut self, b: &[u8]) -> Result<(), OutputError> {
         let n = b.len().checked_add(1).ok_or(OutputError::Capacity)?;
         if self

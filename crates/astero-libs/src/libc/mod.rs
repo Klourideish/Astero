@@ -9,3 +9,5 @@ pub mod bulk;
 pub mod checked;
 pub mod output;
 pub mod strings;
+
+pub mod formatting;

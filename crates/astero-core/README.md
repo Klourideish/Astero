@@ -64,3 +64,5 @@ M33 composes runtime-owned synchronization and its M25 timing engine only for op
 M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.
 
 M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
+
+M37 composes owned formatting/output state with existing native workers; loader-only paths remain independent.

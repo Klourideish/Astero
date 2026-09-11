@@ -899,6 +899,69 @@
         "test:astero-libs/test:user_service/events_are_bounded_ordered_and_do_not_relogin",
         "test:astero-libs/test:user_service/failed_event_copy_is_retryable"
       ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::engine::format",
+      "tests": [
+        "test:astero-libs/test:formatting/integers_length_and_signed_min",
+        "test:astero-libs/test:formatting/hex_octal_precision_and_unsigned_sign",
+        "test:astero-libs/test:formatting/width_precision_and_star_i32_promotion",
+        "test:astero-libs/test:formatting/literal_percent_and_raw_character",
+        "test:astero-libs/test:formatting/pointer_padding",
+        "test:astero-libs/test:formatting/direct_register_to_stack_transition",
+        "test:astero-libs/test:formatting/direct_guest_stack_beyond_snapshot",
+        "test:astero-libs/test:formatting/va_list_advances_local_cursor_and_preserves_caller",
+        "test:astero-libs/test:formatting/malformed_va_list_refused",
+        "test:astero-libs/test:formatting/mixed_gp_fp_and_shared_overflow",
+        "test:astero-libs/test:formatting/floats_direct_decimal_rounding_and_sign",
+        "test:astero-libs/test:formatting/general_float_and_special_values",
+        "test:astero-libs/test:formatting/strings_precision_and_non_utf8",
+        "test:astero-libs/test:formatting/invalid_string_and_precision_zero",
+        "test:astero-libs/test:formatting/snprintf_truncates_but_returns_required",
+        "test:astero-libs/test:formatting/snprintf_zero_and_one",
+        "test:astero-libs/test:formatting/vsnprintf_uses_explicit_list_not_direct_registers",
+        "test:astero-libs/test:formatting/sprintf_and_vsprintf_share_core",
+        "test:astero-libs/test:formatting/output_preflight_avoids_partial_invalid_tail",
+        "test:astero-libs/test:formatting/unsupported_percent_n_positional_wide_and_hexfloat",
+        "test:astero-libs/test:formatting/field_and_conversion_budgets_refuse",
+        "test:astero-libs/test:formatting/console_output_and_owned_streams",
+        "test:astero-libs/test:formatting/vprintf_and_vfprintf_and_output_capacity",
+        "test:astero-libs/test:formatting/concurrent_output_is_call_atomic"
+      ]
+    },
+    {
+      "implementation": "impl:astero-abi/lib:astero_abi/layouts::varargs::impl[VaList]::decode",
+      "tests": [
+        "test:astero-libs/test:formatting/malformed_va_list_refused",
+        "test:astero-libs/test:formatting/va_list_advances_local_cursor_and_preserves_caller"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::arguments::impl[< ' a > Arguments < ' a >]::direct",
+      "tests": [
+        "test:astero-libs/test:formatting/direct_guest_stack_beyond_snapshot",
+        "test:astero-libs/test:formatting/direct_register_to_stack_transition",
+        "test:astero-libs/test:formatting/floats_direct_decimal_rounding_and_sign"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::arguments::impl[< ' a > Arguments < ' a >]::list",
+      "tests": [
+        "test:astero-libs/test:formatting/mixed_gp_fp_and_shared_overflow",
+        "test:astero-libs/test:formatting/malformed_va_list_refused",
+        "test:astero-libs/test:formatting/va_list_advances_local_cursor_and_preserves_caller"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "tests": [
+        "test:astero-libs/test:formatting/snprintf_truncates_but_returns_required",
+        "test:astero-libs/test:formatting/snprintf_zero_and_one",
+        "test:astero-libs/test:formatting/vsnprintf_uses_explicit_list_not_direct_registers",
+        "test:astero-libs/test:formatting/console_output_and_owned_streams",
+        "test:astero-libs/test:formatting/concurrent_output_is_call_atomic",
+        "test:astero-libs/test:formatting/output_preflight_avoids_partial_invalid_tail"
+      ]
     }
   ],
   "reviews": [
@@ -1520,6 +1583,20 @@
       "description": "Process-owned UserService initialization, login, deterministic user, generation and pending event count; no host-account identity.",
       "evidence": [
         "knowledge/architecture/user_service.md"
+      ]
+    },
+    {
+      "id": "diagnostic:libc.formatting",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::Observation",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "Bounded printf-family operation, required/written counts, truncation and structured refusal; no payload logging by default.",
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
       ]
     }
   ],
@@ -4901,13 +4978,157 @@
       },
       "guest_library": "libc",
       "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:libc.guest_varargs"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
+      ],
+      "provenance": "vsnprintf: migrated exact PS5Rust identity; implemented/registered, runtime confirmation only as recorded in M37."
+    },
+    {
+      "id": "nid:m37.78b743c3a974fdb5",
+      "nid": {
+        "numeric_hex": "0x78B743C3A974FDB5",
+        "encoded": "eLdDw6l0-bU"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:libc.guest_varargs"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
+      ],
+      "provenance": "snprintf: migrated exact PS5Rust identity; implemented/registered, runtime confirmation only as recorded in M37."
+    },
+    {
+      "id": "nid:m37.8dbcfd23dbe4aa49",
+      "nid": {
+        "numeric_hex": "0x8DBCFD23DBE4AA49",
+        "encoded": "jbz9I9vkqkk"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:libc.guest_varargs"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
+      ],
+      "provenance": "vsprintf: migrated exact PS5Rust identity; implemented/registered, runtime confirmation only as recorded in M37."
+    },
+    {
+      "id": "nid:m37.b5c562e528af17b4",
+      "nid": {
+        "numeric_hex": "0xB5C562E528AF17B4",
+        "encoded": "tcVi5SivF7Q"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:libc.guest_varargs"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
+      ],
+      "provenance": "sprintf: migrated exact PS5Rust identity; implemented/registered, runtime confirmation only as recorded in M37."
+    },
+    {
+      "id": "nid:m37.85cb90803e775313",
+      "nid": {
+        "numeric_hex": "0x85CB90803E775313",
+        "encoded": "hcuQgD53UxM"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:libc.guest_varargs"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
+      ],
+      "provenance": "printf: migrated exact PS5Rust identity; implemented/registered, runtime confirmation only as recorded in M37."
+    },
+    {
+      "id": "nid:m37.18ca6fc4f156f76e",
+      "nid": {
+        "numeric_hex": "0x18CA6FC4F156F76E",
+        "encoded": "GMpvxPFW924"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:libc.guest_varargs"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
+      ],
+      "provenance": "vprintf: migrated exact PS5Rust identity; implemented/registered, runtime confirmation only as recorded in M37."
+    },
+    {
+      "id": "nid:m37.7df7f010b5cd5450",
+      "nid": {
+        "numeric_hex": "0x7DF7F010B5CD5450",
+        "encoded": "fffwELXNVFA"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:libc.guest_varargs"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
+      ],
+      "provenance": "fprintf: migrated exact PS5Rust identity; implemented/registered, runtime confirmation only as recorded in M37."
+    },
+    {
+      "id": "nid:m37.a43043718eae2d20",
+      "nid": {
+        "numeric_hex": "0xA43043718EAE2D20",
+        "encoded": "pDBDcY6uLSA"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::formatting::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:libc.guest_varargs"
+      ],
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
+      ],
+      "provenance": "vfprintf: migrated exact PS5Rust identity; implemented/registered, runtime confirmation only as recorded in M37."
+    },
+    {
+      "id": "nid:observed.836b558852288471",
+      "nid": {
+        "numeric_hex": "0x836B558852288471",
+        "encoded": "g2tViFIohHE"
+      },
+      "guest_library": "libSceAudioOut2",
+      "guest_module": "libSceAudioOut",
       "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/user_service.md"
+        "knowledge/architecture/libc_formatting.md"
       ],
-      "provenance": "M36 real unresolved import ordinal328, exact libc/libc. PS5Rust libc/nids.rs VSNPRINTF_NID names vsnprintf. Observation/report only; no implementation or registration."
+      "provenance": "M37 real unresolved ordinal138, exact artifact identity; observation only, no name/implementation/registration claim."
     }
   ],
   "abi": [
@@ -4927,6 +5148,15 @@
       "implementation": "impl:astero-kernel/lib:astero_kernel/execution::host::platform::impl[Bridge]::synthetic",
       "evidence": [
         "knowledge/architecture/native_entry_closure.md"
+      ]
+    },
+    {
+      "id": "abi:libc.guest_varargs",
+      "guest_concept": "24-byte guest va_list and checked promoted scalar GP/FP/overflow readers; no complete variadic aggregate ABI",
+      "guest_library": "libc",
+      "implementation": "impl:astero-abi/lib:astero_abi/layouts::varargs::VaList",
+      "evidence": [
+        "knowledge/architecture/libc_formatting.md"
       ]
     }
   ]

@@ -45,6 +45,8 @@ pub fn process_arguments(argv0: u64) -> [u8; 32] {
 pub struct CallFrame {
     pub arguments: [u64; 6],
     pub stack_arguments: [u64; 6],
+    /// Guest address of first overflow argument, supplied only by native capture.
+    pub stack_argument_address: Option<u64>,
     pub xmm: [[u8; 16]; 8],
     pub rax: u64,
     pub xmm0: [u8; 16],

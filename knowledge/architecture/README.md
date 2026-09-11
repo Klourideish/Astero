@@ -74,3 +74,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [M35 large libc memory](libc_large_memory.md): mapping preflight, bounded chunks and threaded runtime continuation.
 
 - [M36 UserService](user_service.md): runtime-owned single-user migration and checked outputs.
+
+- [M37 libc formatting and guest varargs](libc_formatting.md)

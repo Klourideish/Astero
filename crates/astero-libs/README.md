@@ -33,3 +33,6 @@ M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapt
 M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
 
 M36 [user_service/](src/user_service/mod.rs) delegates exact UserService contracts to process-owned state.
+
+M37 implements the checked printf family in `libc/formatting`, with explicit guest varargs,
+raw bytes, truncation semantics and owned console output. See [contract](../../knowledge/architecture/libc_formatting.md).

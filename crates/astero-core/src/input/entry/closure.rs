@@ -712,6 +712,7 @@ pub struct FirstEntryReport {
     pub elapsed_micros: u128,
     pub heap: Option<astero_memory::allocation::heap::HeapSnapshot>,
     pub users: Option<astero_kernel::process::users::Snapshot>,
+    pub formatting: Vec<astero_libs::libc::formatting::exports::Observation>,
     pub output: Vec<u8>,
     pub access_budget: Option<astero_hle::calls::budget::AccessSnapshot>,
     pub data_export: Option<astero_hle::providers::data::DataExport>,
@@ -800,7 +801,10 @@ impl EntryReadyGuest {
                     Ok(astero_hle::dispatch::prepared::CallResult::StopRequested) => {
                         stopped = true;
                     }
-                    Ok(astero_hle::dispatch::prepared::CallResult::Unsupported) => {
+                    Ok(
+                        astero_hle::dispatch::prepared::CallResult::Unsupported
+                        | astero_hle::dispatch::prepared::CallResult::FormatFailure { .. },
+                    ) => {
                         refused = true;
                     }
                     Ok(astero_hle::dispatch::prepared::CallResult::AccessFailure(e)) => {
@@ -922,6 +926,11 @@ impl EntryReadyGuest {
                 .foundation
                 .as_ref()
                 .map(|f| f.users.lock().unwrap_or_else(|p| p.into_inner()).snapshot()),
+            formatting: owner
+                .foundation
+                .as_ref()
+                .map(|f| f.formatting.snapshot())
+                .unwrap_or_default(),
             output: owner
                 .foundation
                 .as_ref()
