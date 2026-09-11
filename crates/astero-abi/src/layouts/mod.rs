@@ -4,3 +4,5 @@ pub mod entry;
 pub mod varargs;
 
 pub mod audio;
+
+pub mod time;

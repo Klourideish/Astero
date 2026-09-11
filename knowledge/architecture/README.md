@@ -80,3 +80,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 [M38 AudioOut and media startup](audio_startup.md): timed null sink, mutex token correction and real runtime boundary.
 
 [M39 speaker-info ABI and continuation](audio_speaker_info.md): global checked query and kernel sleep boundary.
+
+[M40 kernel timing and sleep](kernel_timing.md): canonical deadlines, bounded guest waits and real powf boundary.

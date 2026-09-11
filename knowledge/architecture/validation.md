@@ -1992,3 +1992,29 @@ new kernel sleep observation unregistered. Repeated generation checks all17 inde
 byte identity; freshness,policy/state/structure,supplemental whitespace and git diff checks
 required clean at completion. Raw validation logs target/m39-{pre*,final-*,real-1}.log are ignored.
 M39 ready_for_cleanup pending approval; no M40 implementation,commit,push or rewritten history.
+
+## M40 kernel clocks and sleep migration - 2026-09-11
+
+Preflight formatting, all-target check/build, warnings-denied Clippy, workspace Rust tests and
+policy/index validation passed before the real run. Final Rust suite passes: 572 executable tests,
+23 doctests, zero failures/ignored. Added 25 tests: 15 kernel conversion/wait tests, eight checked
+provider tests, two synthetic native worker tests. Existing M25 core timing test is preserved in
+its original file; new adapters use guest_timing.rs. M31 supervisor, M33 synchronization, M34
+worker lifecycle, M35 memory, M37 formatting and M38/M39 audio regressions all run in this suite.
+Real-time tests use tolerant host guards; manual clocks prove no early completion without sleeps.
+
+One real primary_real_elf run, exact M40 USAGE command: 250 ms wall/15000 ms containment.
+sceKernelUsleep(1000) returns 0; 1 ms requested, 12.582 ms observed, 11.582 ms lateness.
+No clock query is runtime-confirmed. Next boundary: unresolved powf, 0xD43D07D8A363B211,
+libc/libc. Total 29017 us, native supervision 27757 us; no redirection/suspend/resume.
+Eight workers joined, eight condition waits interrupted, zero remaining waiters/timing tickets,
+zero native/runtime reservations, FS restored/GS preserved, release errors empty, containment Clean.
+SHA256 unchanged; full boundary context and evidence distinctions are in kernel_timing.md.
+No second-title run or math migration. Raw logs remain ignored under target/m40-*.
+
+Indexes: implementation 1483, subsystems 138, modules 582, sources 567, tests 650,
+diagnostics 43, NIDs 268 (265 registered / 3 observation-only), ABI 5; total 3736.
+18 timing registrations include scoped explicit CPU-clock refusals; only Usleep is runtime-confirmed.
+One new timespec representation ABI, not a full kernel clock contract. No new crates/dependencies:
+16 crates, 25 internal edges, 252 module homes. All 53 Python tests passed. Final freshness and policy/state/structure passed; all 17 index files regenerate byte-identically.
+Supplemental whitespace and git diff --check pass. M40 remains active ready_for_cleanup pending approval.

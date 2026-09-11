@@ -1009,6 +1009,39 @@
         "test:astero-core/test:audio/speaker_layout_has_exact_offsets_and_zero_reserved_bytes",
         "test:astero-core/test:audio/speaker_selector_uses_guest_u32_argument_width"
       ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/timing::sleep::impl[GuestTiming]::sleep",
+      "tests": [
+        "test:astero-kernel/test:guest_timing/units_and_maximum",
+        "test:astero-kernel/test:guest_timing/timespec_layout_validation_and_normalization",
+        "test:astero-kernel/test:guest_timing/monotonic_and_realtime_are_distinct",
+        "test:astero-kernel/test:guest_timing/supported_aliases_and_modeled_resolution",
+        "test:astero-kernel/test:guest_timing/cpu_clocks_and_unknown_ids_refuse",
+        "test:astero-kernel/test:guest_timing/virtual_ticks_have_explicit_frequency_and_overflow",
+        "test:astero-kernel/test:guest_timing/absolute_conversion_past_and_future",
+        "test:astero-kernel/test:guest_timing/synchronization_reuses_monotonic_conversion",
+        "test:astero-kernel/test:guest_timing/manual_microsecond_and_millisecond_never_complete_early",
+        "test:astero-kernel/test:guest_timing/zero_sleep_is_immediately_due",
+        "test:astero-kernel/test:guest_timing/cancel_one_thread_preserves_other_sleeper",
+        "test:astero-kernel/test:guest_timing/shutdown_releases_all_waiters",
+        "test:astero-kernel/test:guest_timing/execution_deadline_is_not_sleep_completion",
+        "test:astero-kernel/test:guest_timing/timing_owner_shutdown_is_interruption",
+        "test:astero-kernel/test:guest_timing/scheduling_refusal_does_not_retain_waiter"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "tests": [
+        "test:astero-core/test:guest_timing/exact_keys_and_coherent_exports",
+        "test:astero-core/test:guest_timing/zero_sleep_aliases_succeed",
+        "test:astero-core/test:guest_timing/sce_and_posix_invalid_timespec_are_distinct",
+        "test:astero-core/test:guest_timing/clock_serialization_and_timeval",
+        "test:astero-core/test:guest_timing/res_null_and_cpu_refusal",
+        "test:astero-core/test:guest_timing/invalid_output_preserves_tail_and_reports_efault",
+        "test:astero-core/test:guest_timing/sleep_conversion_overflow_is_not_wrapped",
+        "test:astero-core/test:guest_timing/optional_remainder_preflight_and_success_preservation"
+      ]
     }
   ],
   "reviews": [
@@ -1658,6 +1691,20 @@
       "description": "Runtime-owned null-sink ports/configurations,retired identities,submitted/completed/cancelled totals; no host playback claim.",
       "evidence": [
         "knowledge/architecture/audio_startup.md"
+      ]
+    },
+    {
+      "id": "diagnostic:kernel.guest_timing",
+      "implementation": "impl:astero-kernel/lib:astero_kernel/timing::sleep::Snapshot",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "Bounded per-thread sleep tickets, requested/elapsed/lateness, completion/interruption and clock-query observations; no hard precision claim.",
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
       ]
     }
   ],
@@ -5603,13 +5650,318 @@
       },
       "guest_library": "libkernel",
       "guest_module": "libkernel",
-      "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md",
+        "knowledge/architecture/audio_speaker_info.md"
+      ],
+      "provenance": "sceKernelUsleep: migrated and registered; M40 runtime-confirmed one call(1000us), returned0, observed12.582ms; host scheduling latency is not guest precision."
+    },
+    {
+      "id": "nid:m40.fd947e846eda0c7c",
+      "nid": {
+        "numeric_hex": "0xFD947E846EDA0C7C",
+        "encoded": "-ZR+hG7aDHw"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelSleep: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.42fb19c689af507b",
+      "nid": {
+        "numeric_hex": "0x42FB19C689AF507B",
+        "encoded": "QvsZxomvUHs"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:guest.timespec"
+      ],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelNanosleep: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.d30bb7de1ba735d1",
+      "nid": {
+        "numeric_hex": "0xD30BB7DE1BA735D1",
+        "encoded": "0wu33hunNdE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sleep: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.41cb5e4706ec9d5d",
+      "nid": {
+        "numeric_hex": "0x41CB5E4706EC9D5D",
+        "encoded": "QcteRwbsnV0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "usleep: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.c92f14d931827b50",
+      "nid": {
+        "numeric_hex": "0xC92F14D931827B50",
+        "encoded": "yS8U2TGCe1A"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:guest.timespec"
+      ],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "nanosleep: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.361a6ca7176310a5",
+      "nid": {
+        "numeric_hex": "0x361A6CA7176310A5",
+        "encoded": "NhpspxdjEKU"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:guest.timespec"
+      ],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "_nanosleep: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.4018bb1c22b4de1c",
+      "nid": {
+        "numeric_hex": "0x4018BB1C22B4DE1C",
+        "encoded": "QBi7HCK03hw"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:guest.timespec"
+      ],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelClockGettime: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.94b313f6f240724d",
+      "nid": {
+        "numeric_hex": "0x94B313F6F240724D",
+        "encoded": "lLMT9vJAck0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:guest.timespec"
+      ],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "clock_gettime: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.b26223edeab3644f",
+      "nid": {
+        "numeric_hex": "0xB26223EDEAB3644F",
+        "encoded": "smIj7eqzZE8"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:guest.timespec"
+      ],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "clock_getres: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.7a37a471a35036ad",
+      "nid": {
+        "numeric_hex": "0x7A37A471A35036AD",
+        "encoded": "ejekcaNQNq0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:guest.timespec"
+      ],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelGettimeofday: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.9fcf2fc770b99d6f",
+      "nid": {
+        "numeric_hex": "0x9FCF2FC770B99D6F",
+        "encoded": "n88vx3C5nW8"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:guest.timespec"
+      ],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "gettimeofday: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.e09dac5099ae1d94",
+      "nid": {
+        "numeric_hex": "0xE09DAC5099AE1D94",
+        "encoded": "4J2sUJmuHZQ"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelGetProcessTime: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.7e0c6731e4cd52d6",
+      "nid": {
+        "numeric_hex": "0x7E0C6731E4CD52D6",
+        "encoded": "fgxnMeTNUtY"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelGetProcessTimeCounter: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.04da30c76979f3c1",
+      "nid": {
+        "numeric_hex": "0x04DA30C76979F3C1",
+        "encoded": "BNowx2l588E"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelGetProcessTimeCounterFrequency: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.ff62115023bffcf3",
+      "nid": {
+        "numeric_hex": "0xFF62115023BFFCF3",
+        "encoded": "-2IRUCO--PM"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelReadTsc: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.d63dd2de7fed4d6e",
+      "nid": {
+        "numeric_hex": "0xD63DD2DE7FED4D6E",
+        "encoded": "1j3S3n-tTW4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "sceKernelGetTscFrequency: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. "
+    },
+    {
+      "id": "nid:m40.4193fa23d659c691",
+      "nid": {
+        "numeric_hex": "0x4193FA23D659C691",
+        "encoded": "QZP6I9ZZxpE"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::timing::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
+      ],
+      "provenance": "clock: PS5Rust-adapted exact timing export; synthetically validated but not runtime-confirmed. CPU accounting explicitly unsupported; no fabricated elapsed-time CPU result."
+    },
+    {
+      "id": "nid:observed.d43d07d8a363b211",
+      "nid": {
+        "numeric_hex": "0xD43D07D8A363B211",
+        "encoded": "1D0H2KNjshE"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/audio_speaker_info.md"
+        "knowledge/architecture/kernel_timing.md"
       ],
-      "provenance": "sceKernelUsleep: M39 unresolved runtime import argument1000; PS5Rust name correlation; no Astero HLE implementation or registration."
+      "provenance": "M40 real unresolved import ordinal89, exact libc/libc key; PS5Rust kernel/libc/nids.rs:73 identifies powf. Observation only; no Astero math implementation/registration. GP lanes do not establish floating-point arguments."
     }
   ],
   "abi": [
@@ -5647,6 +5999,15 @@
       "implementation": "impl:astero-abi/lib:astero_abi/layouts::audio::SpeakerInfo",
       "evidence": [
         "knowledge/architecture/audio_speaker_info.md"
+      ]
+    },
+    {
+      "id": "abi:guest.timespec",
+      "guest_concept": "16-byte signed64 guest seconds/nanoseconds pair; inherited64-bit timeval variant uses microseconds; no host timespec/CPU-clock contract",
+      "guest_library": "libkernel",
+      "implementation": "impl:astero-abi/lib:astero_abi/layouts::time::Timespec",
+      "evidence": [
+        "knowledge/architecture/kernel_timing.md"
       ]
     }
   ]

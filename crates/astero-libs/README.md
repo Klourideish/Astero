@@ -38,3 +38,5 @@ M37 implements the checked printf family in `libc/formatting`, with explicit gue
 raw bytes, truncation semantics and owned console output. See [contract](../../knowledge/architecture/libc_formatting.md).
 
 M38 adds checked legacy AudioOut and AudioOut2 adapters under audio/exports; mechanisms use astero-audio.
+
+M40 kernel/timing registers the scoped sleep/clock family, with checked outputs and distinct SCE/POSIX errors.

@@ -1,2 +1,3 @@
-//! Future guest clock/wait policy adapters.
-//! Generic host/manual clocks and scheduling are owned by astero-timing; no guest timer semantics yet.
+//! Guest clocks, checked conversion and owned interruptible waits over astero-timing.
+pub mod clock;
+pub mod sleep;

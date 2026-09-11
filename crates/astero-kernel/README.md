@@ -24,7 +24,7 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [dependency policy](../../knowledge/architecture/dependency_policy.json),
 and [repository contract](../../AGENTS.md).
 
-M25 separates the generic asynchronous mechanism into astero-timing. This crate retains future guest clocks, waits and timer policy adapters; no timing HLE is implemented here.
+M25 separates the generic asynchronous mechanism into astero-timing. M40 now owns guest clock conversion and cancellable sleep tickets; guest HLE adapters remain in libs.
 
 M29 execution/preparation implements guarded native stack/TLS storage, layout, explicit context and recovery/import-encoding contracts. No thread, FS switch or native transfer occurs. Dependencies on memory/ABI are now active.
 
@@ -42,3 +42,5 @@ M36 process/users owns bounded single-user session/event state; no host-account 
 
 M37 native call capture retains a checked stack argument address for extended varargs;
 process output supports bounded raw-byte append shared by printf-family and puts.
+
+M40 [guest timing](../../knowledge/architecture/kernel_timing.md) shares M25 scheduling across clocks, sleeps and pthread absolute deadlines.

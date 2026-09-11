@@ -788,3 +788,26 @@ cargo test -p astero-audio --test output
 Six new speaker tests cover ABI fields,reserved bytes,global topology independent of port input
 channels,range/error/selector behavior and shutdown. Full evidence/confidence and runtime context:
 [M39](knowledge/architecture/audio_speaker_info.md). No second eboot was executed.
+
+## M40 kernel clocks and sleep continuation
+
+The exact validated PowerShell command below executes trusted primary_real_elf using the existing
+controller. REAL GUEST CODE WILL EXECUTE; this is not a security sandbox.
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$path = $corpus.artifacts.primary_real_elf.path
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --wall-ms 250 --containment-ms 15000 *> target/m40-real-1.log
+$result = $LASTEXITCODE
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Exit=$result Before=$before After=$after"
+```
+
+The migrated timing family uses M25. One sceKernelUsleep(1000) returned0: 1ms requested,
+12.582ms observed (11.582ms lateness). No clock query was observed. The next stop was
+libc/libc powf, NID0xD43D07D8A363B211. Total29.017ms; all eight workers joined,
+zero pending timing/native resources, source hash unchanged. Guest timing diagnostics distinguish
+requested duration, elapsed duration and lateness. No Windows precision guarantee is implied.
+CPU-time domains are explicitly unsupported. No second-title run occurred.

@@ -25,3 +25,5 @@ See [formatting contract](../../knowledge/architecture/libc_formatting.md).
 
 M39 adds byte-exact 80-byte GetSpeakerInfo encoding under layouts/audio; device field meanings
 remain comparative-correlated. See [M39](../../knowledge/architecture/audio_speaker_info.md).
+
+M40 layouts/time encodes the 16-byte guest timespec explicitly; it does not reuse host layout.

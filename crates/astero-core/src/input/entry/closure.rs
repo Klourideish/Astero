@@ -712,6 +712,7 @@ pub struct FirstEntryReport {
     pub elapsed_micros: u128,
     pub heap: Option<astero_memory::allocation::heap::HeapSnapshot>,
     pub users: Option<astero_kernel::process::users::Snapshot>,
+    pub guest_timing: Option<astero_kernel::timing::sleep::Snapshot>,
     pub audio: Option<astero_audio::output::service::Snapshot>,
     pub formatting: Vec<astero_libs::libc::formatting::exports::Observation>,
     pub output: Vec<u8>,
@@ -750,6 +751,7 @@ impl EntryReadyGuest {
             if let Some(runtime) = &owner.runtime {
                 runtime.table.arm(deadline);
                 runtime.audio.arm(deadline);
+                runtime.guest_timing.arm(deadline);
             }
         }
         let started = std::time::Instant::now();
@@ -928,6 +930,7 @@ impl EntryReadyGuest {
                 .foundation
                 .as_ref()
                 .map(|f| f.users.lock().unwrap_or_else(|p| p.into_inner()).snapshot()),
+            guest_timing: owner.runtime.as_ref().map(|r| r.guest_timing.snapshot()),
             audio: owner.runtime.as_ref().map(|r| r.audio.snapshot()),
             formatting: owner
                 .foundation

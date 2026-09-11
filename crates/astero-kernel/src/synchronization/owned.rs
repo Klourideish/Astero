@@ -105,28 +105,21 @@ impl Synchronization {
     }
     /// Explicit compatibility adapter: host realtime at call, or this timing engine's monotonic epoch.
     pub fn absolute(&self, seconds: i64, nanos: i64, clock: i32) -> Result<Deadline> {
-        if seconds < 0 || !(0..1_000_000_000).contains(&nanos) {
-            return Err(Error::Invalid);
-        }
-        let total = (seconds as u64)
-            .checked_mul(1_000_000_000)
-            .and_then(|v| v.checked_add(nanos as u64))
-            .ok_or(Error::Invalid)?;
-        let now = self.scheduler.now().map_err(|_| Error::Interrupted)?;
-        let delay = match clock {
-            0 => {
-                let host = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map_err(|_| Error::Invalid)?
-                    .as_nanos();
-                total.saturating_sub(u64::try_from(host).map_err(|_| Error::Invalid)?)
+        crate::timing::clock::absolute(
+            &self.scheduler,
+            crate::timing::clock::Realtime::HostUnix,
+            astero_abi::layouts::time::Timespec { seconds, nanos },
+            clock,
+        )
+        .map_err(|e| {
+            if e == crate::timing::clock::Error::Interrupted {
+                Error::Interrupted
+            } else {
+                Error::Invalid
             }
-            4 => total.saturating_sub(now.as_nanos()),
-            _ => return Err(Error::Invalid),
-        };
-        Deadline::after(now, astero_timing::time::Span::from_nanos(delay))
-            .map_err(|_| Error::Invalid)
+        })
     }
+
     pub fn arm(&self, deadline: Deadline) -> Result {
         let mut s = self.lock();
         if !s.waiters.is_empty() {

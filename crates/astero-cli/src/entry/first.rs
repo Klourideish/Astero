@@ -170,6 +170,7 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
         String::from_utf8_lossy(&f.output)
     )
     .unwrap();
+    writeln!(s, "Guest timing: {:?}", f.guest_timing).unwrap();
     writeln!(s, "AudioOut: {:?}", f.audio).unwrap();
     for record in &f.formatting {
         writeln!(s, "Formatting: {:?}", record).unwrap();

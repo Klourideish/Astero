@@ -20,13 +20,15 @@ pub const MAX_REGISTERED_PROVIDERS: usize = 256
     + astero_libs::user_service::exports::EXPORTS.len()
     + astero_libs::libc::formatting::exports::EXPORTS.len()
     + astero_libs::audio::exports::LEGACY.len()
-    + astero_libs::audio::exports::AUDIO2.len();
+    + astero_libs::audio::exports::AUDIO2.len()
+    + astero_libs::kernel::timing::EXPORTS.len();
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
     attempts: std::sync::atomic::AtomicUsize,
     pub table: Arc<ThreadTable>,
+    pub guest_timing: Arc<astero_kernel::timing::sleep::GuestTiming>,
     pub audio: Arc<astero_audio::output::service::AudioService>,
     attrs: Arc<AttributeTable>,
     image: Arc<NativeImage>,
@@ -83,6 +85,10 @@ impl Runtime {
             .try_reserve_exact(4096)
             .map_err(|_| ClosureError::Allocation)?;
         Ok(Arc::new(Self {
+            guest_timing: Arc::new(astero_kernel::timing::sleep::GuestTiming::new(
+                scheduler.clone(),
+                astero_kernel::timing::clock::Realtime::HostUnix,
+            )),
             audio: Arc::new(astero_audio::output::service::AudioService::new(scheduler)),
             attempts: std::sync::atomic::AtomicUsize::new(0),
             table,
@@ -132,6 +138,11 @@ impl Runtime {
             self.audio.clone(),
         ));
         let errno = storage.layout().thread_pointer + 8;
+        entries.extend(astero_libs::kernel::timing::registrations(
+            self.guest_timing.clone(),
+            thread,
+            errno,
+        ));
         entries.extend(astero_libs::libc::process::shared_registrations(
             errno,
             self.procparam,
@@ -184,6 +195,7 @@ impl Runtime {
         self.table.request_stop();
         self.synchronization.shutdown();
         self.audio.shutdown();
+        self.guest_timing.shutdown();
         self.table.reap_all();
         self.storage
             .lock()
@@ -365,6 +377,7 @@ impl Runtime {
                     self.table.request_stop();
                     self.synchronization.shutdown();
                     self.audio.shutdown();
+                    self.guest_timing.shutdown();
                 }
                 Outcome { value, reason }
             }
@@ -372,6 +385,7 @@ impl Runtime {
                 self.table.request_stop();
                 self.synchronization.shutdown();
                 self.audio.shutdown();
+                self.guest_timing.shutdown();
                 Outcome {
                     value: 0,
                     reason: if error == Error::Interrupted {
@@ -983,6 +997,78 @@ mod tests {
             observations
                 .iter()
                 .all(|o| o.error.is_none() && o.conversions == 11)
+        );
+        assert!(
+            r.observers
+                .lock()
+                .unwrap()
+                .iter()
+                .all(|o| o.active_reservations() == 0)
+        );
+    }
+    #[test]
+    fn native_worker_sleep_returns_through_existing_bridge() {
+        let _serial = SERIAL.lock().unwrap();
+        let (g, _b, r, _e) = fixture(&[], 0xD637D72D15738AC7);
+        r.create(
+            Attributes::default(),
+            0x220001100,
+            1000,
+            vec![],
+            g.thread.layout().stack.start.0,
+            &mut r.access(),
+        )
+        .unwrap();
+        assert_eq!(r.table.join(Thread(1), Thread(2)), Ok(0));
+        let timing = r.guest_timing.snapshot();
+        assert_eq!(timing.completed, 1);
+        assert_eq!(timing.records[0].thread, Thread(2));
+        assert!(timing.records[0].elapsed_ns >= 1_000_000);
+        r.stop_and_join();
+        assert_eq!(r.guest_timing.snapshot().pending, 0);
+        assert!(
+            r.exits
+                .lock()
+                .unwrap()
+                .iter()
+                .all(|(_, e)| e.host_fs_restored && e.host_gs_preserved)
+        );
+        assert!(
+            r.observers
+                .lock()
+                .unwrap()
+                .iter()
+                .all(|o| o.active_reservations() == 0)
+        );
+    }
+    #[test]
+    fn native_worker_sleep_is_interrupted_by_runtime_shutdown() {
+        let _serial = SERIAL.lock().unwrap();
+        let (g, _b, r, _e) = fixture(&[], 0xD637D72D15738AC7);
+        r.create(
+            Attributes::default(),
+            0x220001100,
+            10_000_000,
+            vec![],
+            g.thread.layout().stack.start.0,
+            &mut r.access(),
+        )
+        .unwrap();
+        let until = std::time::Instant::now() + std::time::Duration::from_secs(3);
+        while r.guest_timing.snapshot().pending == 0 {
+            assert!(std::time::Instant::now() < until);
+            std::thread::yield_now();
+        }
+        r.stop_and_join();
+        let t = r.guest_timing.snapshot();
+        assert_eq!(t.pending, 0);
+        assert_eq!(t.interrupted, 1);
+        assert!(
+            r.exits
+                .lock()
+                .unwrap()
+                .iter()
+                .all(|(_, e)| e.host_fs_restored && e.host_gs_preserved)
         );
         assert!(
             r.observers

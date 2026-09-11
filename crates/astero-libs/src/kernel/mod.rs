@@ -1,2 +1,2 @@
-//! Planned kernel ownership within astero-libs.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Guest kernel contracts; mechanisms remain in astero-kernel.
+pub mod timing;
