@@ -184,6 +184,7 @@ dependencies = [
  "astero-hle",
  "astero-kernel",
  "astero-memory",
+ "astero-timing",
 ]
 
 [[package]]

@@ -26,3 +26,5 @@ and [repository contract](../../AGENTS.md).
 
 M39 owns logical Stereo speaker-query state independently of input port format; no host-device
 topology claim. See [M39](../../knowledge/architecture/audio_speaker_info.md).
+
+M43 codecs/ajm owns bounded AJM lifecycle and ATRAC9 configuration parsing. Batch/decode execution remains unsupported; no codec playback claim. See [M43](../../knowledge/architecture/ajm_c11_startup.md).

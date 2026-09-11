@@ -728,6 +728,7 @@ pub struct FirstEntryReport {
     pub users: Option<astero_kernel::process::users::Snapshot>,
     pub guest_timing: Option<astero_kernel::timing::sleep::Snapshot>,
     pub audio: Option<astero_audio::output::service::Snapshot>,
+    pub ajm: Option<astero_audio::codecs::ajm::Snapshot>,
     pub formatting: Vec<astero_libs::libc::formatting::exports::Observation>,
     pub output: Vec<u8>,
     pub access_budget: Option<astero_hle::calls::budget::AccessSnapshot>,
@@ -956,6 +957,7 @@ impl EntryReadyGuest {
                 .map(|f| f.users.lock().unwrap_or_else(|p| p.into_inner()).snapshot()),
             guest_timing: owner.runtime.as_ref().map(|r| r.guest_timing.snapshot()),
             audio: owner.runtime.as_ref().map(|r| r.audio.snapshot()),
+            ajm: owner.runtime.as_ref().map(|r| r.ajm.snapshot()),
             formatting: owner
                 .foundation
                 .as_ref()

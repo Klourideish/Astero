@@ -183,6 +183,7 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
     .unwrap();
     writeln!(s, "Guest timing: {:?}", f.guest_timing).unwrap();
     writeln!(s, "AudioOut: {:?}", f.audio).unwrap();
+    writeln!(s, "AJM: {:?}", f.ajm).unwrap();
     for record in &f.formatting {
         writeln!(s, "Formatting: {:?}", record).unwrap();
     }

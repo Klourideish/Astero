@@ -44,3 +44,5 @@ M40 kernel/timing registers the scoped sleep/clock family, with checked outputs 
 M41 libc/math adds 53 exact scalar math adapters with checked outputs and native XMM validation. See [math/cross-title record](../../knowledge/architecture/libc_scalar_math.md).
 
 M42 runtime/guards provides exact C++ guard and pure-virtual contracts; nested destructor execution remains unsupported.
+
+M43 media/ajm supplies checked lifecycle exports; libc/c11 reuses kernel synchronization. A dev-only timing dependency exercises those adapters. See [M43](../../knowledge/architecture/ajm_c11_startup.md).

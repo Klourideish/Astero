@@ -910,3 +910,32 @@ eight workers joined. No additional unknown provider was implemented after these
 
 Focused synthetic checks: `cargo test -p astero-memory --test native` and
 `cargo test -p astero-core --test cxx_guards`. These execute no corpus instructions.
+
+## M43 AJM and C11 continuation
+
+REAL GUEST CODE WILL EXECUTE. These are the two configured trusted experimental corpus roles,
+not a security sandbox. The existing controller keeps 250 ms wall, 15000 ms containment and
+65536 HLE calls. No audible output or codec decode is claimed.
+
+Validated separately for `primary_real_elf` (16 MiB acquisition) and `named_title_elf` (32 MiB):
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$role = 'primary_real_elf' # second validated run: 'named_title_elf'
+$path = $corpus.artifacts.$role.path
+$maxBytes = if ($role -eq 'primary_real_elf') { '16777216' } else { '33554432' }
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+$planLimits = @('--max-bytes',$maxBytes,'--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --max-hle-calls 65536 --wall-ms 250 --containment-ms 15000
+$result = $LASTEXITCODE
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Exit=$result SourceUnchanged=$($before -eq $after)"
+```
+
+Primary passed AJM initialize and four codec registrations, then stopped at
+sceKernelGetDirectMemorySize (0xA4EF7A4F0CCE9B91),169.286 ms overall. Second passed
+C11 condition/mutex initialization, then sceKernelCreateSema (0xD7CF31E7B258A748),1.171 ms.
+Both clean containment, FS/GS restoration, joined threads and zero native reservations; both hashes
+unchanged. AJM snapshot is taken after shutdown; runtime call records retain the successful
+initialization evidence. No AJM jobs submitted; no C11 waits exercised by these artifacts.
+See [M43](knowledge/architecture/ajm_c11_startup.md) for limits and remaining unsupported contracts.

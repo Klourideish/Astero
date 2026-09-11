@@ -21,7 +21,8 @@
       "astero-kernel",
       "astero-gpu",
       "astero-video",
-      "astero-audio"
+      "astero-audio",
+      "astero-timing"
     ],
     "astero-shader": [
       "astero-abi"
@@ -106,6 +107,9 @@
     ],
     "astero-cli": [
       "astero-loader"
+    ],
+    "astero-libs": [
+      "astero-timing"
     ]
   }
 }

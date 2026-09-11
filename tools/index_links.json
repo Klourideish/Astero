@@ -1731,6 +1731,20 @@
       "evidence": [
         "knowledge/architecture/kernel_timing.md"
       ]
+    },
+    {
+      "id": "diagnostic:audio.ajm",
+      "implementation": "impl:astero-audio/lib:astero_audio/codecs::ajm::Snapshot",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "Runtime-owned AJM context, instance and registered range counts after shutdown; no codec completion claim.",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ]
     }
   ],
   "nids": [
@@ -7005,13 +7019,14 @@
       },
       "guest_library": "libc",
       "guest_module": "libc",
-      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
-      "registration_status": "unregistered",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/native_placement_static_init.md"
+        "knowledge/architecture/native_placement_static_init.md",
+        "knowledge/architecture/ajm_c11_startup.md"
       ],
-      "provenance": "M42 cnd_init; PS5Rust-correlated exact identity. Unresolved real runtime observation only; no Astero implementation/registration."
+      "provenance": "M43 _Cnd_init; PS5Rust migration, implemented/registered. Real native call returned successfully. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
     },
     {
       "id": "nid:observed.765fb87874b352ee",
@@ -7021,13 +7036,302 @@
       },
       "guest_library": "libSceAjm",
       "guest_module": "libSceAjm",
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/native_placement_static_init.md",
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmInitialize; PS5Rust migration, implemented/registered. Real native call returned successfully. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.307babeaa0ac52eb",
+      "nid": {
+        "numeric_hex": "0x307BABEAA0AC52EB",
+        "encoded": "MHur6qCsUus"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmFinalize; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.43777216ec069fae",
+      "nid": {
+        "numeric_hex": "0x43777216EC069FAE",
+        "encoded": "Q3dyFuwGn64"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmModuleRegister; PS5Rust migration, implemented/registered. Real native call returned successfully. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.5a2ec3b652d5f8a2",
+      "nid": {
+        "numeric_hex": "0x5A2EC3B652D5F8A2",
+        "encoded": "Wi7DtlLV+KI"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmModuleUnregister; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.6e44471181ba9443",
+      "nid": {
+        "numeric_hex": "0x6E44471181BA9443",
+        "encoded": "bkRHEYG6lEM"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmMemoryRegister; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.a48a4689a6241e43",
+      "nid": {
+        "numeric_hex": "0xA48A4689A6241E43",
+        "encoded": "pIpGiaYkHkM"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmMemoryUnregister; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.031a03ac8369e09f",
+      "nid": {
+        "numeric_hex": "0x031A03AC8369E09F",
+        "encoded": "AxoDrINp4J8"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmInstanceCreate; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.45b2dbb8abfcce1a",
+      "nid": {
+        "numeric_hex": "0x45B2DBB8ABFCCE1A",
+        "encoded": "RbLbuKv8zho"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmInstanceDestroy; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.d6dde2c58357cae7",
+      "nid": {
+        "numeric_hex": "0xD6DDE2C58357CAE7",
+        "encoded": "1t3ixYNXyuc"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/media::ajm::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceAjmDecAt9ParseConfigData; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Registration is bookkeeping; compressed decoding is not implemented."
+    },
+    {
+      "id": "nid:m43.61a1dcdc64bbcbb8",
+      "nid": {
+        "numeric_hex": "0x61A1DCDC64BBCBB8",
+        "encoded": "YaHc3GS7y7g"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 _Mtx_init; PS5Rust migration, implemented/registered. Real native call returned successfully. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
+    },
+    {
+      "id": "nid:m43.892e1a59b5289e5d",
+      "nid": {
+        "numeric_hex": "0x892E1A59B5289E5D",
+        "encoded": "iS4aWbUonl0"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 _Mtx_lock; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
+    },
+    {
+      "id": "nid:m43.813b974303fdaebb",
+      "nid": {
+        "numeric_hex": "0x813B974303FDAEBB",
+        "encoded": "gTuXQwP9rrs"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 _Mtx_unlock; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
+    },
+    {
+      "id": "nid:m43.e4b7f9d63be88534",
+      "nid": {
+        "numeric_hex": "0xE4B7F9D63BE88534",
+        "encoded": "5Lf51jvohTQ"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 _Mtx_destroy; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
+    },
+    {
+      "id": "nid:m43.d2ebaa811cfda9fa",
+      "nid": {
+        "numeric_hex": "0xD2EBAA811CFDA9FA",
+        "encoded": "0uuqgRz9qfo"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 _Cnd_signal; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
+    },
+    {
+      "id": "nid:m43.56c3f775a2609950",
+      "nid": {
+        "numeric_hex": "0x56C3F775A2609950",
+        "encoded": "VsP3daJgmVA"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 _Cnd_broadcast; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
+    },
+    {
+      "id": "nid:m43.bc46aa13fec86587",
+      "nid": {
+        "numeric_hex": "0xBC46AA13FEC86587",
+        "encoded": "vEaqE-7IZYc"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 _Cnd_wait; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
+    },
+    {
+      "id": "nid:m43.ef230581c4bc10f0",
+      "nid": {
+        "numeric_hex": "0xEF230581C4BC10F0",
+        "encoded": "7yMFgcS8EPA"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::c11::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 _Cnd_destroy; PS5Rust migration, implemented/registered. Synthetic coverage only; not runtime-confirmed. Mode 2 uses explicitly limited prototype mutex policy; no full C11 conformance claim."
+    },
+    {
+      "id": "nid:observed.a4ef7a4f0cce9b91",
+      "nid": {
+        "numeric_hex": "0xA4EF7A4F0CCE9B91",
+        "encoded": "pO96TwzOm5E"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
       "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/native_placement_static_init.md"
+        "knowledge/architecture/ajm_c11_startup.md"
       ],
-      "provenance": "M42 sceAjmInitialize; PS5Rust-correlated exact identity. Unresolved real runtime observation only; no Astero implementation/registration."
+      "provenance": "M43 sceKernelGetDirectMemorySize: PS5Rust-correlated exact identity, real unresolved import. Observation only; not implemented or registered."
+    },
+    {
+      "id": "nid:observed.d7cf31e7b258a748",
+      "nid": {
+        "numeric_hex": "0xD7CF31E7B258A748",
+        "encoded": "188x57JYp0g"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
+      "registration_status": "unregistered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/ajm_c11_startup.md"
+      ],
+      "provenance": "M43 sceKernelCreateSema: PS5Rust-correlated exact identity, real unresolved import. Observation only; not implemented or registered."
     }
   ],
   "abi": [

@@ -2079,3 +2079,34 @@ M42 awaits approved tracker cleanup; no M43 implementation,commit,push or histor
 
 Final M42 regeneration reproduced all16 generated JSON/Markdown index files byte-identically
 (17 directory files including the human-maintained README). Supplemental and Git whitespace checks pass.
+
+## M43 AJM and C11 migration validation
+
+Commands run after implementation:
+`cargo fmt --all -- --check`, `cargo check --workspace --all-targets`,
+`cargo build --workspace --all-targets`,
+`cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`,
+`python tools/generate_indexes.py`, `python tools/check_policy.py`,
+`python -m unittest discover -s tools -p 'test_*.py' -v`,
+`python tools/check_whitespace.py`, `git -c core.safecrlf=false diff --check`.
+All passed:627 executable Rust tests,23 doctests,53 Python tests. Existing native infinite-loop
+supervisor, worker lifecycle, pthread, audio, math, timing, guard and CLI integrations are included.
+The20 new media_c11 tests exercise capacities/identity, publication rollback, ATRAC9 configuration,
+checked output boundaries, wrapper returns, owner enforcement, actual shared-service wait/relock
+and shutdown wake. Initial development compilation failures (test timing dependency and Vec length
+assertions) were corrected. Full warning-denied build/test validation preceded real runs; the
+mode2 refinement passed focused tests/build before the second continuation, then full validation.
+
+Real commands: `& ./target/m43-primary.ps1`, `& ./target/m43-second.ps1`; reusable command bodies
+in USAGE. Primary ran once,second twice (initial mode2 refusal then adapted continuation). Both
+final runs exited0/Clean; source hashes unchanged,FS restored,GS preserved,threads joined,zero
+native/runtime reservations/release errors. Primary advanced through AJM initialize/four module
+registrations to direct-memory-size query. Second advanced through CndInit/MtxInit to semaphore
+creation. No followup implementation of those kernel boundaries. Batch/decode and nested once
+remain unsupported, not synthetically or runtime confirmed. See ajm_c11_startup.md for exact
+contexts and confidence limits. Historical error487 remains unresolved/unreproduced.
+
+Indexes:implementation1539,subsystems138,modules594,sources579,tests705,diagnostics44,NIDs344,
+ABI6;3949 total. NIDs340 registered/4 observation-only. Sixteen crates,26 internal edges,
+253 declared homes. No new production dependency,crate or unsafe code. Test-only libs->timing
+is explicit in policy. Generated JSON and raw target logs remain local-only.

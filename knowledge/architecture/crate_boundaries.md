@@ -105,3 +105,5 @@ M31 activates kernel -> timing for native deadlines. Core owns execution-thread/
 M38 activates audio -> timing and libs/core -> audio. Core owns AudioService lifetime; libs owns
 guest structures/NIDs; audio owns ports, queues and null-sink periods. No loader dependency.
 See [AudioOut](audio_startup.md).
+
+M43 permits libs -> timing only in tests to instantiate the shared pthread service. Production C11 adapters do not own or construct schedulers.

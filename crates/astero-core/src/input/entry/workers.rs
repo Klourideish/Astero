@@ -22,11 +22,14 @@ pub const MAX_REGISTERED_PROVIDERS: usize = 256
     + astero_libs::audio::exports::LEGACY.len()
     + astero_libs::audio::exports::AUDIO2.len()
     + astero_libs::kernel::timing::EXPORTS.len()
-    + astero_libs::libc::math::exports::EXPORTS.len();
+    + astero_libs::libc::math::exports::EXPORTS.len()
+    + astero_libs::media::ajm::EXPORTS.len()
+    + astero_libs::libc::c11::EXPORTS.len();
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
+    pub ajm: Arc<astero_audio::codecs::ajm::Ajm>,
     pub guards: Arc<astero_kernel::process::guards::Guards>,
     attempts: std::sync::atomic::AtomicUsize,
     call_budget: std::sync::atomic::AtomicUsize,
@@ -88,6 +91,7 @@ impl Runtime {
             .try_reserve_exact(4096)
             .map_err(|_| ClosureError::Allocation)?;
         Ok(Arc::new(Self {
+            ajm: Arc::new(astero_audio::codecs::ajm::Ajm::new(4096)),
             guards: Arc::new(
                 astero_kernel::process::guards::Guards::new(scheduler.clone(), 4096)
                     .map_err(|_| ClosureError::Allocation)?,
@@ -143,6 +147,11 @@ impl Runtime {
             self.executable.clone(),
         ));
         entries.extend(astero_libs::libc::math::exports::registrations());
+        entries.extend(astero_libs::media::ajm::registrations(self.ajm.clone()));
+        entries.extend(astero_libs::libc::c11::registrations(
+            self.synchronization.clone(),
+            thread,
+        ));
         entries.extend(astero_libs::runtime::guards::registrations(
             self.guards.clone(),
             thread,
@@ -222,6 +231,7 @@ impl Runtime {
         self.table.request_stop();
         self.synchronization.shutdown();
         self.guards.shutdown();
+        self.ajm.shutdown();
         self.audio.shutdown();
         self.guest_timing.shutdown();
         self.table.reap_all();
@@ -407,6 +417,7 @@ impl Runtime {
                     self.table.request_stop();
                     self.synchronization.shutdown();
                     self.guards.shutdown();
+                    self.ajm.shutdown();
                     self.audio.shutdown();
                     self.guest_timing.shutdown();
                 }
@@ -416,6 +427,7 @@ impl Runtime {
                 self.table.request_stop();
                 self.synchronization.shutdown();
                 self.guards.shutdown();
+                self.ajm.shutdown();
                 self.audio.shutdown();
                 self.guest_timing.shutdown();
                 Outcome {
