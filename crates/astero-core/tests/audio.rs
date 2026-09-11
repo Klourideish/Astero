@@ -57,7 +57,7 @@ fn setup() -> (TimingEngine, Arc<AudioService>, PreparedRegistry, Memory) {
     })
     .unwrap();
     let s = Arc::new(AudioService::new(e.scheduler()));
-    let r = PreparedRegistry::new(registrations(s.clone()), 25).unwrap();
+    let r = PreparedRegistry::new(registrations(s.clone()), 26).unwrap();
     (e, s, r, Memory::new())
 }
 fn call(
@@ -88,7 +88,7 @@ fn exact_provider_family_keys() {
     let (_e, _s, r, _m) = setup();
     assert!(r.find(&key(AUDIO2[0].1, false)).is_err());
     assert!(r.find(&key(AUDIO2[0].1, true)).is_ok());
-    assert_eq!(LEGACY.len() + AUDIO2.len(), 25);
+    assert_eq!(LEGACY.len() + AUDIO2.len(), 26);
 }
 #[test]
 fn checked_legacy_output_and_null_submission() {
@@ -250,4 +250,140 @@ fn audio2_port_parent_and_system_state() {
     m.b[512..576].fill(255);
     call(&r, &mut m, true, "GetSystemState", [512, 0, 0, 0, 0, 0]);
     assert!(m.b[512..576].iter().all(|x| *x == 0));
+}
+
+#[test]
+fn speaker_query_is_global_across_mono_stereo_and_eight_channel_ports() {
+    let (_e, s, r, mut m) = setup();
+    s.initialize().unwrap();
+    for format in [0, 1, 2] {
+        let id = s
+            .create(
+                Kind::Legacy,
+                None,
+                Config::pcm(480, 48000, format, 0).unwrap(),
+            )
+            .unwrap();
+        m.b[257..337].fill(0xa5);
+        assert_eq!(
+            call(&r, &mut m, true, "GetSpeakerInfo", [257, 0, 0, 0, 0, 0]),
+            (CallResult::Returned, 0)
+        );
+        assert_eq!(
+            &m.b[257..337],
+            astero_abi::layouts::audio::SpeakerInfo::stereo_sink().bytes()
+        );
+        s.close(id, Kind::Legacy).unwrap();
+    }
+    assert_eq!(s.snapshot().speaker_queries, 3);
+}
+#[test]
+fn speaker_errors_preserve_output_and_firmware_priority() {
+    let (_e, s, r, mut m) = setup();
+    assert_eq!(
+        call(&r, &mut m, true, "GetSpeakerInfo", [0, 0, 0, 0, 0, 0]).1 as u32,
+        0x80268006
+    );
+    s.initialize().unwrap();
+    assert_eq!(
+        call(&r, &mut m, true, "GetSpeakerInfo", [0, 0, 0, 0, 0, 0]).1 as u32,
+        0x8026800c
+    );
+    m.b[128..208].fill(0xa5);
+    assert_eq!(
+        call(&r, &mut m, true, "GetSpeakerInfo", [128, 999, 0, 0, 0, 0]).1 as u32,
+        0x80268001
+    );
+    assert_eq!(
+        call(&r, &mut m, true, "GetSpeakerInfo", [128, 1, 0, 0, 0, 0]).0,
+        CallResult::Unsupported
+    );
+    assert_eq!(&m.b[128..208], &[0xa5; 80]);
+}
+#[test]
+fn speaker_range_preflight_and_exact_unaligned_boundary() {
+    let (_e, s, r, mut m) = setup();
+    s.initialize().unwrap();
+    let end = m.b.len() as u64;
+    m.b.fill(0xa5);
+    assert!(matches!(
+        call(
+            &r,
+            &mut m,
+            true,
+            "GetSpeakerInfo",
+            [end - 79, 0, 0, 0, 0, 0]
+        )
+        .0,
+        CallResult::AccessFailure(_)
+    ));
+    assert!(m.b.iter().all(|b| *b == 0xa5));
+    assert_eq!(
+        call(
+            &r,
+            &mut m,
+            true,
+            "GetSpeakerInfo",
+            [end - 80, 0, 0, 0, 0, 0]
+        )
+        .1,
+        0
+    );
+    assert_eq!(
+        &m.b[m.b.len() - 80..],
+        astero_abi::layouts::audio::SpeakerInfo::stereo_sink().bytes()
+    );
+    m.ro = true;
+    assert!(matches!(
+        call(&r, &mut m, true, "GetSpeakerInfo", [128, 0, 0, 0, 0, 0]).0,
+        CallResult::AccessFailure(_)
+    ));
+}
+#[test]
+fn speaker_repeated_query_and_shutdown() {
+    let (_e, s, r, mut m) = setup();
+    s.initialize().unwrap();
+    for _ in 0..4 {
+        assert_eq!(
+            call(&r, &mut m, true, "GetSpeakerInfo", [128, 0, 0, 0, 0, 0]).1,
+            0
+        );
+    }
+    assert_eq!(s.snapshot().speaker_queries, 4);
+    s.shutdown();
+    assert_eq!(
+        call(&r, &mut m, true, "GetSpeakerInfo", [128, 0, 0, 0, 0, 0]).0,
+        CallResult::StopRequested
+    );
+}
+
+#[test]
+fn speaker_layout_has_exact_offsets_and_zero_reserved_bytes() {
+    let b = astero_abi::layouts::audio::SpeakerInfo::stereo_sink();
+    let b = b.bytes();
+    assert_eq!(b.len(), 80);
+    assert_eq!(b[0], 0);
+    assert_eq!(u32::from_le_bytes(b[4..8].try_into().unwrap()), 3);
+    assert_eq!(i16::from_le_bytes(b[16..18].try_into().unwrap()), -30);
+    assert_eq!(i16::from_le_bytes(b[20..22].try_into().unwrap()), 30);
+    for i in (0..80).filter(|i| !matches!(i, 4 | 16 | 17 | 20)) {
+        assert_eq!(b[i], 0, "offset {i}");
+    }
+}
+
+#[test]
+fn speaker_selector_uses_guest_u32_argument_width() {
+    let (_e, s, r, mut m) = setup();
+    s.initialize().unwrap();
+    assert_eq!(
+        call(
+            &r,
+            &mut m,
+            true,
+            "GetSpeakerInfo",
+            [128, 1u64 << 32, 0, 0, 0, 0]
+        )
+        .1,
+        0
+    );
 }

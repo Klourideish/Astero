@@ -755,3 +755,36 @@ cargo test -p astero-core --test audio --test synchronization
 
 These passed16 audio-service,10 adapter and5 synchronization tests. Exact evidence, NIDs, raw
 context and limitations are in [M38 architecture](knowledge/architecture/audio_startup.md).
+
+## M39 GetSpeakerInfo and AudioOut continuation
+
+REAL GUEST CODE WILL EXECUTE. Configured trusted primary_real_elf only; not a security sandbox.
+Exact validated command, same execution bounds:
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$path = $corpus.artifacts.primary_real_elf.path
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --wall-ms 250 --containment-ms 15000 *> target/m39-real-1.log
+$result = $LASTEXITCODE
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Exit=$result Before=$before After=$after"
+```
+
+Expected: checked speaker query succeeds,continue known AudioOut helpers,stop at a different subsystem.
+Actual: exit0/Clean,13195us overall/12154us native. GetSpeakerInfo(selector0) succeeded once,
+writing80 bytes at0x200800790: type0,logical stereo mask3,flags0,angles-30/+30,unknown/reservedzero.
+PortGetState(port3) then succeeded. Next stop: unresolved sceKernelUsleep0xD637D72D15738AC7,
+libkernel/libkernel,argument1000. No sleep implementation added; no audio buffers submitted.
+Eight workers joined,audio objects/tickets and native/runtime mappings released,sourceSHA unchanged.
+No physical speaker/playback claim. Selector1 remains unsupported. Mutex failures did not recur.
+
+```powershell
+cargo test -p astero-core --test audio --test synchronization
+cargo test -p astero-audio --test output
+```
+
+Six new speaker tests cover ABI fields,reserved bytes,global topology independent of port input
+channels,range/error/selector behavior and shutdown. Full evidence/confidence and runtime context:
+[M39](knowledge/architecture/audio_speaker_info.md). No second eboot was executed.

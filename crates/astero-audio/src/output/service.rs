@@ -11,6 +11,7 @@ pub enum Error {
     Capacity,
     Busy,
     Interrupted,
+    NotInitialized,
 }
 pub type Result<T = ()> = std::result::Result<T, Error>;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -19,6 +20,11 @@ pub enum Kind {
     Context,
     Port,
     User,
+}
+/// Logical output policy, independent of input port channel counts and host hardware.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SpeakerTopology {
+    Stereo,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Config {
@@ -101,6 +107,8 @@ struct State {
     next: u64,
     initialized: bool,
     mastering: bool,
+    speaker_queries: u64,
+    topology: SpeakerTopology,
     stopped: bool,
     limit: Option<Deadline>,
     submitted: u64,
@@ -117,6 +125,8 @@ pub struct Snapshot {
     pub backend: &'static str,
     pub initialized: bool,
     pub mastering: bool,
+    pub speaker_queries: u64,
+    pub topology: SpeakerTopology,
     pub stopped: bool,
     pub objects: Vec<Record>,
     pub submitted: u64,
@@ -141,6 +151,8 @@ impl AudioService {
                 next: 1,
                 initialized: false,
                 mastering: false,
+                speaker_queries: 0,
+                topology: SpeakerTopology::Stereo,
                 stopped: false,
                 limit: None,
                 submitted: 0,
@@ -194,6 +206,21 @@ impl AudioService {
         let mut s = self.lock();
         self.live(&s)?;
         s.initialized = true;
+        Ok(())
+    }
+    /// Global query: firmware takes output + selector, never a port handle.
+    pub fn speaker_ready(&self) -> Result<SpeakerTopology> {
+        let s = self.lock();
+        self.live(&s)?;
+        if !s.initialized {
+            return Err(Error::NotInitialized);
+        }
+        Ok(s.topology)
+    }
+    pub fn speaker_queried(&self) -> Result {
+        let mut s = self.lock();
+        self.live(&s)?;
+        s.speaker_queries = s.speaker_queries.saturating_add(1);
         Ok(())
     }
     pub fn mastering(&self) -> Result {
@@ -391,6 +418,8 @@ impl AudioService {
             backend: "TimedNullSink (no host playback)",
             initialized: s.initialized,
             mastering: s.mastering,
+            speaker_queries: s.speaker_queries,
+            topology: s.topology,
             stopped: s.stopped,
             objects: s
                 .objects

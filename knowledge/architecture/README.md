@@ -78,3 +78,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [M37 libc formatting and guest varargs](libc_formatting.md)
 
 [M38 AudioOut and media startup](audio_startup.md): timed null sink, mutex token correction and real runtime boundary.
+
+[M39 speaker-info ABI and continuation](audio_speaker_info.md): global checked query and kernel sleep boundary.

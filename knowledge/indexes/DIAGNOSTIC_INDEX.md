@@ -8,7 +8,7 @@ Discovery and lexical references do not prove passing tests, runtime support or 
 
 | Logical ID | Owner / symbol | Status / evidence | Source / knowledge |
 |---|---|---|---|
-| diagnostic:audio.output | astero-audio / Snapshot | implemented | [crates/astero-audio/src/output/service.rs](../../crates/astero-audio/src/output/service.rs) : 115-129 |
+| diagnostic:audio.output | astero-audio / Snapshot | implemented | [crates/astero-audio/src/output/service.rs](../../crates/astero-audio/src/output/service.rs) : 123-139 |
 | diagnostic:cli.acquisition_arguments | astero-cli / ArgumentError | implemented | [crates/astero-cli/src/acquisition/arguments.rs](../../crates/astero-cli/src/acquisition/arguments.rs) : 9-18 |
 | diagnostic:cli.inspection_request | astero-cli / RequestError | implemented | [crates/astero-cli/src/inspection/request.rs](../../crates/astero-cli/src/inspection/request.rs) : 4-6 |
 | diagnostic:core.evidence_input | astero-core / InputError | implemented | [crates/astero-core/src/session/inputs/composition.rs](../../crates/astero-core/src/session/inputs/composition.rs) : 11-17 |

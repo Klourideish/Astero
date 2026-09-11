@@ -22,3 +22,6 @@ M29 layouts/entry provides explicit 32-byte process argument encoding and a plan
 
 M37 adds the explicit 24-byte guest va_list layout in `layouts::varargs`; it is not a host va_list.
 See [formatting contract](../../knowledge/architecture/libc_formatting.md).
+
+M39 adds byte-exact 80-byte GetSpeakerInfo encoding under layouts/audio; device field meanings
+remain comparative-correlated. See [M39](../../knowledge/architecture/audio_speaker_info.md).

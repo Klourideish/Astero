@@ -998,6 +998,17 @@
         "test:astero-core/test:audio/queue_output_pair_preflight",
         "test:astero-core/test:audio/audio2_port_parent_and_system_state"
       ]
+    },
+    {
+      "implementation": "impl:astero-abi/lib:astero_abi/layouts::audio::impl[SpeakerInfo]::stereo_sink",
+      "tests": [
+        "test:astero-core/test:audio/speaker_query_is_global_across_mono_stereo_and_eight_channel_ports",
+        "test:astero-core/test:audio/speaker_errors_preserve_output_and_firmware_priority",
+        "test:astero-core/test:audio/speaker_range_preflight_and_exact_unaligned_boundary",
+        "test:astero-core/test:audio/speaker_repeated_query_and_shutdown",
+        "test:astero-core/test:audio/speaker_layout_has_exact_offsets_and_zero_reserved_bytes",
+        "test:astero-core/test:audio/speaker_selector_uses_guest_u32_argument_width"
+      ]
     }
   ],
   "reviews": [
@@ -5480,9 +5491,10 @@
       "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/audio_startup.md"
+        "knowledge/architecture/audio_startup.md",
+        "knowledge/architecture/audio_speaker_info.md"
       ],
-      "provenance": "sceAudioOut2PortGetState: PS5Rust-adapted null-sink implementation, registered; not runtime-confirmed; synthetic validation only."
+      "provenance": "sceAudioOut2PortGetState: M38 migrated/registered; M39 one real successful query, not physical audio validation."
     },
     {
       "id": "nid:m38.47b774175836aac5",
@@ -5572,13 +5584,32 @@
       },
       "guest_library": "libSceAudioOut2",
       "guest_module": "libSceAudioOut",
+      "implementation": "impl:astero-libs/lib:astero_libs/audio::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:audio.speaker_info"
+      ],
+      "evidence": [
+        "knowledge/architecture/audio_startup.md",
+        "knowledge/architecture/audio_speaker_info.md"
+      ],
+      "provenance": "sceAudioOut2GetSpeakerInfo: M39 implemented/registered selector0 logical Stereo; firmware-sized ABI, comparative fields; one successful real call. Hardware topology remains experimental."
+    },
+    {
+      "id": "nid:observed.d637d72d15738ac7",
+      "nid": {
+        "numeric_hex": "0xD637D72D15738AC7",
+        "encoded": "1jfXLRVzisc"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
       "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/audio_startup.md"
+        "knowledge/architecture/audio_speaker_info.md"
       ],
-      "provenance": "sceAudioOut2GetSpeakerInfo: M38 unresolved runtime import; firmware catalogue name correlation only, no HLE implementation or established complete output ABI."
+      "provenance": "sceKernelUsleep: M39 unresolved runtime import argument1000; PS5Rust name correlation; no Astero HLE implementation or registration."
     }
   ],
   "abi": [
@@ -5607,6 +5638,15 @@
       "implementation": "impl:astero-abi/lib:astero_abi/layouts::varargs::VaList",
       "evidence": [
         "knowledge/architecture/libc_formatting.md"
+      ]
+    },
+    {
+      "id": "abi:audio.speaker_info",
+      "guest_concept": "80-byte GetSpeakerInfo output, two-argument signature; logical sink values experimental, field meanings comparative-correlated",
+      "guest_library": "libSceAudioOut2",
+      "implementation": "impl:astero-abi/lib:astero_abi/layouts::audio::SpeakerInfo",
+      "evidence": [
+        "knowledge/architecture/audio_speaker_info.md"
       ]
     }
   ]

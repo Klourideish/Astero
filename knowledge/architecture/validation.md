@@ -1967,3 +1967,28 @@ runtime-confirmed; new SpeakerInfo observation unregistered. No new ABI claim.
 Final freshness and repeated generation cover all17 files for byte identity; policy, supplemental
 whitespace and Git diff checks must remain clean. M38 ready_for_cleanup pending approval;
 no M39,commit,push or rewritten history. Logs target/m38-final-{check,build,clippy,rust,policy,python}.log.
+
+## M39 GetSpeakerInfo ABI and AudioOut continuation — 2026-09-11
+
+Preflight all-target check/build,Clippy and full Rust tests passed before real execution,with
+policy/index checks. Final formatting,workspace all-target check/build,warnings-denied Clippy
+and Rust suite pass:547 executable tests,23 doctests,zero failures/ignored. Six new tests cover
+speaker layout/global semantics/errors/ranges/selector width/shutdown. Existing CLI,native
+supervisor,M33 mutex/waits,M34 workers,M35 memory,M37 formatting,M38 AudioOut tests included.
+All53 Python tests pass; policy16 crates/25 edges/252 module homes; active state valid.
+
+One real run: exact M39 USAGE command,250ms wall/15000ms containment,exit0/Clean.
+13195us overall/12154us native. GetSpeakerInfo once returned0,PortGetState once returned0;
+next unresolved sceKernelUsleep0xD637D72D15738AC7(argument1000),outside AudioOut.
+No audio buffers/waits; eight workers interrupted/joined; zero audio/native/runtime resources,
+sourceSHA unchanged. See audio_speaker_info.md for firmware/hash/call-site evidence,field
+confidence and raw context. No second-title run. No physical playback validation claim.
+Final refinements explicitly stored Stereo in service state and tested u32 selector width;
+these preserve selector0 bytes from the real run and did not warrant another depth-chasing run.
+
+Index counts:implementation1441,subsystems138,modules576,sources561,tests625,diagnostics42,
+NIDs250(247registered,3unregistered),ABI4,total3637. One new ABI; one provider promoted;
+new kernel sleep observation unregistered. Repeated generation checks all17 index files for
+byte identity; freshness,policy/state/structure,supplemental whitespace and git diff checks
+required clean at completion. Raw validation logs target/m39-{pre*,final-*,real-1}.log are ignored.
+M39 ready_for_cleanup pending approval; no M40 implementation,commit,push or rewritten history.

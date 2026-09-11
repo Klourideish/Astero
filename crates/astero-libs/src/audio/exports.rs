@@ -15,6 +15,7 @@ pub const LEGACY: &[(&str, u64)] = &[
     ("GetPortState", 0x1ab43db3822b35a4),
 ];
 pub const AUDIO2: &[(&str, u64)] = &[
+    ("GetSpeakerInfo", 0x0c89b3d85b7d1368),
     ("Initialize", 0x836b558852288471),
     ("ContextResetParam", 0xb7962b8b3b9fa507),
     ("ContextQueryMemory", 0xa439a67bb0609ba1),
@@ -50,6 +51,7 @@ enum Failure {
     Service(Error),
     Memory(AccessError),
     Unsupported,
+    Guest(u32),
 }
 impl From<Error> for Failure {
     fn from(e: Error) -> Self {
@@ -187,6 +189,28 @@ fn legacy(name: &str, a: [u64; 6], m: &mut dyn GuestMemory, s: &AudioService) ->
 }
 fn audio2(name: &str, a: [u64; 6], m: &mut dyn GuestMemory, s: &AudioService) -> Result<u64> {
     match name {
+        "GetSpeakerInfo" => {
+            let topology = s.speaker_ready()?;
+            if a[0] == 0 {
+                return Err(Failure::Guest(0x8026800c));
+            }
+            // Firmware selector 1 is version/device-dependent. No invented topology.
+            let selector = a[1] as u32;
+            if selector == 1 {
+                return Err(Failure::Unsupported);
+            }
+            if selector != 0 {
+                return Err(Failure::Guest(0x80268001));
+            }
+            let info = match topology {
+                astero_audio::output::service::SpeakerTopology::Stereo => {
+                    astero_abi::layouts::audio::SpeakerInfo::stereo_sink()
+                }
+            };
+            write(m, a[0], info.bytes())?;
+            s.speaker_queried()?;
+            Ok(0)
+        }
         "Initialize" => {
             s.initialize()?;
             Ok(0)
@@ -338,12 +362,18 @@ pub fn registrations(service: Arc<AudioService>) -> Vec<Registration> {
                                 f.rax = v;
                                 CallResult::Returned
                             }
+                            Err(Failure::Guest(code)) => {
+                                f.rax = (code as i32 as i64) as u64;
+                                CallResult::Returned
+                            }
                             Err(Failure::Unsupported) => CallResult::Unsupported,
                             Err(Failure::Memory(e)) => CallResult::AccessFailure(e),
                             Err(Failure::Service(Error::Interrupted)) => CallResult::StopRequested,
                             Err(Failure::Service(e)) => {
                                 let code = if two {
-                                    if e == Error::Busy {
+                                    if e == Error::NotInitialized {
+                                        0x80268006u32
+                                    } else if e == Error::Busy {
                                         0x80268008u32
                                     } else {
                                         0x80268001
