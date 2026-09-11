@@ -1,6 +1,16 @@
 use super::super::owned::*;
 use astero_timing::time::Deadline;
 impl Synchronization {
+    pub fn mutex_require_owner(&self, id: u64, address: u64, thread: Thread) -> Result {
+        let s = self.lock();
+        let i = Self::index(&s, id, address, Kind::Mutex)?;
+        if s.objects[i].owner == Some(thread) {
+            Ok(())
+        } else {
+            Err(Error::Permission)
+        }
+    }
+
     pub fn mutex_lock(
         &self,
         id: u64,

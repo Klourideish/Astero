@@ -877,3 +877,36 @@ foreach ($role in @('primary_real_elf','named_title_elf')) {
 Both exit 0, StagedWithPendingWork, zero byte mappings after teardown. These offline diagnostics
 do not execute guest code and do not prove native placement. See [M41](knowledge/architecture/libc_scalar_math.md)
 for the complete comparison, limitations and recommended next work. No third title was run.
+
+## M42 second native entry and C++ guard continuation
+
+Both roles now reach structured runtime stops at the unchanged image bias. The historical M41
+Windows487 occupant is still unknown; reservation failures now include bounded region evidence.
+No random/title-specific relocation fallback was added. See [M42 evidence](knowledge/architecture/native_placement_static_init.md).
+
+Using `$corpus` and `$planLimits` from the M41 section above (32 MiB acquisition):
+
+```powershell
+# Nonexecuting placement diagnostic for the same second artifact.
+& .\target\debug\astero-cli.exe native-map --path $corpus.artifacts.named_title_elf.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864
+# Deliberate real execution; trusted corpus only, not a security sandbox.
+# Run named_title_elf first; inspect its boundary before running primary_real_elf.
+$role = 'named_title_elf' # use 'primary_real_elf' for the validated primary continuation
+if ($role -eq 'primary_real_elf') { $planLimits[1] = '16777216' }
+$path = $corpus.artifacts.$role.path
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --max-hle-calls 65536 --wall-ms 250 --containment-ms 15000
+$result = $LASTEXITCODE
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Exit=$result Before=$before After=$after"
+```
+
+Second: EntryReady, real native entry, _init_env1/atexit2/__cxa_atexit5, then unresolved cnd_init
+0x4AB799C9B4915A95 libc/libc (0.578 ms overall). No workers. Primary: eleven guard acquire/release
+pairs, then unresolved sceAjmInitialize0x765FB87874B352EE libSceAjm/libSceAjm (180.274 ms).
+Both commands exit0 because controlled stops/teardown succeed; this does not mean guest completion.
+Both source hashes unchanged, FS restored/GS preserved, no reservations or release errors; primary's
+eight workers joined. No additional unknown provider was implemented after these stops.
+
+Focused synthetic checks: `cargo test -p astero-memory --test native` and
+`cargo test -p astero-core --test cxx_guards`. These execute no corpus instructions.

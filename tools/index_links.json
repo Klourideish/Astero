@@ -6935,13 +6935,99 @@
       },
       "guest_library": "libc",
       "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/runtime::guards::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:static.guard"
+      ],
+      "evidence": [
+        "knowledge/architecture/native_placement_static_init.md"
+      ],
+      "provenance": "M42 __cxa_guard_acquire; PS5Rust-correlated exact identity. Implemented/registered; primary native call confirmed."
+    },
+    {
+      "id": "nid:observed.f6b01e00d4f6b721",
+      "nid": {
+        "numeric_hex": "0xF6B01E00D4F6B721",
+        "encoded": "9rAeANT2tyE"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/runtime::guards::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:static.guard"
+      ],
+      "evidence": [
+        "knowledge/architecture/native_placement_static_init.md"
+      ],
+      "provenance": "M42 __cxa_guard_release; PS5Rust-correlated exact identity. Implemented/registered; primary native call confirmed."
+    },
+    {
+      "id": "nid:observed.d9e99a6a5b96cd4c",
+      "nid": {
+        "numeric_hex": "0xD9E99A6A5B96CD4C",
+        "encoded": "2emaaluWzUw"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/runtime::guards::registrations",
+      "registration_status": "registered",
+      "related_abi": [
+        "abi:static.guard"
+      ],
+      "evidence": [
+        "knowledge/architecture/native_placement_static_init.md"
+      ],
+      "provenance": "M42 __cxa_guard_abort; PS5Rust-correlated exact identity. Implemented/registered; synthetic validation only, not runtime-confirmed."
+    },
+    {
+      "id": "nid:observed.cebd3de04437f56c",
+      "nid": {
+        "numeric_hex": "0xCEBD3DE04437F56C",
+        "encoded": "zr094EQ39Ww"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/runtime::guards::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/native_placement_static_init.md"
+      ],
+      "provenance": "M42 __cxa_pure_virtual; PS5Rust-correlated exact identity. Implemented/registered; synthetic validation only, not runtime-confirmed."
+    },
+    {
+      "id": "nid:observed.4ab799c9b4915a95",
+      "nid": {
+        "numeric_hex": "0x4AB799C9B4915A95",
+        "encoded": "SreZybSRWpU"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
       "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/libc_scalar_math.md"
+        "knowledge/architecture/native_placement_static_init.md"
       ],
-      "provenance": "M41 primary unresolved __cxa_guard_acquire,ordinal66; exact key corroborated by PS5Rust kernel/libc/nids.rs:354. No Astero provider implementation/registration."
+      "provenance": "M42 cnd_init; PS5Rust-correlated exact identity. Unresolved real runtime observation only; no Astero implementation/registration."
+    },
+    {
+      "id": "nid:observed.765fb87874b352ee",
+      "nid": {
+        "numeric_hex": "0x765FB87874B352EE",
+        "encoded": "dl+4eHSzUu4"
+      },
+      "guest_library": "libSceAjm",
+      "guest_module": "libSceAjm",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
+      "registration_status": "unregistered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/native_placement_static_init.md"
+      ],
+      "provenance": "M42 sceAjmInitialize; PS5Rust-correlated exact identity. Unresolved real runtime observation only; no Astero implementation/registration."
     }
   ],
   "abi": [
@@ -6988,6 +7074,15 @@
       "implementation": "impl:astero-abi/lib:astero_abi/layouts::time::Timespec",
       "evidence": [
         "knowledge/architecture/kernel_timing.md"
+      ]
+    },
+    {
+      "id": "abi:static.guard",
+      "guest_concept": "8-byte aligned guard, completion bit0 of first byte, seven reserved bytes preserved; PS5Rust-correlated static initialization, not full C++ exception ABI",
+      "guest_library": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/runtime::guards::call",
+      "evidence": [
+        "knowledge/architecture/native_placement_static_init.md"
       ]
     }
   ]

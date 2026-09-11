@@ -27,6 +27,7 @@ pub const MAX_REGISTERED_PROVIDERS: usize = 256
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
+    pub guards: Arc<astero_kernel::process::guards::Guards>,
     attempts: std::sync::atomic::AtomicUsize,
     call_budget: std::sync::atomic::AtomicUsize,
     pub table: Arc<ThreadTable>,
@@ -87,6 +88,10 @@ impl Runtime {
             .try_reserve_exact(4096)
             .map_err(|_| ClosureError::Allocation)?;
         Ok(Arc::new(Self {
+            guards: Arc::new(
+                astero_kernel::process::guards::Guards::new(scheduler.clone(), 4096)
+                    .map_err(|_| ClosureError::Allocation)?,
+            ),
             guest_timing: Arc::new(astero_kernel::timing::sleep::GuestTiming::new(
                 scheduler.clone(),
                 astero_kernel::timing::clock::Realtime::HostUnix,
@@ -138,6 +143,10 @@ impl Runtime {
             self.executable.clone(),
         ));
         entries.extend(astero_libs::libc::math::exports::registrations());
+        entries.extend(astero_libs::runtime::guards::registrations(
+            self.guards.clone(),
+            thread,
+        ));
         entries.extend(astero_libs::audio::exports::registrations(
             self.audio.clone(),
         ));
@@ -212,6 +221,7 @@ impl Runtime {
     pub fn stop_and_join(&self) {
         self.table.request_stop();
         self.synchronization.shutdown();
+        self.guards.shutdown();
         self.audio.shutdown();
         self.guest_timing.shutdown();
         self.table.reap_all();
@@ -396,6 +406,7 @@ impl Runtime {
                 if !normal {
                     self.table.request_stop();
                     self.synchronization.shutdown();
+                    self.guards.shutdown();
                     self.audio.shutdown();
                     self.guest_timing.shutdown();
                 }
@@ -404,6 +415,7 @@ impl Runtime {
             Err(error) => {
                 self.table.request_stop();
                 self.synchronization.shutdown();
+                self.guards.shutdown();
                 self.audio.shutdown();
                 self.guest_timing.shutdown();
                 Outcome {

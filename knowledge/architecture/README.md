@@ -84,3 +84,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 [M40 kernel timing and sleep](kernel_timing.md): canonical deadlines, bounded guest waits and real powf boundary.
 
 [M41 scalar math and cross-title smoke](libc_scalar_math.md): FP lane migration, primary C++ guard boundary and second native-placement refusal.
+
+[M42 placement and static initialization](native_placement_static_init.md): bounded collision evidence, second real entry and C++ guard migration.

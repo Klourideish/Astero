@@ -181,17 +181,106 @@ mod windows {
         let (r, o) = realize(&[region(a, &b, protection(true, false, false))], limits());
         let image = r.unwrap();
         let (second, other) = realize(&[region(a, &b, protection(true, false, false))], limits());
-        assert!(matches!(
-            second,
-            Err(NativeError::Os {
-                operation: "reserve_exact_or_collision",
-                ..
-            })
-        ));
+        let Err(NativeError::ReservationRefused { code, evidence }) = second else {
+            panic!("expected bounded reservation evidence");
+        };
+        assert_eq!(code, 487);
+        assert!(evidence.complete);
+        assert_eq!(evidence.query_error, None);
+        assert_eq!(evidence.requested.start.0, a);
+        assert_eq!(evidence.regions[0].allocation_base, a);
+        assert_eq!(evidence.regions[0].state, 0x1000);
         assert_eq!(other.active_reservations(), 0);
         assert_eq!(image.read(GuestAddress(a), 1).unwrap(), [42]);
         drop(image);
         assert_eq!(o.active_reservations(), 0);
+    }
+    #[test]
+    fn canonical_envelope_sequential_child_process() {
+        if std::env::var_os("ASTERO_PLACEMENT_TEST_CHILD").is_none() {
+            let output = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "windows::canonical_envelope_sequential_child_process",
+                    "--nocapture",
+                ])
+                .env("ASTERO_PLACEMENT_TEST_CHILD", "1")
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "{} {}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+            return;
+        }
+        let a = 0x100000000;
+        for size in [4096, 29134848] {
+            let bytes = vec![0; size];
+            let (r, o) = realize(
+                &[region(a, &bytes, protection(true, false, true))],
+                NativeLimits {
+                    max_reserved_bytes: 67108864,
+                    max_committed_bytes: 67108864,
+                },
+            );
+            let image = r.unwrap();
+            assert_eq!(image.snapshot().host_envelope.start.0, a);
+            drop(image);
+            assert_eq!(o.active_reservations(), 0);
+            assert_eq!(o.release_error(), 0);
+        }
+    }
+    #[test]
+    fn sequential_larger_images_preserve_exact_base_and_release() {
+        let a = address();
+        for size in [4096, 131072, 65536, 196608] {
+            let bytes = vec![19; size];
+            let (r, o) = realize(
+                &[region(a, &bytes, protection(true, false, true))],
+                limits(),
+            );
+            let image = r.unwrap();
+            assert_eq!(image.snapshot().host_envelope.start.0, a);
+            assert_eq!(
+                image.read(GuestAddress(a + size as u64 - 1), 1).unwrap(),
+                [19]
+            );
+            drop(image);
+            assert_eq!(o.active_reservations(), 0);
+            assert_eq!(o.release_error(), 0);
+        }
+    }
+    #[test]
+    fn larger_envelope_collision_reports_interior_owner_and_retry() {
+        let a = address();
+        let b = [27; 4096];
+        let (owner, o) = realize(
+            &[region(a + 65536, &b, protection(true, false, false))],
+            limits(),
+        );
+        let owner = owner.unwrap();
+        let big = vec![0; 131072];
+        let (failed, f) = realize(&[region(a, &big, protection(true, true, false))], limits());
+        let Err(NativeError::ReservationRefused { evidence, .. }) = failed else {
+            panic!("expected refusal")
+        };
+        assert!(evidence.complete);
+        assert!(evidence.regions.len() <= 64);
+        assert!(
+            evidence
+                .regions
+                .iter()
+                .any(|r| r.allocation_base == a + 65536)
+        );
+        assert_eq!(owner.read(GuestAddress(a + 65536), 1).unwrap(), [27]);
+        assert_eq!(f.active_reservations(), 0);
+        drop(owner);
+        assert_eq!(o.active_reservations(), 0);
+        let (retry, r) = realize(&[region(a, &big, protection(true, true, false))], limits());
+        drop(retry.unwrap());
+        assert_eq!(r.active_reservations(), 0);
     }
     #[test]
     fn noaccess_executeonly_and_holes_never_read_unsafely() {

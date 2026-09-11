@@ -68,3 +68,5 @@ M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_
 M37 composes owned formatting/output state with existing native workers; loader-only paths remain independent.
 
 M38 runtime owns/shuts down AudioService before joining workers; all audio waits share canonical timing.
+
+M42 injects process guard ownership/deadlines into shared main/worker registries; both configured real images execute to structured stops.

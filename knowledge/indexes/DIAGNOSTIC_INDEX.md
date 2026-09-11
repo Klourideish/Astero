@@ -43,7 +43,7 @@ Discovery and lexical references do not prove passing tests, runtime support or 
 | diagnostic:loader.source | astero-loader / SourceError | implemented | [crates/astero-loader/src/artifact/source.rs](../../crates/astero-loader/src/artifact/source.rs) : 22-42 |
 | diagnostic:loader.string_references | astero-loader / StringReferenceFailure | implemented | [crates/astero-loader/src/elf/dynamic/string_references/error.rs](../../crates/astero-loader/src/elf/dynamic/string_references/error.rs) : 7-28 |
 | diagnostic:loader.structural_classification | astero-loader / ClassificationFailure | implemented | [crates/astero-loader/src/elf/dynamic/candidates/structural/model.rs](../../crates/astero-loader/src/elf/dynamic/candidates/structural/model.rs) : 30-34 |
-| diagnostic:memory.native_vm | astero-memory / NativeError | implemented | [crates/astero-memory/src/mapping/windows_native/model.rs](../../crates/astero-memory/src/mapping/windows_native/model.rs) : 56-92 |
+| diagnostic:memory.native_vm | astero-memory / NativeError | implemented | [crates/astero-memory/src/mapping/windows_native/model.rs](../../crates/astero-memory/src/mapping/windows_native/model.rs) : 56-96 |
 | diagnostic:process.user_service | astero-kernel / Snapshot | implemented | [crates/astero-kernel/src/process/users.rs](../../crates/astero-kernel/src/process/users.rs) : 15-21 |
 | diagnostic:runtime.entry | astero-core / EntryError | implemented | [crates/astero-core/src/input/entry/owner.rs](../../crates/astero-core/src/input/entry/owner.rs) : 51-59 |
 | diagnostic:runtime.entry_closure | astero-core / ClosureError | implemented | [crates/astero-core/src/input/entry/closure.rs](../../crates/astero-core/src/input/entry/closure.rs) : 19-36 |

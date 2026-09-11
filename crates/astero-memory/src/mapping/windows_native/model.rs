@@ -54,6 +54,10 @@ impl NativeLayout {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeError {
+    ReservationRefused {
+        code: u32,
+        evidence: Box<ReservationEvidence>,
+    },
     SharedOwnership,
     UnsupportedHost,
     Geometry,
@@ -89,6 +93,24 @@ pub enum NativeError {
     },
     Released,
     Unreadable,
+}
+/// Bounded post-failure observation, not a lease or attribution of host ownership.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReservationEvidence {
+    pub requested: GuestRange,
+    pub geometry: Geometry,
+    pub regions: Vec<ReservationRegion>,
+    pub complete: bool,
+    pub query_error: Option<u32>,
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReservationRegion {
+    pub base: u64,
+    pub size: u64,
+    pub allocation_base: u64,
+    pub state: u32,
+    pub protection: u32,
+    pub kind: u32,
 }
 impl std::fmt::Display for NativeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -768,6 +768,10 @@ impl EntryReadyGuest {
             sync.arm(deadline).map_err(|_| BridgeError::Validation)?;
             if let Some(runtime) = &owner.runtime {
                 runtime.table.arm(deadline);
+                runtime
+                    .guards
+                    .arm(deadline)
+                    .map_err(|_| BridgeError::Validation)?;
                 runtime.audio.arm(deadline);
                 runtime.guest_timing.arm(deadline);
             }

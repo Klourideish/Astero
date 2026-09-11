@@ -93,6 +93,53 @@ fn flags(p: Protection) -> u32 {
         _ => 1,
     }
 }
+/// Query only the failed envelope, at most 64 regions. VirtualQuery does not read payloads.
+/// The snapshot can race unrelated host allocation; it never licenses replacement or retry.
+fn reservation_evidence(range: GuestRange, geometry: Geometry) -> ReservationEvidence {
+    let mut evidence = ReservationEvidence {
+        requested: range,
+        geometry,
+        regions: Vec::new(),
+        complete: false,
+        query_error: None,
+    };
+    let end = range.start.0 + range.size; // validated layout
+    let mut at = range.start.0;
+    while at < end && evidence.regions.len() < 64 {
+        let mut info = MaybeUninit::<MemoryInfo>::zeroed();
+        // SAFETY: query does not dereference the address; output has verified x64 layout.
+        if unsafe {
+            VirtualQuery(
+                at as *const c_void,
+                info.as_mut_ptr(),
+                size_of::<MemoryInfo>(),
+            )
+        } == 0
+        {
+            // SAFETY: no pointers; capture immediately after failed query.
+            evidence.query_error = Some(unsafe { GetLastError() });
+            break;
+        }
+        // SAFETY: successful VirtualQuery initialized the structure.
+        let info = unsafe { info.assume_init() };
+        let base = info.base as u64;
+        let size = info.region_size as u64;
+        evidence.regions.push(ReservationRegion {
+            base,
+            size,
+            allocation_base: info.allocation as u64,
+            state: info.state,
+            protection: info.protect,
+            kind: info.kind,
+        });
+        let Some(next) = base.checked_add(size).filter(|next| *next > at) else {
+            break;
+        };
+        at = next;
+    }
+    evidence.complete = at >= end;
+    evidence
+}
 struct Reservation {
     base: *mut c_void,
     size: u64,
@@ -354,11 +401,12 @@ fn construct_checked(
     // SAFETY: aligned checked nonzero address/size; reservation never replaces existing mappings.
     let base = unsafe { VirtualAlloc(range.start.0 as *mut c_void, size, 0x2000, 1) };
     if base.is_null() {
-        return Err(error(
-            "reserve_exact_or_collision",
-            range.start.0,
-            range.size,
-        ));
+        // SAFETY: preserve allocation error before diagnostic queries change last-error.
+        let code = unsafe { GetLastError() };
+        return Err(NativeError::ReservationRefused {
+            code,
+            evidence: Box::new(reservation_evidence(range, layout.geometry)),
+        });
     }
     observer.active.store(1, Ordering::SeqCst);
     let reservation = Reservation {

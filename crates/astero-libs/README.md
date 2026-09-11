@@ -42,3 +42,5 @@ M38 adds checked legacy AudioOut and AudioOut2 adapters under audio/exports; mec
 M40 kernel/timing registers the scoped sleep/clock family, with checked outputs and distinct SCE/POSIX errors.
 
 M41 libc/math adds 53 exact scalar math adapters with checked outputs and native XMM validation. See [math/cross-title record](../../knowledge/architecture/libc_scalar_math.md).
+
+M42 runtime/guards provides exact C++ guard and pure-virtual contracts; nested destructor execution remains unsupported.

@@ -2048,3 +2048,34 @@ ABI5 unchanged. One new libs/libc/math home;16 crates/25 edges/253 module homes.
 All 17 index files regenerate byte-identically. Supplemental whitespace and git diff --check pass.
 Indexes: implementation1497, subsystems138, modules586, sources571, tests672, diagnostics43,
 NIDs321, ABI5; total3833. M41 active ready_for_cleanup pending approval. No commit/push or M42 implementation.
+
+## M42 native placement / cross-title / static initialization - 2026-09-11
+
+Formatting, all-target check/build, warnings-denied Clippy and full workspace tests pass:
+607 executable Rust tests and23 doctests, zero failures/ignored. Thirteen new tests: ten guard
+provider/concurrency/deadline tests and three Windows placement tests; the existing collision test
+now asserts bounded error evidence. Canonical-base sequential 4 KiB /29,134,848-byte synthetic
+images run in an isolated child process and release cleanly. Existing supervisor/native worker,
+synchronization, scalar math and CLI regressions pass. All53 Python tests pass, including active
+state, structure and index freshness. Initial development failures (old error expectation, missing
+Config default and unarmed test deadline) were corrected before real primary continuation.
+
+Nonexecuting named_title_elf native-map succeeded unchanged; one contained second-title entry
+then stopped at cnd_init after8 startup calls,0workers,0.578ms overall. One primary continuation
+passed11 guard acquire/release pairs and stopped at sceAjmInitialize after180.274ms. Both retained
+250ms wall /15000ms containment and65536 HLE calls; no next-provider migration followed. Both
+hashes unchanged,FS restored,GS preserved,threads joined,zero native reservations/release errors,
+Clean containment. Final uncalled pure-virtual registration and additional synthetic tests were
+validated afterward without another real depth-chasing run. Full contexts and historical487
+uncertainty are in native_placement_static_init.md; exact commands in USAGE.
+
+Historical M41 failure cause is not retroactively proven: diagnostic code did not exist then and
+M42's same envelope succeeds. This validation must not be cited as a reproduced placement fix.
+No bias/arena/allocation-order change,random fallback or title rule was made. No new unsafe leaf,
+crate or dependency. Six ABI records;326 NID records (322 registered/4 unregistered).
+Indexes:implementation1513,subsystems138,modules589,sources574,tests685,diagnostics43,NIDs326,ABI6;
+total3874. Sixteen crates,25internal edges,253module homes. Raw logs target/m42-* remain local-only.
+M42 awaits approved tracker cleanup; no M43 implementation,commit,push or history rewrite.
+
+Final M42 regeneration reproduced all16 generated JSON/Markdown index files byte-identically
+(17 directory files including the human-maintained README). Supplemental and Git whitespace checks pass.

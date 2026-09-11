@@ -33,3 +33,5 @@ M32 allocation/heap provides bounded reusable guest arena allocation. Native own
 M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.
 
 M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
+
+M42 adds bounded exact-reservation failure evidence; identity placement and transactional release remain unchanged.

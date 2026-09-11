@@ -44,3 +44,5 @@ M37 native call capture retains a checked stack argument address for extended va
 process output supports bounded raw-byte append shared by printf-family and puts.
 
 M40 [guest timing](../../knowledge/architecture/kernel_timing.md) shares M25 scheduling across clocks, sleeps and pthread absolute deadlines.
+
+M42 process/guards owns bounded static-initializer exclusion using existing synchronization and timing.
