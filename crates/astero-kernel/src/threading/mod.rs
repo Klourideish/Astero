@@ -1,5 +1,4 @@
-//! Planned threading ownership within astero-kernel.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Runtime-owned pthread lifecycle; context/TLS reuse execution preparation mechanisms.
 pub mod context;
 pub mod thread;
 pub mod tls;

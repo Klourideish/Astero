@@ -159,12 +159,26 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
     for c in &f.startup_calls {
         writeln!(
             s,
-            "Startup NID={:#x} library={:?} module={:?} args={:x?} returned={:#x}",
-            c.key.nid, c.key.library, c.key.module, c.arguments, c.returned
+            "Startup NID={:#x} library={:?} module={:?} args={:x?} return-lane={:#x} disposition={:?}",
+            c.key.nid, c.key.library, c.key.module, c.arguments, c.returned, c.result
         )
         .unwrap();
     }
     writeln!(s, "Synchronization: {:?}", f.synchronization).unwrap();
+    for thread in &f.threads {
+        writeln!(s, "Pthread lifecycle: {thread:?}").unwrap();
+    }
+    for (thread, exit) in &f.worker_exits {
+        writeln!(s, "Worker {} exit: {exit:x?}", thread.0).unwrap();
+    }
+    for (thread, call) in &f.worker_calls {
+        writeln!(
+            s,
+            "Worker {} NID={:#x} library={:?} module={:?} args={:x?} return-lane={:#x} disposition={:?}",
+            thread.0, call.key.nid, call.key.library, call.key.module, call.arguments, call.returned, call.result
+        )
+        .unwrap();
+    }
     writeln!(s,"Unresolved key: {:?}\nGuarded object: {:?}; associated relocation count={}\nRetained callbacks={} (not invoked)\nThread joined={} native/runtime reservations={} release errors={:?}",f.unresolved,f.guarded_object,f.guarded_relocations.len(),f.callback_count,r.thread_joined,r.active_reservations,r.release_errors).unwrap();
     s
 }

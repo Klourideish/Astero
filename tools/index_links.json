@@ -723,6 +723,84 @@
         "test:astero-kernel/test:synchronization/cond_shutdown_never_resumes_guest_with_unowned_mutex",
         "test:astero-kernel/test:synchronization/timing_shutdown_is_not_condition_signal_success"
       ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/threading::thread::lifecycle::impl[ThreadTable]::launch",
+      "tests": [
+        "test:astero-kernel/test:lifecycle/create_return_join_preserves_value_and_identity",
+        "test:astero-kernel/test:lifecycle/failed_publication_never_runs_job_and_joins_host"
+      ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/threading::thread::lifecycle::impl[ThreadTable]::join",
+      "tests": [
+        "test:astero-kernel/test:lifecycle/faulted_thread_is_not_successful_join",
+        "test:astero-kernel/test:lifecycle/self_join_invalid_handles_and_capacity_are_distinct",
+        "test:astero-kernel/test:lifecycle/shutdown_interrupts_join_without_losing_host_ownership"
+      ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/threading::thread::lifecycle::impl[ThreadTable]::detach",
+      "tests": [
+        "test:astero-kernel/test:lifecycle/detach_running_and_exited_retains_host_cleanup"
+      ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/threading::thread::lifecycle::impl[ThreadTable]::reap_all",
+      "tests": [
+        "test:astero-kernel/test:lifecycle/detach_running_and_exited_retains_host_cleanup",
+        "test:astero-kernel/test:lifecycle/shutdown_interrupts_join_without_losing_host_ownership"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::attributes::lifecycle::invoke",
+      "tests": [
+        "test:astero-core/test:thread_contracts/lifecycle_attributes_sce_posix_aliases_share_exact_object",
+        "test:astero-core/test:thread_contracts/lifecycle_copied_attr_token_and_unsupported_policy_refuse"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "tests": [
+        "test:astero-core/test:thread_contracts/lifecycle_dispatch_never_uses_nid_only_fallback",
+        "test:astero-core/test:thread_contracts/pthread_exit_is_a_controlled_value_not_host_unwind",
+        "test:astero-core/test:thread_contracts/self_equal_and_fixed_32_byte_name_contract"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::workers::impl[Runtime]::run",
+      "tests": [
+        "test:astero-core/lib:astero_core/input::entry::workers::tests::composed_worker_unknown_provider_stops_and_tears_down",
+        "test:astero-core/lib:astero_core/input::entry::workers::tests::composed_workers_return_and_exit_through_real_provider_registry",
+        "test:astero-core/lib:astero_core/input::entry::workers::tests::composed_workers_use_distinct_errno_and_same_guest_identity_model"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::workers::impl[Runtime]::create",
+      "tests": [
+        "test:astero-core/lib:astero_core/input::entry::workers::tests::detached_native_return_releases_storage_without_guest_join",
+        "test:astero-core/lib:astero_core/input::entry::workers::tests::worker_creation_refuses_nonexecutables_and_failed_output_without_worker"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::workers::impl[Runtime]::stop_and_join",
+      "tests": [
+        "test:astero-core/lib:astero_core/input::entry::workers::tests::composed_shutdown_interrupts_worker_in_m33_mutex_wait"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::workers::impl[Runtime]::admit_call",
+      "tests": [
+        "test:astero-core/lib:astero_core/input::entry::workers::tests::migrated_provider_budget_is_atomic_across_producers"
+      ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/execution::host::platform::impl[BridgeLease]::attach",
+      "tests": [
+        "test:astero-kernel/test:bridge/attached_workers_share_adapter_but_not_stack_tls_or_frames",
+        "test:astero-kernel/test:bridge/attached_infinite_worker_remains_supervised_and_joinable",
+        "test:astero-kernel/test:bridge/attached_worker_hle_exit_and_fault_use_existing_recovery"
+      ]
     }
   ],
   "reviews": [
@@ -1302,6 +1380,20 @@
       "description": "Bounded runtime object, owner, waiter, generation and lifecycle counts; snapshot does not imply guest destroy.",
       "evidence": [
         "knowledge/architecture/pthread_foundation.md"
+      ]
+    },
+    {
+      "id": "diagnostic:kernel.thread_lifecycle",
+      "implementation": "impl:astero-kernel/lib:astero_kernel/threading::thread::lifecycle::Record",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "Owned guest identity, worker start/state/name/stack/TLS, outcome and host identity; detached guest never implies orphan host.",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
       ]
     }
   ],
@@ -1903,9 +1995,10 @@
       "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/pthread_foundation.md"
+        "knowledge/architecture/pthread_foundation.md",
+        "knowledge/architecture/pthread_lifecycle.md"
       ],
-      "provenance": "SCE_PTHREAD_MUTEX_LOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+      "provenance": "SCE_PTHREAD_MUTEX_LOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented. M34: seven native workers acquired this mutex before entering condition waits; shutdown interrupted the waits."
     },
     {
       "id": "nid:m33.ba9a15af330715e1",
@@ -2127,9 +2220,10 @@
       "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/pthread_foundation.md"
+        "knowledge/architecture/pthread_foundation.md",
+        "knowledge/architecture/pthread_lifecycle.md"
       ],
-      "provenance": "SCE_PTHREAD_COND_WAIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+      "provenance": "SCE_PTHREAD_COND_WAIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented. M34 workers: lock acquisition and condition-wait entry observed; waits ended by runtime interruption, not signalled wake or timeout."
     },
     {
       "id": "nid:m33.06632363199ec35c",
@@ -3163,13 +3257,913 @@
       },
       "guest_library": "libkernel",
       "guest_module": "libkernel",
-      "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
-      "registration_status": "unregistered",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/pthread_foundation.md"
+        "knowledge/architecture/pthread_lifecycle.md"
       ],
-      "provenance": "scePthreadAttrInit: M33 real runtime observed; prototype identity from threading/nids.rs. No Astero thread lifecycle implementation/registration."
+      "provenance": "SCE_PTHREAD_ATTR_INIT: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence. M34 primary_real_elf: eight calls; AttrSetschedparam explicitly refused nondefault priority, other observed lifecycle calls succeeded. See per-export capability table."
+    },
+    {
+      "id": "nid:m34.e9482dc15fb4cdbe",
+      "nid": {
+        "numeric_hex": "0xE9482DC15FB4CDBE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_CREATE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence. M34 primary_real_elf: eight calls; AttrSetschedparam explicitly refused nondefault priority, other observed lifecycle calls succeeded. See per-export capability table."
+    },
+    {
+      "id": "nid:m34.a27358f41ca7fd6f",
+      "nid": {
+        "numeric_hex": "0xA27358F41CA7FD6F"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_JOIN: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.e2a1ab47a7a83fd6",
+      "nid": {
+        "numeric_hex": "0xE2A1AB47A7A83FD6"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_DETACH: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.3b184807c2c1fcf4",
+      "nid": {
+        "numeric_hex": "0x3B184807C2C1FCF4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_CREATE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.2668bef70f6ed04e",
+      "nid": {
+        "numeric_hex": "0x2668BEF70F6ED04E"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_CREATE_NAME_NP: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.87d09c3f7274a153",
+      "nid": {
+        "numeric_hex": "0x87D09C3F7274A153"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_JOIN: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.f94d51e16b57be87",
+      "nid": {
+        "numeric_hex": "0xF94D51E16B57BE87"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_DETACH: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.149ad3e4bb940405",
+      "nid": {
+        "numeric_hex": "0x149AD3E4BB940405"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_EXIT: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.de483bad3d0d408b",
+      "nid": {
+        "numeric_hex": "0xDE483BAD3D0D408B"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_EXIT: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.108ff9fe396ad9d1",
+      "nid": {
+        "numeric_hex": "0x108FF9FE396AD9D1"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_GETTHREADID: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.ddeaacdfb1bbe3fb",
+      "nid": {
+        "numeric_hex": "0xDDEAACDFB1BBE3FB"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_GETTHREADID_NP: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.c2d92dfed791d6ca",
+      "nid": {
+        "numeric_hex": "0xC2D92DFED791D6CA"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_INIT: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.5135f325b5a18531",
+      "nid": {
+        "numeric_hex": "0x5135F325B5A18531"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETSTACKSIZE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence. M34 primary_real_elf: eight calls; AttrSetschedparam explicitly refused nondefault priority, other observed lifecycle calls succeeded. See per-export capability table."
+    },
+    {
+      "id": "nid:m34.d90d33eab9c1ad31",
+      "nid": {
+        "numeric_hex": "0xD90D33EAB9C1AD31"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETSTACKSIZE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.0f3112f61405e1fe",
+      "nid": {
+        "numeric_hex": "0x0F3112F61405E1FE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETSCHEDPARAM: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence. M34 primary_real_elf: eight calls; AttrSetschedparam explicitly refused nondefault priority, other observed lifecycle calls succeeded. See per-export capability table."
+    },
+    {
+      "id": "nid:m34.7ae291826d159f63",
+      "nid": {
+        "numeric_hex": "0x7AE291826D159F63"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETSCHEDPARAM: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.e3e87d133c0a1782",
+      "nid": {
+        "numeric_hex": "0xE3E87D133C0A1782"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETSCHEDPOLICY: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence. M34 primary_real_elf: eight calls; AttrSetschedparam explicitly refused nondefault priority, other observed lifecycle calls succeeded. See per-export capability table."
+    },
+    {
+      "id": "nid:m34.25aacc232f242846",
+      "nid": {
+        "numeric_hex": "0x25AACC232F242846"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETSCHEDPOLICY: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.1573d61cd93c39fd",
+      "nid": {
+        "numeric_hex": "0x1573D61CD93C39FD"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETSCHEDPARAM: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.aa593da522ec5263",
+      "nid": {
+        "numeric_hex": "0xAA593DA522EC5263"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETSCHEDPARAM: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.7976d44a911a4ec0",
+      "nid": {
+        "numeric_hex": "0x7976D44A911A4EC0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETINHERITSCHED: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence. M34 primary_real_elf: eight calls; AttrSetschedparam explicitly refused nondefault priority, other observed lifecycle calls succeeded. See per-export capability table."
+    },
+    {
+      "id": "nid:m34.ed99406a411fd108",
+      "nid": {
+        "numeric_hex": "0xED99406A411FD108"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETINHERITSCHED: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.fd6adea6bb6ed10b",
+      "nid": {
+        "numeric_hex": "0xFD6ADEA6BB6ED10B"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETDETACHSTATE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.13eb72a37969e4bc",
+      "nid": {
+        "numeric_hex": "0x13EB72A37969E4BC"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETDETACHSTATE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.fdf03eed99460d0b",
+      "nid": {
+        "numeric_hex": "0xFDF03EED99460D0B"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETSTACKSIZE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.d2a3ad091fd91dc9",
+      "nid": {
+        "numeric_hex": "0xD2A3AD091FD91DC9"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETSTACKSIZE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.06f9fbe2f8faa0ba",
+      "nid": {
+        "numeric_hex": "0x06F9FBE2F8FAA0BA"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETSTACK: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.fd2adb5e9191d5fd",
+      "nid": {
+        "numeric_hex": "0xFD2ADB5E9191D5FD"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETSTACK: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.feab8f6b8484254c",
+      "nid": {
+        "numeric_hex": "0xFEAB8F6B8484254C"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETSTACK: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.bd09b87c312c5a2f",
+      "nid": {
+        "numeric_hex": "0xBD09B87C312C5A2F"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETSTACK: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.61d65f1197d19cf9",
+      "nid": {
+        "numeric_hex": "0x61D65F1197D19CF9"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETSCOPE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.c5eb2695223f2822",
+      "nid": {
+        "numeric_hex": "0xC5EB2695223F2822"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETSCOPE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.fbb07600428a9ecf",
+      "nid": {
+        "numeric_hex": "0xFBB07600428A9ECF"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETSCOPE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.7b61be71d1243a65",
+      "nid": {
+        "numeric_hex": "0x7B61BE71D1243A65"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETSCOPE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.5544f5652ac74f42",
+      "nid": {
+        "numeric_hex": "0x5544F5652AC74F42"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETDETACHSTATE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.24d91556c54398e9",
+      "nid": {
+        "numeric_hex": "0x24D91556C54398E9"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETGUARDSIZE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.a0b8cfa942a1cdeb",
+      "nid": {
+        "numeric_hex": "0xA0B8CFA942A1CDEB"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETINHERITSCHED: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.46d2d157fa414d36",
+      "nid": {
+        "numeric_hex": "0x46D2D157FA414D36"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETSCHEDPOLICY: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.0f198831443fc176",
+      "nid": {
+        "numeric_hex": "0x0F198831443FC176"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_GETSTACKADDR: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.24ac86dd25b2035d",
+      "nid": {
+        "numeric_hex": "0x24AC86DD25B2035D"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETGUARDSIZE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.b2e0ab11baf4c484",
+      "nid": {
+        "numeric_hex": "0xB2E0AB11BAF4C484"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_SETSTACKADDR: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.25a44ccbe41ca5e5",
+      "nid": {
+        "numeric_hex": "0x25A44CCBE41CA5E5"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETDETACHSTATE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.b711ed9e027e7b27",
+      "nid": {
+        "numeric_hex": "0xB711ED9E027E7B27"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETGUARDSIZE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.96930ff0786405b8",
+      "nid": {
+        "numeric_hex": "0x96930FF0786405B8"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETINHERITSCHED: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.34cc8843d5a059b5",
+      "nid": {
+        "numeric_hex": "0x34CC8843D5A059B5"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETSCHEDPOLICY: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.46edfa7e24ed2730",
+      "nid": {
+        "numeric_hex": "0x46EDFA7E24ED2730"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_GETSTACKADDR: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.125f9c436d03ca75",
+      "nid": {
+        "numeric_hex": "0x125F9C436D03CA75"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETGUARDSIZE: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.17ec9f99db88041f",
+      "nid": {
+        "numeric_hex": "0x17EC9F99DB88041F"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_SETSTACKADDR: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.eb6282c04326cdc3",
+      "nid": {
+        "numeric_hex": "0xEB6282C04326CDC3"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_ATTR_DESTROY: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence. M34 primary_real_elf: eight calls; AttrSetschedparam explicitly refused nondefault priority, other observed lifecycle calls succeeded. See per-export capability table."
+    },
+    {
+      "id": "nid:m34.cc772163c7ede699",
+      "nid": {
+        "numeric_hex": "0xCC772163C7EDE699"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_ATTR_DESTROY: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.688f8e782cfcc6b4",
+      "nid": {
+        "numeric_hex": "0x688F8E782CFCC6B4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_SELF: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.128b51f1adc049fe",
+      "nid": {
+        "numeric_hex": "0x128B51F1ADC049FE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_SELF: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.dcfb55ea9dd0357e",
+      "nid": {
+        "numeric_hex": "0xDCFB55EA9DD0357E"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_EQUAL: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.ed7976e7b33854d2",
+      "nid": {
+        "numeric_hex": "0xED7976E7B33854D2"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_EQUAL: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.181518ef2c1d50b1",
+      "nid": {
+        "numeric_hex": "0x181518EF2C1D50B1"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_RENAME: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.1e8c3b07c39eb7a9",
+      "nid": {
+        "numeric_hex": "0x1E8C3B07C39EB7A9"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_GETNAME: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.f47cdf85db444a2a",
+      "nid": {
+        "numeric_hex": "0xF47CDF85DB444A2A"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_GETNAME_NP: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.5de4eac3ed19975d",
+      "nid": {
+        "numeric_hex": "0x5DE4EAC3ED19975D"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "SCE_PTHREAD_SET_NAME: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.f6fc8fe99edbab37",
+      "nid": {
+        "numeric_hex": "0xF6FC8FE99EDBAB37"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_RENAME_NP: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m34.a31329f2e3ea6be5",
+      "nid": {
+        "numeric_hex": "0xA31329F2E3EA6BE5"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "related_abi": [],
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::thread::exports::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/pthread_lifecycle.md"
+      ],
+      "provenance": "PTHREAD_SET_NAME_NP: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
     }
   ],
   "abi": [

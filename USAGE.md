@@ -585,3 +585,35 @@ This run observed three live objects, zero waits/wakes/timeouts, clean joined te
 source hash. Object snapshot metadata is not a live resource. Timed waits use Astero timing;
 execution-deadline cancellation stops the bridge. Guest clock conversion is a documented initial
 compatibility policy, not complete realtime/paused guest clock behavior. No additional command needed.
+
+
+## M34 pthread lifecycle migration
+
+The same explicit `first-entry` command now permits the bounded lifecycle cluster. It executes real
+trusted corpus code; this is not a security sandbox. Preparation commands still never execute it.
+Validated once on x86-64 Windows (run from the repository root):
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $corpus.artifacts.primary_real_elf.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --wall-ms 250 --containment-ms 15000
+```
+
+Expected: pass the previous AttrInit boundary, record bounded lifecycle calls and stop at the next
+unsupported operation with clean teardown. Actual: exit 0, eight real native workers using 16 KiB
+stacks and independent TLS; seven entered condition waits. Nondefault scheduling priority returned
+ENOTSUP explicitly. Main stopped at `ProviderRefused / Limit` for libc `memset`
+(NID 0xf334c5bc120020df): 1,352,000 requested bytes exceed the existing 1 MiB operation bound.
+No failed-operation bytes were written. Elapsed 10,121 us; workers were interrupted and joined,
+all native/runtime reservations=0, no release errors, source SHA256 unchanged.
+
+Output includes guest thread ID, host identity, start/stack/TLS, state, typed completion and provider
+call disposition. A stopped wait's return lane is not a successful wake. Real run: seven waits,
+zero signalled wakes/timeouts. M25 tickets participate; native execution retains M31 supervision.
+Capacity: 32 worker creation records, 256 live attr objects, 4096 shared provider attempts. No orphan
+host thread survives runtime teardown. No full pthread scheduler or TLS destructor support is claimed.
+See [lifecycle evidence](knowledge/architecture/pthread_lifecycle.md) for exact calls, addresses,
+NID statuses, preserved uncertainties and the outside-cluster boundary. The synthetic commands are
+`cargo test -p astero-kernel --test lifecycle`, `cargo test -p astero-kernel --test bridge`,
+`cargo test -p astero-core --lib workers::tests` and
+`cargo test -p astero-core --test thread_contracts`; these do not execute corpus bytes.

@@ -68,3 +68,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [M32 startup foundation](startup_foundation.md): migrated object, heap and libc runtime cluster.
 
 - [M33 pthread synchronization foundation](pthread_foundation.md).
+
+- [M34 pthread lifecycle](pthread_lifecycle.md): owned supervised native workers and general attributes.

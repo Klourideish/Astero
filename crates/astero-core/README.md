@@ -1,6 +1,6 @@
 # astero-core
 
-Owns a real host Session, checked lifecycle and coherent detached snapshots. SessionObserver is weak/read-only; ObserveSession is the application observation contract. Session state remains separate from explicit M27 staging; no guest execution exists.
+Owns a real host Session, checked lifecycle and coherent detached snapshots. SessionObserver is weak/read-only; ObserveSession is the application observation contract. Session state remains separate from explicit staging and native runtime composition. The bounded execution path owns supervised main/worker lifetimes and detached reports.
 
 ## Module ownership
 
@@ -60,3 +60,5 @@ M31 input/entry owns a dedicated first-entry thread and additional worker-proces
 M32 entry/foundation composes residency and scoped HLE access; close_startup integrates the migrated startup cluster. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
 
 M33 composes runtime-owned synchronization and its M25 timing engine only for opted-in startup execution. See [pthread foundation](../../knowledge/architecture/pthread_foundation.md).
+
+M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.

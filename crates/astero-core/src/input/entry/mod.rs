@@ -23,3 +23,5 @@ pub use traps::{ObjectTrap, trap_geometry};
 
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod foundation;
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod workers;

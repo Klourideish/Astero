@@ -1815,3 +1815,42 @@ native HLE blocked-mutex test also passed; no second real run. No M34 implementa
 
 Final M33 index regeneration was byte-identical across all 17 index-directory files; freshness,
 policy/state/structure, all 53 Python tests and whitespace checks passed after the shutdown fix.
+
+
+## M34 pthread lifecycle migration - 2026-09-11
+
+Final formatting/check/build (workspace all-targets), warnings-denied all-targets Clippy and full
+workspace tests passed: **453 executable Rust tests and 23 doctests**, no failures/ignored tests.
+27 added tests: kernel lifecycle 12, native bridge workers 3, core composed workers 7, guest adapter
+contracts 5. Existing executable CLI integration, M31 supervision and M33 synchronization remain
+included. Focused tests cover OS workers with synthetic native bytes, private stacks/TLS/errno,
+return/exit/join/detach, exact provider keys, attr errors, publication rollback, condition wait/relock
+and shutdown interruption. Synthetic ordinary infinite-loop worker at 0x740000000 was interrupted
+by the existing supervisor's 25 ms deadline; actual captured RIP in loop, balanced suspend/resume,
+restored FS/GS, joined host and zero storage reservations are asserted. The test makes no hard host
+scheduling latency or instruction-count claim.
+
+Python: 53 tests passed (policy/state/structure/native-policy/index), 16 workspace members,
+22 internal edges, 250 module homes. No dependency/crate changes. Supplemental whitespace 642
+files plus git diff --check pass. Index counts: implementation 1266, subsystems 137, modules 551,
+sources 536, tests 531, diagnostics 38, NIDs 176, ABI 2; total 3237. 174 registered NID identities and
+2 observation-only/unregistered. ABI records retain process arguments and synthetic native boundary.
+
+One real run occurred only after preflight (full Rust and synthetic supervisor tests, check/build/
+Clippy and policy). Exact command and expected/actual outcome: USAGE.md M34; complete evidence:
+pthread_lifecycle.md. Primary corpus role only, wall-ms 250/containment-ms 15000, process exit 0,
+Clean containment, 10,121 us report duration. Eight native workers, seven real condition waits,
+zero signal wakes/timeouts. All waits interrupted on shutdown. First outside-lifecycle stop:
+libc memset 1,352,000-byte request explicitly refused by existing 1 MiB per-operation limit.
+No further real execution or libc-limit modification. Main and all workers restored FS/preserved GS,
+joined, mappings/reservations 0, release errors [], source SHA unchanged (full hash in capability doc).
+
+Post-run refinements added typed interrupted/faulted outcomes and explicit call dispositions,
+main-thread layout/outcome, output-pair preflight and bounded trace preallocation; synthetic tests
+and full final suite passed afterward. The raw ignored log is target/m34-real-1.log; full final Rust,
+Python and policy logs are target/m34-final-{rust,python,policy}.log. No claim that cancelled waits
+returned successfully or that unexercised lifecycle exports have runtime proof.
+
+Final regeneration is verified byte-identical across all 17 index files; freshness and policy checks
+are rerun after durable documentation and ready_for_cleanup tracker updates. M34 stays active pending
+approval; no M35 work, commit, push or history change.

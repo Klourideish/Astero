@@ -4,7 +4,7 @@ Guest library exports and delegation to owning services.
 
 ## Interfaces and status
 
-Startup libc/libkernel and pthread synchronization exports delegate through exact HLE registrations; other families retain explicit scaffold status.
+Startup libc/libkernel, pthread synchronization and pthread lifecycle exports delegate through exact HLE registrations; other families retain explicit scaffold status.
 
 ## Module ownership
 
@@ -27,3 +27,5 @@ M30 libc/startup implements exact libc/libc startup registrations: instrumented 
 M32 libc/primitives and libc/process adapt the PS5Rust startup cluster; startup publishes the owned guard contract. Tests alone add ABI/memory dependencies. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
 
 M33 [pthread foundation](../../knowledge/architecture/pthread_foundation.md) implements owned synchronization and scoped guest adapters.
+
+M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.

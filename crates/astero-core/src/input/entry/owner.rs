@@ -67,7 +67,7 @@ impl std::error::Error for EntryError {}
 /// The M30 adapter must satisfy the reported blockers; a Boolean cannot grant entry authority.
 pub struct PreparedGuest {
     pub(super) image: NativeBackedGuestImage,
-    pub(super) thread: ThreadStorage,
+    pub(super) thread: std::sync::Arc<ThreadStorage>,
     pub(super) context: InitialContext,
     pub(super) bootstrap: BootstrapEvidence,
     pub(super) registry: PreparedRegistry,
@@ -125,7 +125,9 @@ impl PreparedGuest {
         self.recovery.release();
         // No execution leases exist in M29. Future entry must prohibit teardown while active.
         self.timing.take();
-        let a = self.thread.release();
+        let a = std::sync::Arc::get_mut(&mut self.thread)
+            .ok_or(NativeError::SharedOwnership)
+            .and_then(|t| t.release());
         let b = self.image.release();
         if a.is_ok() && b.is_ok() {
             self.state = EntryState::Released;
@@ -269,7 +271,7 @@ pub fn prepare(
     Ok((
         PreparedGuest {
             image,
-            thread,
+            thread: std::sync::Arc::new(thread),
             context,
             bootstrap,
             registry,

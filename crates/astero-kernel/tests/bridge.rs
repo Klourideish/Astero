@@ -1,6 +1,159 @@
 #![cfg(all(windows, target_arch = "x86_64"))]
 use astero_kernel::execution::host::{Bridge, BridgeError, SyntheticProbe};
 static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
+fn worker_image(
+    bytes: &[u8],
+) -> std::sync::Arc<astero_memory::mapping::windows_native::NativeImage> {
+    use astero_memory::mapping::{GuestAddress, windows_native::*};
+    let mut code = vec![0xcc; 4096];
+    code[..bytes.len()].copy_from_slice(bytes);
+    std::sync::Arc::new(
+        realize(
+            &[NativeRegion {
+                range: GuestRange {
+                    start: GuestAddress(0x740000000),
+                    size: 4096,
+                },
+                bytes: &code,
+                protection: Protection {
+                    read: true,
+                    write: false,
+                    execute: true,
+                },
+            }],
+            NativeLimits {
+                max_reserved_bytes: 4096,
+                max_committed_bytes: 4096,
+            },
+        )
+        .0
+        .unwrap(),
+    )
+}
+fn worker_storage(
+    n: u64,
+    landing: u64,
+) -> astero_kernel::execution::preparation::storage::ThreadStorage {
+    use astero_kernel::execution::preparation::{layout::*, storage::ThreadStorage};
+    let base = 0x750000000 + n * 0x100000;
+    let l = plan(
+        RuntimeLimits {
+            stack_base: base,
+            stack_bytes: 0x4000,
+            tls_base: base + 0x10000,
+            max_runtime_bytes: 0x20000,
+        },
+        astero_memory::mapping::windows_native::host_geometry().unwrap(),
+        8,
+        32,
+        16,
+    )
+    .unwrap();
+    let (s, _) = ThreadStorage::build(l, &[0xa5; 8]).unwrap();
+    assert_eq!(s.read_tls(s.layout().tls.start.0, 8).unwrap(), [0xa5; 8]);
+    assert_eq!(s.read_tls(s.layout().tls.start.0 + 8, 24).unwrap(), [0; 24]);
+    s.install_return(landing).unwrap();
+    s
+}
+#[test]
+fn attached_workers_share_adapter_but_not_stack_tls_or_frames() {
+    let _guard = SERIAL.lock().unwrap();
+    let mut b = Bridge::new().unwrap();
+    b.validate().unwrap();
+    // Astero-owned code stores and reads its argument through FS+8, then RET.
+    let image = worker_image(&[
+        0x64, 0x48, 0x89, 0x3c, 0x25, 8, 0, 0, 0, 0x64, 0x48, 0x8b, 4, 0x25, 8, 0, 0, 0, 0xc3,
+    ]);
+    b.prepare_ranges(&[(0x740000000, 4096)]).unwrap();
+    let lease = b.worker_lease().unwrap();
+    let barrier = std::sync::Arc::new(std::sync::Barrier::new(3));
+    let mut handles = vec![];
+    let mut observers = vec![];
+    for n in 0..2 {
+        let s = worker_storage(n, b.return_landing());
+        observers.extend(s.observers());
+        let l = lease.clone();
+        let i = image.clone();
+        let barrier = barrier.clone();
+        handles.push(std::thread::spawn(move || {
+            let mut b = l.attach();
+            barrier.wait();
+            let r = b
+                .execute_worker(&i, &s, (0x740000000, 100 + n), 100, &mut |_, _| false)
+                .unwrap();
+            assert_eq!(r.value, 100 + n);
+            assert_eq!(
+                s.read_tls(s.layout().thread_pointer + 8, 8).unwrap(),
+                (100 + n).to_le_bytes()
+            );
+            assert!(r.host_fs_restored && r.host_gs_preserved);
+            r
+        }));
+    }
+    drop(b);
+    assert!(matches!(Bridge::new(), Err(BridgeError::Busy)));
+    barrier.wait();
+    for h in handles {
+        assert_eq!(h.join().unwrap().reason, 0);
+    }
+    assert!(observers.iter().all(|o| o.active_reservations() == 0));
+    drop(lease);
+    assert!(Bridge::new().is_ok());
+}
+#[test]
+fn attached_infinite_worker_remains_supervised_and_joinable() {
+    let _guard = SERIAL.lock().unwrap();
+    let mut b = Bridge::new().unwrap();
+    b.validate().unwrap();
+    let image = worker_image(&[0xeb, 0xfe]);
+    b.prepare_ranges(&[(0x740000000, 4096)]).unwrap();
+    let l = b.worker_lease().unwrap();
+    let s = worker_storage(0, b.return_landing());
+    let observers = s.observers();
+    let h = std::thread::spawn(move || {
+        l.attach()
+            .execute_worker(&image, &s, (0x740000000, 0), 25, &mut |_, _| false)
+            .unwrap()
+    });
+    let r = h.join().unwrap();
+    assert_eq!(r.reason, 4);
+    assert_eq!(r.rip, 0x740000000);
+    assert!(r.host_fs_restored && r.host_gs_preserved);
+    let sup = r.supervision.unwrap();
+    assert_eq!(sup.suspends, sup.resumes);
+    assert!(sup.redirected);
+    assert!(observers.iter().all(|o| o.active_reservations() == 0));
+}
+#[test]
+fn attached_worker_hle_exit_and_fault_use_existing_recovery() {
+    let _guard = SERIAL.lock().unwrap();
+    let mut b = Bridge::new().unwrap();
+    b.validate().unwrap();
+    for code in [
+        astero_kernel::execution::preparation::boundary::import_stub(17, b.import_landing())
+            .unwrap()
+            .to_vec(),
+        vec![0x0f, 0x0b],
+    ] {
+        let image = worker_image(&code);
+        b.prepare_ranges(&[(0x740000000, 4096)]).unwrap();
+        let l = b.worker_lease().unwrap();
+        let s = worker_storage(0, b.return_landing());
+        let h = std::thread::spawn(move || {
+            l.attach()
+                .execute_worker(&image, &s, (0x740000000, 123), 100, &mut |n, c| {
+                    assert_eq!(n, 17);
+                    assert_eq!(c.arguments[0], 123);
+                    c.rax = 321;
+                    false
+                })
+                .unwrap()
+        });
+        let r = h.join().unwrap();
+        assert!(matches!(r.reason, 2 | 3));
+        assert!(r.host_fs_restored && r.host_gs_preserved);
+    }
+}
 #[test]
 fn windows_register_stack_fs_and_fault_paths() {
     let _guard = SERIAL.lock().unwrap();

@@ -54,6 +54,7 @@ impl NativeLayout {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeError {
+    SharedOwnership,
     UnsupportedHost,
     Geometry,
     Empty,

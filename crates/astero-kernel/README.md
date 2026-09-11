@@ -35,3 +35,5 @@ M31 uses astero-timing deadlines for exact-thread native supervision in the exis
 M32 process/environment retains bounded guest-owned value identities; exit callbacks distinguish guest and runtime-return targets. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
 
 M33 [pthread foundation](../../knowledge/architecture/pthread_foundation.md) implements owned synchronization and scoped guest adapters.
+
+M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.

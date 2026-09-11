@@ -1,5 +1,5 @@
 //! M30/M31 sole native-execution unsafe leaf. See native_entry_closure.md and first_native_entry.md.
-//! A process-exclusive, thread-affine adapter owns its VEH and TLS slot. Public calls
+//! A process-exclusive adapter owns VEH/TLS; thread-affine attachments retain shared leases. Calls
 //! use static probes or a checked live native-owner lease; core gates real entry on EntryReadyGuest.
 use astero_abi::layouts::entry::CallFrame;
 use astero_memory::mapping::GuestAddress;
@@ -115,6 +115,7 @@ unsafe extern "system" {
     fn TlsAlloc() -> u32;
     fn TlsFree(slot: u32) -> i32;
     fn TlsSetValue(slot: u32, value: *mut c_void) -> i32;
+    fn TlsGetValue(slot: u32) -> *mut c_void;
     fn AddVectoredExceptionHandler(
         first: u32,
         handler: unsafe extern "system" fn(*mut ExceptionPointers) -> i32,
@@ -142,13 +143,42 @@ unsafe extern "system" {
 /// Owns process-global Windows adapter plumbing, not a global guest/runtime.
 /// A second adapter refuses explicitly. Drop removes the handler before freeing TLS.
 pub struct Bridge {
-    slot: u32,
-    handler: *mut c_void,
+    adapter: std::sync::Arc<Adapter>,
     validated: bool,
     ranges: Vec<(u64, u64)>,
     _thread: PhantomData<Rc<()>>,
 }
+/// One process adapter; every attached thread retains it until its active frame is cleared.
+struct Adapter {
+    slot: u32,
+    handler: usize,
+}
+/// Transferable attachment authority, never an active frame or arbitrary execution address.
+#[derive(Clone)]
+pub struct BridgeLease {
+    adapter: std::sync::Arc<Adapter>,
+    ranges: Vec<(u64, u64)>,
+}
+impl BridgeLease {
+    pub fn attach(&self) -> Bridge {
+        Bridge {
+            adapter: self.adapter.clone(),
+            validated: true,
+            ranges: self.ranges.clone(),
+            _thread: PhantomData,
+        }
+    }
+}
 impl Bridge {
+    pub fn worker_lease(&self) -> Result<BridgeLease, BridgeError> {
+        if !self.validated {
+            return Err(BridgeError::Validation);
+        }
+        Ok(BridgeLease {
+            adapter: self.adapter.clone(),
+            ranges: self.ranges.clone(),
+        })
+    }
     pub fn synthetic_loop_contains(rip: u64) -> bool {
         rip >= probe_loop as *const () as u64 && rip < probe_guard as *const () as u64
     }
@@ -185,8 +215,10 @@ impl Bridge {
             return Err(BridgeError::Os("VEH install"));
         }
         Ok(Self {
-            slot,
-            handler,
+            adapter: std::sync::Arc::new(Adapter {
+                slot,
+                handler: handler as usize,
+            }),
             validated: false,
             ranges: Vec::new(),
             _thread: PhantomData,
@@ -362,7 +394,11 @@ impl Bridge {
     ) -> Result<NativeExit, BridgeError> {
         // SAFETY: frame and mappings outlive synchronous assembly; no reference to frame is used
         // in Rust during transfer. Only the built-in probe range can be claimed by VEH.
-        if unsafe { TlsSetValue(self.slot, (frame as *mut Frame<'_>).cast()) } == 0 {
+        // SAFETY: this adapter retains the slot; refuse nested frames on the same OS thread.
+        if !unsafe { TlsGetValue(self.adapter.slot) }.is_null() {
+            return Err(BridgeError::Busy);
+        }
+        if unsafe { TlsSetValue(self.adapter.slot, (frame as *mut Frame<'_>).cast()) } == 0 {
             return Err(BridgeError::Os("TLS install"));
         }
         struct ActiveTls(u32);
@@ -373,7 +409,7 @@ impl Bridge {
                 }
             }
         }
-        let _active_tls = ActiveTls(self.slot);
+        let _active_tls = ActiveTls(self.adapter.slot);
         let (preservation, supervision) = match millis {
             Some(ms) => supervised_call(frame, ms)?,
             None => (
@@ -382,7 +418,7 @@ impl Bridge {
             ),
         };
         unsafe {
-            TlsSetValue(self.slot, std::ptr::null_mut());
+            TlsSetValue(self.adapter.slot, std::ptr::null_mut());
         }
         if preservation != (1 << 18) - 1 {
             return Err(BridgeError::Validation);
@@ -426,14 +462,46 @@ impl Bridge {
         millis: u64,
         callback: &mut dyn FnMut(u32, &mut CallFrame) -> bool,
     ) -> Result<NativeExit, BridgeError> {
+        self.execute_context(image, thread, context, None, millis, callback)
+    }
+    /// Worker start convention: RDI argument, cleared remaining argument registers, owned RET.
+    /// Executable image coverage, guarded storage and validated adapter are still mandatory.
+    pub fn execute_worker(
+        &mut self,
+        image: &windows_native::NativeImage,
+        thread: &crate::execution::preparation::storage::ThreadStorage,
+        start: (u64, u64),
+        millis: u64,
+        callback: &mut dyn FnMut(u32, &mut CallFrame) -> bool,
+    ) -> Result<NativeExit, BridgeError> {
+        let l = thread.layout();
+        let context = crate::execution::preparation::InitialContext::planned(
+            start.0,
+            l.rsp,
+            start.1,
+            l.thread_pointer,
+        );
+        self.execute_context(image, thread, &context, Some(start.1), millis, callback)
+    }
+    fn execute_context(
+        &mut self,
+        image: &windows_native::NativeImage,
+        thread: &crate::execution::preparation::storage::ThreadStorage,
+        context: &crate::execution::preparation::InitialContext,
+        worker_argument: Option<u64>,
+        millis: u64,
+        callback: &mut dyn FnMut(u32, &mut CallFrame) -> bool,
+    ) -> Result<NativeExit, BridgeError> {
         let layout = thread.layout();
         let mut expected = crate::execution::preparation::InitialContext::planned(
             context.rip,
             layout.rsp,
-            layout.params,
+            worker_argument.unwrap_or(layout.params),
             layout.thread_pointer,
         );
-        expected.gpr[4] = self.return_landing();
+        if worker_argument.is_none() {
+            expected.gpr[4] = self.return_landing();
+        }
         if !self.validated
             || !(1..=500).contains(&millis)
             || context != &expected
@@ -523,12 +591,12 @@ impl Bridge {
         Ok(())
     }
 }
-impl Drop for Bridge {
+impl Drop for Adapter {
     fn drop(&mut self) {
-        // SAFETY: &mut self and !Send prevent concurrent execution; no active lease remains.
+        // SAFETY: final Arc release means every attachment/invocation has ended and cleared TLS.
         // Failure quarantines process slot/ownership so a stale callback is never reused.
         unsafe {
-            if RemoveVectoredExceptionHandler(self.handler) != 0 {
+            if RemoveVectoredExceptionHandler(self.handler as *mut c_void) != 0 {
                 TlsSetValue(self.slot, std::ptr::null_mut());
                 TlsFree(self.slot);
                 OWNED.store(false, Ordering::SeqCst);

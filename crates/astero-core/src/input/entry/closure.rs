@@ -8,7 +8,7 @@ use astero_memory::mapping::{
     GuestAddress,
     windows_native::{self, GuestRange, NativeImage, NativeLimits, NativeRegion, Protection},
 };
-use std::{cell::RefCell, rc::Rc};
+use std::sync::{Arc, Mutex};
 /// Explicit hypothesis for workloads whose entry stub owns DT_INIT. Not firmware TCB proof.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum StartupPolicy {
@@ -73,11 +73,19 @@ pub struct ClosureGuest {
     landings: NativeImage,
     traps: super::traps::ObjectTraps,
     keys: Vec<Option<ProviderKey>>,
-    startup: Rc<RefCell<astero_libs::libc::startup::StartupState>>,
+    startup: Arc<Mutex<astero_libs::libc::startup::StartupState>>,
     report: ClosureReport,
-    foundation: Option<super::foundation::Foundation>,
+    foundation: Option<Arc<super::foundation::Foundation>>,
     synchronization: Option<std::sync::Arc<astero_kernel::synchronization::owned::Synchronization>>,
     sync_timing: Option<astero_timing::scheduler::TimingEngine>,
+    runtime: Option<Arc<super::workers::Runtime>>,
+}
+impl Drop for ClosureGuest {
+    fn drop(&mut self) {
+        if let Some(runtime) = self.runtime.take() {
+            runtime.stop_and_join();
+        }
+    }
 }
 /// Future execution must consume this authority, not a loose readiness Boolean.
 /// No public constructor; unresolved closure never manufactures the capability.
@@ -164,7 +172,11 @@ impl ClosureGuest {
         }
     }
     pub fn retained_callback_count(&self) -> usize {
-        self.startup.borrow().callbacks().count()
+        self.startup
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .callbacks()
+            .count()
     }
     pub fn native_landing_count(&self) -> usize {
         self.keys.len()
@@ -382,14 +394,14 @@ fn close_impl(
         .ok_or(ClosureError::Budget)?
         & !(gran - 1);
     let foundation = if migrate {
-        Some(super::foundation::Foundation::build(
+        Some(Arc::new(super::foundation::Foundation::build(
             foundation_base,
             page,
             available
                 .checked_sub(size)
                 .and_then(|v| v.checked_sub(traps.bytes))
                 .ok_or(ClosureError::Budget)?,
-        )?)
+        )?))
     } else {
         None
     };
@@ -433,6 +445,7 @@ fn close_impl(
     }
     guest
         .thread
+        .as_ref()
         .install_return(bridge.return_landing())
         .map_err(|e| ClosureError::Native {
             operation: "return slot",
@@ -494,13 +507,6 @@ fn close_impl(
         ));
     }
     guest.registry = PreparedRegistry::new(registrations, 256).map_err(ClosureError::Registry)?;
-    let startup_matches = keys
-        .iter()
-        .flatten()
-        .filter(|k| guest.registry.find(k).is_ok())
-        .map(|k| k.nid)
-        .collect::<std::collections::BTreeSet<_>>()
-        .len();
     let mut finalized = 0;
     let mut relro_pending = 0;
     let mut relro_hole_bytes = 0;
@@ -580,6 +586,36 @@ fn close_impl(
     if relro_pending != 0 {
         remaining.push(MustClose::RelroPending);
     }
+    let runtime = if let (Some(f), Some(sync), Some(timing)) =
+        (&foundation, &synchronization, &sync_timing)
+    {
+        let runtime = super::workers::Runtime::new(
+            &guest,
+            f.clone(),
+            sync.clone(),
+            timing.scheduler(),
+            startup.clone(),
+            &bridge,
+            keys.clone(),
+        )?;
+        guest.registry = runtime
+            .registry(
+                astero_kernel::synchronization::owned::Thread(1),
+                &guest.thread,
+                Arc::new(Mutex::new(None)),
+            )
+            .map_err(ClosureError::Registry)?;
+        Some(runtime)
+    } else {
+        None
+    };
+    let startup_matches = keys
+        .iter()
+        .flatten()
+        .filter(|k| guest.registry.find(k).is_ok())
+        .map(|k| k.nid)
+        .collect::<std::collections::BTreeSet<_>>()
+        .len();
     let report = ClosureReport {
         source: source.identity(),
         object_trap_writes: object_writes.len(),
@@ -624,6 +660,7 @@ fn close_impl(
         foundation,
         synchronization,
         sync_timing,
+        runtime,
     })
 }
 
@@ -643,6 +680,7 @@ pub enum FirstEntryStop {
 }
 #[derive(Clone, Debug)]
 pub struct StartupCall {
+    pub result: Result<astero_hle::dispatch::prepared::CallResult, RegistryError>,
     pub ordinal: u32,
     pub key: ProviderKey,
     pub arguments: [u64; 6],
@@ -650,6 +688,14 @@ pub struct StartupCall {
 }
 #[derive(Debug)]
 pub struct FirstEntryReport {
+    pub threads: Vec<astero_kernel::threading::thread::lifecycle::Record>,
+    pub worker_exits: Vec<(
+        astero_kernel::synchronization::owned::Thread,
+        astero_kernel::execution::host::NativeExit,
+    )>,
+    pub worker_calls: Vec<(astero_kernel::synchronization::owned::Thread, StartupCall)>,
+    pub worker_active_reservations: u64,
+    pub worker_release_errors: Vec<u32>,
     pub source: astero_loader::artifact::SourceId,
     pub initial: InitialContext,
     pub stop: FirstEntryStop,
@@ -696,6 +742,9 @@ impl EntryReadyGuest {
             )
             .map_err(|_| BridgeError::Validation)?;
             sync.arm(deadline).map_err(|_| BridgeError::Validation)?;
+            if let Some(runtime) = &owner.runtime {
+                runtime.table.arm(deadline);
+            }
         }
         let started = std::time::Instant::now();
         let native = owner.bridge.execute_prepared(
@@ -724,7 +773,17 @@ impl EntryReadyGuest {
                     counts[slot] += 1;
                 }
                 let args = frame.arguments;
-                let result = if let Some(f) = &mut owner.foundation {
+                let result = if let Some(runtime) = &owner.runtime {
+                    if runtime.table.stopped() {
+                        stopped = true;
+                        return false;
+                    }
+                    if !runtime.admit_call() {
+                        exhausted = true;
+                        return false;
+                    }
+                    registry.invoke(key, frame, &mut runtime.access())
+                } else if let Some(f) = &mut owner.foundation {
                     let mut access = super::foundation::Access {
                         guest: &owner.guest,
                         foundation: f,
@@ -752,6 +811,7 @@ impl EntryReadyGuest {
                     }
                 }
                 calls.push(StartupCall {
+                    result,
                     ordinal,
                     key: key.clone(),
                     arguments: args,
@@ -795,11 +855,53 @@ impl EntryReadyGuest {
             }
         }
         let callback_count = owner.retained_callback_count();
+        if let Some(runtime) = &owner.runtime {
+            use astero_kernel::threading::thread::lifecycle::{Outcome, ThreadEnd};
+            runtime.table.complete_main(Outcome {
+                value: native.value,
+                reason: match stop {
+                    FirstEntryStop::Returned => ThreadEnd::Returned,
+                    FirstEntryStop::AccessViolation
+                    | FirstEntryStop::IllegalInstruction
+                    | FirstEntryStop::GuardedObject => ThreadEnd::NativeFault,
+                    FirstEntryStop::SupervisorExpired => ThreadEnd::Interrupted,
+                    _ => ThreadEnd::ProviderStop,
+                },
+            });
+            runtime.stop_and_join();
+        }
         if let Some(sync) = &owner.synchronization {
             sync.shutdown();
         }
         let synchronization = owner.synchronization.as_ref().map(|s| s.snapshot());
         Ok(FirstEntryReport {
+            threads: owner
+                .runtime
+                .as_ref()
+                .map_or_else(Vec::new, |r| r.table.snapshot()),
+            worker_exits: owner.runtime.as_ref().map_or_else(Vec::new, |r| {
+                r.exits.lock().unwrap_or_else(|p| p.into_inner()).clone()
+            }),
+            worker_calls: owner.runtime.as_ref().map_or_else(Vec::new, |r| {
+                r.calls.lock().unwrap_or_else(|p| p.into_inner()).clone()
+            }),
+            worker_active_reservations: owner.runtime.as_ref().map_or(0, |r| {
+                r.observers
+                    .lock()
+                    .unwrap_or_else(|p| p.into_inner())
+                    .iter()
+                    .map(|o| o.active_reservations())
+                    .sum()
+            }),
+            worker_release_errors: owner.runtime.as_ref().map_or_else(Vec::new, |r| {
+                r.observers
+                    .lock()
+                    .unwrap_or_else(|p| p.into_inner())
+                    .iter()
+                    .map(|o| o.release_error())
+                    .filter(|c| *c != 0)
+                    .collect()
+            }),
             source,
             initial,
             stop,
@@ -813,7 +915,10 @@ impl EntryReadyGuest {
             provider_failure,
             registry_failure,
             elapsed_micros: started.elapsed().as_micros(),
-            heap: owner.foundation.as_ref().map(|f| f.heap.snapshot()),
+            heap: owner
+                .foundation
+                .as_ref()
+                .map(|f| f.heap.lock().unwrap_or_else(|p| p.into_inner()).snapshot()),
             data_export: owner.foundation.as_ref().map(|f| f.guard.clone()),
         })
     }
@@ -851,12 +956,17 @@ where
             let first = ready
                 .execute_first(millis)
                 .map_err(|e| format!("Bridge: {e:?}"))?;
-            let active_reservations = observers.iter().map(|o| o.active_reservations()).sum();
-            let release_errors = observers
+            let active_reservations = observers
+                .iter()
+                .map(|o| o.active_reservations())
+                .sum::<u64>()
+                + first.worker_active_reservations;
+            let mut release_errors: Vec<_> = observers
                 .iter()
                 .map(|o| o.release_error())
                 .filter(|e| *e != 0)
                 .collect();
+            release_errors.extend(&first.worker_release_errors);
             Ok(ExecutionReport {
                 first,
                 thread_joined: true,

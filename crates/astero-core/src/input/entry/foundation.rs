@@ -16,7 +16,7 @@ pub const MAX_ALLOCATIONS: usize = 4096;
 pub const MAX_PROVIDER_CALLS: usize = 4096;
 pub struct Foundation {
     pub image: NativeImage,
-    pub heap: GuestHeap,
+    pub heap: std::sync::Mutex<GuestHeap>,
     pub guard: DataExport,
 }
 impl Foundation {
@@ -66,15 +66,17 @@ impl Foundation {
                 operation: "startup residency",
                 error,
             })?,
-            heap: GuestHeap::new(heap_base, HEAP_BYTES, MAX_ALLOCATIONS)
-                .map_err(|_| ClosureError::Allocation)?,
+            heap: std::sync::Mutex::new(
+                GuestHeap::new(heap_base, HEAP_BYTES, MAX_ALLOCATIONS)
+                    .map_err(|_| ClosureError::Allocation)?,
+            ),
             guard: astero_libs::libc::startup::stack_guard(base),
         })
     }
 }
 pub struct Access<'a> {
     pub guest: &'a PreparedGuest,
-    pub foundation: &'a mut Foundation,
+    pub foundation: &'a Foundation,
 }
 impl GuestMemory for Access<'_> {
     fn read(&self, a: u64, n: u64) -> Result<Vec<u8>, AccessError> {
@@ -110,18 +112,24 @@ impl GuestMemory for Access<'_> {
     fn allocate(&mut self, n: u64) -> Result<u64, AccessError> {
         self.foundation
             .heap
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
             .allocate(n)
             .map_err(|_| AccessError::Allocation)
     }
     fn free(&mut self, a: u64) -> Result<(), AccessError> {
         self.foundation
             .heap
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
             .free(a)
             .map_err(|_| AccessError::InvalidAllocation)
     }
     fn allocation_size(&self, a: u64) -> Result<u64, AccessError> {
         self.foundation
             .heap
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
             .size(a)
             .map_err(|_| AccessError::InvalidAllocation)
     }

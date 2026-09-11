@@ -15,7 +15,7 @@ fn startup_registration_is_exact_and_bounded() {
     let mut wrong = key(INIT_ENV_NID);
     wrong.library = b"libkernel".to_vec();
     assert!(registry.find(&wrong).is_err());
-    assert_eq!(s.borrow().init_env_calls, 0);
+    assert_eq!(s.lock().unwrap().init_env_calls, 0);
 }
 #[cfg(all(windows, target_arch = "x86_64"))]
 #[test]
@@ -32,8 +32,8 @@ fn startup_handlers_are_callable_through_native_synthetic_boundary() {
             .unwrap();
         assert_eq!(result.value, 0);
     }
-    assert_eq!(s.borrow().init_env_calls, 1);
-    assert_eq!(s.borrow().callbacks().collect::<Vec<_>>(), [7, 7]);
+    assert_eq!(s.lock().unwrap().init_env_calls, 1);
+    assert_eq!(s.lock().unwrap().callbacks().collect::<Vec<_>>(), [7, 7]);
     let result = b
         .synthetic(SyntheticProbe::Import, &mut |_, f| {
             registry.invoke_host_model(&key(ATEXIT_NID), f).is_ok()

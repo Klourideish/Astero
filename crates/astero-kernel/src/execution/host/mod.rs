@@ -3,4 +3,4 @@
 #[allow(unsafe_code)]
 mod platform;
 #[cfg(all(windows, target_arch = "x86_64"))]
-pub use platform::{Bridge, BridgeError, NativeExit, Supervision, SyntheticProbe};
+pub use platform::{Bridge, BridgeError, BridgeLease, NativeExit, Supervision, SyntheticProbe};

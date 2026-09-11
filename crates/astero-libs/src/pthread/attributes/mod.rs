@@ -1,2 +1,2 @@
-//! Planned pthread / attributes ownership within astero-libs.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Guest pthread attribute contracts, separate from kernel object mechanisms.
+pub mod lifecycle;

@@ -13,11 +13,14 @@ pub enum NativeState {
     Released,
 }
 pub struct NativeBackedGuestImage {
-    image: NativeImage,
+    image: Arc<NativeImage>,
     plan: Arc<GuestLoadPlan>,
     staging: StagingSnapshot,
 }
 impl NativeBackedGuestImage {
+    pub(crate) fn shared_owner(&self) -> Arc<NativeImage> {
+        self.image.clone()
+    }
     pub(crate) fn native_owner(&self) -> &NativeImage {
         &self.image
     }
@@ -49,10 +52,14 @@ impl NativeBackedGuestImage {
         self.image.write(GuestAddress(address), bytes)
     }
     pub(crate) fn seal_read_only(&mut self, range: GuestRange) -> Result<(), NativeError> {
-        self.image.seal_read_only(range)
+        Arc::get_mut(&mut self.image)
+            .ok_or(NativeError::SharedOwnership)?
+            .seal_read_only(range)
     }
     pub fn release(&mut self) -> Result<(), NativeError> {
-        self.image.release()
+        Arc::get_mut(&mut self.image)
+            .ok_or(NativeError::SharedOwnership)?
+            .release()
     }
     pub fn read(&self, address: u64, size: u64) -> Result<Vec<u8>, NativeError> {
         self.image.read(GuestAddress(address), size)
@@ -101,7 +108,7 @@ pub fn realize(
     let (result, observer) = windows_native::realize(&regions, limits);
     (
         result.map(|image| NativeBackedGuestImage {
-            image,
+            image: Arc::new(image),
             plan: staged.plan().clone(),
             staging: staged.snapshot(),
         }),

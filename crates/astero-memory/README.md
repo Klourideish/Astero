@@ -4,7 +4,7 @@ Guest mappings, protections, allocation and checked access.
 
 ## Interfaces and status
 
-M27 implements isolated guest byte regions; other module roots remain scaffolded.
+Owned staging and Windows native mappings provide checked shared access, protections and deterministic release. Other module roots remain scaffolded.
 
 ## Module ownership
 
@@ -29,3 +29,5 @@ M29 adds exact-page write removal/query for RELRO closure in the existing privat
 M30 adds checked writes to already-owned RW/NX pages, without elevating protections. Native closure seals present RELRO pages and leaves reserved holes inaccessible.
 
 M32 allocation/heap provides bounded reusable guest arena allocation. Native owners support scoped checked HLE copies. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
+
+M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.

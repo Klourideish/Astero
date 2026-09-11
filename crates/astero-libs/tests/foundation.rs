@@ -177,7 +177,10 @@ fn owned_return_landing_is_distinct_from_arbitrary_host_address() {
         r.invoke_host_model(&k, &mut f).unwrap();
         assert_eq!(f.rax, result);
     }
-    assert_eq!(s.borrow().callbacks().collect::<Vec<_>>(), [110, 9000]);
+    assert_eq!(
+        s.lock().unwrap().callbacks().collect::<Vec<_>>(),
+        [110, 9000]
+    );
 }
 #[test]
 fn cxa_registration_retains_argument_dso_order_and_bound() {
@@ -199,7 +202,7 @@ fn cxa_registration_retains_argument_dso_order_and_bound() {
         r.invoke_host_model(&k, &mut f).unwrap();
         assert_eq!(f.rax, expected);
     }
-    let s = s.borrow();
+    let s = s.lock().unwrap();
     let records: Vec<_> = s.records().collect();
     assert_eq!(records.len(), 2);
     assert_eq!(records[0].argument, Some(456));

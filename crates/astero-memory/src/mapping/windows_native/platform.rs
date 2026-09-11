@@ -1,5 +1,5 @@
 //! Sole M28 unsafe leaf. Every address passed to copy/protect/query is inside this owner's
-//! successfully reserved envelope; writes occur only in committed RW pages before publication.
+//! successfully reserved envelope; runtime copies touch only committed owned RW/NX pages.
 //! No callable pointer escapes. x86-64 Windows ABI declarations are pinned below.
 use super::*;
 use std::{
@@ -50,6 +50,13 @@ unsafe extern "system" {
         buffer: *mut c_void,
         size: usize,
         read: *mut usize,
+    ) -> i32;
+    fn WriteProcessMemory(
+        process: *mut c_void,
+        address: *mut c_void,
+        buffer: *const c_void,
+        size: usize,
+        written: *mut usize,
     ) -> i32;
 }
 fn error(operation: &'static str, address: u64, size: u64) -> NativeError {
@@ -115,12 +122,19 @@ impl Drop for Reservation {
         let _ = self.release();
     }
 }
-/// Native owner is deliberately not Send/Sync; no execution lease or raw pointer API is provided.
+/// Owned VM may be shared after protection finalization. Release/protection require exclusive
+/// ownership; checked copies never borrow guest bytes as Rust references.
 pub struct NativeImage {
     reservation: Reservation,
     layout: NativeLayout,
     snapshot: NativeSnapshot,
 }
+// SAFETY: the reservation is process VM, not thread-local storage. Metadata is immutable through
+// shared access. Only OS checked copies touch published bytes (which native guest threads may
+// mutate). Exclusive release/protection cannot race an Arc-held execution/storage lease. No raw
+// pointer or Rust reference to guest memory escapes; final drop releases on any owning thread.
+unsafe impl Send for NativeImage {}
+unsafe impl Sync for NativeImage {}
 impl NativeImage {
     pub fn observer(&self) -> NativeObserver {
         self.reservation.observer.clone()
@@ -212,7 +226,7 @@ impl NativeImage {
         }
         Ok(())
     }
-    /// Writes only existing owned RW/NX pages, with complete preflight and readback.
+    /// Writes only existing owned RW/NX pages, with complete preflight and OS checked copy.
     /// No permission elevation, executable patching, or arbitrary pointer is exposed.
     pub fn write(
         &self,
@@ -243,14 +257,21 @@ impl NativeImage {
         if bytes.is_empty() {
             return Ok(());
         }
-        // SAFETY: owned live RW/NX coverage checked; !Send/!Sync owner, no guest references
-        // escape, and native execution is suspended at this synchronous HLE boundary.
-        // Protection/release require exclusive ownership; source is an independent Rust slice.
-        unsafe {
-            ptr::copy_nonoverlapping(bytes.as_ptr(), address.0 as *mut u8, bytes.len());
-        }
-        if self.read(address, bytes.len() as u64)? != bytes {
-            return Err(NativeError::Readback { address: address.0 });
+        let mut written = 0;
+        // SAFETY: complete owned RW/NX coverage, independent source slice, live shared owner.
+        // Readback is deliberately not a concurrency guarantee: another guest may write after us.
+        if unsafe {
+            WriteProcessMemory(
+                GetCurrentProcess(),
+                address.0 as *mut c_void,
+                bytes.as_ptr().cast(),
+                bytes.len(),
+                &mut written,
+            )
+        } == 0
+            || written != bytes.len()
+        {
+            return Err(error("write", address.0, bytes.len() as u64));
         }
         Ok(())
     }

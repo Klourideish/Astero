@@ -4,7 +4,7 @@ use astero_hle::{
     dispatch::prepared::*,
 };
 use astero_kernel::process::environment::Environment;
-use std::{cell::RefCell, rc::Rc};
+use std::sync::{Arc, Mutex};
 pub const ERROR_NID: u64 = 0xf41703ca43e6a352;
 pub const PROCPARAM_NID: u64 = 0xf79f6aadaccf22b8;
 pub const GETENV_NID: u64 = 0xb266d0ba47f16093;
@@ -30,12 +30,19 @@ fn string(m: &dyn GuestMemory, address: u64) -> Result<Vec<u8>, AccessError> {
     Err(AccessError::Limit)
 }
 pub fn registrations(errno: u64, procparam: u64) -> Vec<Registration> {
+    shared_registrations(errno, procparam, Arc::new(Mutex::new(Environment::new())))
+}
+pub fn shared_registrations(
+    errno: u64,
+    procparam: u64,
+    env: Arc<Mutex<Environment>>,
+) -> Vec<Registration> {
     let key = |nid, library: &[u8]| ProviderKey {
         nid,
         library: library.to_vec(),
         module: library.to_vec(),
     };
-    let env = Rc::new(RefCell::new(Environment::new()));
+
     let read = env.clone();
     let mut entries = vec![
         Registration {
@@ -61,7 +68,11 @@ pub fn registrations(errno: u64, procparam: u64) -> Vec<Registration> {
                 let Ok(name) = string(m, f.arguments[0]) else {
                     return CallResult::Unsupported;
                 };
-                f.rax = read.borrow().get(&name).unwrap_or(0);
+                f.rax = read
+                    .lock()
+                    .unwrap_or_else(|p| p.into_inner())
+                    .get(&name)
+                    .unwrap_or(0);
                 CallResult::Returned
             })),
         },
@@ -74,7 +85,7 @@ pub fn registrations(errno: u64, procparam: u64) -> Vec<Registration> {
                 else {
                     return CallResult::Unsupported;
                 };
-                let mut env = env.borrow_mut();
+                let mut env = env.lock().unwrap_or_else(|p| p.into_inner());
                 if name.is_empty() || name.contains(&b'=') {
                     if m.write(errno, &22u32.to_le_bytes()).is_err() {
                         return CallResult::Unsupported;
