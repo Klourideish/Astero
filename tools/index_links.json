@@ -697,6 +697,32 @@
       "tests": [
         "test:astero-abi/test:entry/process_record_has_exact_little_endian_layout"
       ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/synchronization::mutex::operations::impl[Synchronization]::mutex_lock",
+      "tests": [
+        "test:astero-kernel/test:synchronization/mutex_recursive_and_errorcheck",
+        "test:astero-kernel/test:synchronization/mutex_timeout_cleans_ticket",
+        "test:astero-kernel/test:synchronization/shutdown_interrupts_blocked_mutex"
+      ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/synchronization::rwlock::operations::impl[Synchronization]::rw_lock",
+      "tests": [
+        "test:astero-kernel/test:synchronization/rw_readers_exclude_writer_and_destroy",
+        "test:astero-kernel/test:synchronization/rw_writer_exclusion_and_ownership",
+        "test:astero-kernel/test:synchronization/rw_wait_wakes_on_unlock"
+      ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/synchronization::condvar::operations::impl[Synchronization]::cond_wait",
+      "tests": [
+        "test:astero-kernel/test:synchronization/cond_signal_atomic_release_reacquire",
+        "test:astero-kernel/test:synchronization/cond_timeout_reacquires_mutex",
+        "test:astero-kernel/test:synchronization/cond_broadcast_releases_all",
+        "test:astero-kernel/test:synchronization/cond_shutdown_never_resumes_guest_with_unowned_mutex",
+        "test:astero-kernel/test:synchronization/timing_shutdown_is_not_condition_signal_success"
+      ]
     }
   ],
   "reviews": [
@@ -1263,6 +1289,20 @@
       "evidence": [
         "knowledge/architecture/first_native_entry.md"
       ]
+    },
+    {
+      "id": "diagnostic:kernel.synchronization",
+      "implementation": "impl:astero-kernel/lib:astero_kernel/synchronization::owned::Snapshot",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "Bounded runtime object, owner, waiter, generation and lifecycle counts; snapshot does not imply guest destroy.",
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ]
     }
   ],
   "nids": [
@@ -1811,13 +1851,1325 @@
       },
       "guest_library": "libkernel",
       "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented. M33 real runtime invoked once, returned success."
+    },
+    {
+      "id": "nid:m33.726a3544862f6bda",
+      "nid": {
+        "numeric_hex": "0x726A3544862F6BDA",
+        "encoded": "cmo1RIYva9o"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEX_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented. M33 real runtime invoked once, returned success."
+    },
+    {
+      "id": "nid:m33.d8e7f47fede68611",
+      "nid": {
+        "numeric_hex": "0xD8E7F47FEDE68611",
+        "encoded": "2Of0f+3mhhE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEX_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.f542b5bcb6507ede",
+      "nid": {
+        "numeric_hex": "0xF542B5BCB6507EDE",
+        "encoded": "9UK1vLZQft4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEX_LOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.ba9a15af330715e1",
+      "nid": {
+        "numeric_hex": "0xBA9A15AF330715E1",
+        "encoded": "upoVrzMHFeE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEX_TRYLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.b67dd5943d211bad",
+      "nid": {
+        "numeric_hex": "0xB67DD5943D211BAD",
+        "encoded": "tn3VlD0hG60"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEX_UNLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.21a7c8d8fc5c3e74",
+      "nid": {
+        "numeric_hex": "0x21A7C8D8FC5C3E74",
+        "encoded": "IafI2PxcPnQ"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEX_TIMEDLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.041fa46f4f1397d0",
+      "nid": {
+        "numeric_hex": "0x041FA46F4F1397D0",
+        "encoded": "BB+kb08Tl9A"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.3b1f62d1cecbe70d",
+      "nid": {
+        "numeric_hex": "0x3B1F62D1CECBE70D",
+        "encoded": "Ox9i0c7L5w0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_RDLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.5c3de60dec9b0a79",
+      "nid": {
+        "numeric_hex": "0x5C3DE60DEC9B0A79",
+        "encoded": "XD3mDeybCnk"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_TRYRDLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.9aa74da2bac1fa02",
+      "nid": {
+        "numeric_hex": "0x9AA74DA2BAC1FA02",
+        "encoded": "mqdNorrB+gI"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_WRLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.6c81e86424e89ac2",
+      "nid": {
+        "numeric_hex": "0x6C81E86424E89AC2",
+        "encoded": "bIHoZCTomsI"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_TRYWRLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.f8bf7c3c86c6b6d9",
+      "nid": {
+        "numeric_hex": "0xF8BF7C3C86C6B6D9",
+        "encoded": "+L98PIbGttk"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_UNLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.88fb594562028eb3",
+      "nid": {
+        "numeric_hex": "0x88FB594562028EB3",
+        "encoded": "iPtZRWICjrM"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_TIMEDRDLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.69d87fffa9c8a939",
+      "nid": {
+        "numeric_hex": "0x69D87FFFA9C8A939",
+        "encoded": "adh--6nIqTk"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCK_TIMEDWRLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.d936fddaaba9ae5d",
+      "nid": {
+        "numeric_hex": "0xD936FDDAABA9AE5D",
+        "encoded": "2Tb92quprl0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_COND_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented. M33 real runtime invoked once, returned success."
+    },
+    {
+      "id": "nid:m33.83e3d977686269c8",
+      "nid": {
+        "numeric_hex": "0x83E3D977686269C8",
+        "encoded": "g+PZd2hiacg"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_COND_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.58a0172785c13d0e",
+      "nid": {
+        "numeric_hex": "0x58A0172785C13D0E",
+        "encoded": "WKAXJ4XBPQ4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_COND_WAIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.06632363199ec35c",
+      "nid": {
+        "numeric_hex": "0x06632363199EC35C",
+        "encoded": "BmMjYxmew1w"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_COND_TIMEDWAIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.90387f35fc6032d1",
+      "nid": {
+        "numeric_hex": "0x90387F35FC6032D1",
+        "encoded": "kDh-NfxgMtE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_COND_SIGNAL: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.246823ed4beb97e0",
+      "nid": {
+        "numeric_hex": "0x246823ED4BEB97E0",
+        "encoded": "JGgj7Uvrl+A"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_COND_BROADCAST: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.17c6d41f0006dbce",
+      "nid": {
+        "numeric_hex": "0x17C6D41F0006DBCE",
+        "encoded": "F8bUHwAG284"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEXATTR_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.b2658492d8b2c86d",
+      "nid": {
+        "numeric_hex": "0xB2658492D8B2C86D",
+        "encoded": "smWEktiyyG0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEXATTR_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.88ca7c42913e5cee",
+      "nid": {
+        "numeric_hex": "0x88CA7C42913E5CEE",
+        "encoded": "iMp8QpE+XO4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEXATTR_SETTYPE: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.82ab84841ad2da2c",
+      "nid": {
+        "numeric_hex": "0x82AB84841AD2DA2C",
+        "encoded": "gquEhBrS2iw"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEXATTR_GETTYPE: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.d451af5348bdb1a4",
+      "nid": {
+        "numeric_hex": "0xD451AF5348BDB1A4",
+        "encoded": "1FGvU0i9saQ"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEXATTR_SETPROTOCOL: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.1a84e615eba2fa14",
+      "nid": {
+        "numeric_hex": "0x1A84E615EBA2FA14",
+        "encoded": "GoTmFeui+hQ"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEXATTR_GETPROTOCOL: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.9b12b1f5bc571762",
+      "nid": {
+        "numeric_hex": "0x9B12B1F5BC571762",
+        "encoded": "mxKx9bxXF2I"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEXATTR_SETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.968b04b9b1dceb87",
+      "nid": {
+        "numeric_hex": "0x968B04B9B1DCEB87",
+        "encoded": "losEubHc64c"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_MUTEXATTR_GETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.c8e7c683f2356482",
+      "nid": {
+        "numeric_hex": "0xC8E7C683F2356482",
+        "encoded": "yOfGg-I1ZII"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCKATTR_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.8b689f6777d2d9fa",
+      "nid": {
+        "numeric_hex": "0x8B689F6777D2D9FA",
+        "encoded": "i2ifZ3fS2fo"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCKATTR_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.87f3a27e2a2e05df",
+      "nid": {
+        "numeric_hex": "0x87F3A27E2A2E05DF",
+        "encoded": "h-OifiouBd8"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCKATTR_SETTYPE: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.2b296cd42845cab7",
+      "nid": {
+        "numeric_hex": "0x2B296CD42845CAB7",
+        "encoded": "Kyls1ChFyrc"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCKATTR_GETTYPE: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.fd9bd01f5f23d747",
+      "nid": {
+        "numeric_hex": "0xFD9BD01F5F23D747",
+        "encoded": "-ZvQH18j10c"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCKATTR_SETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.2dc3990471aa6c59",
+      "nid": {
+        "numeric_hex": "0x2DC3990471AA6C59",
+        "encoded": "LcOZBHGqbFk"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_RWLOCKATTR_GETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.9b9ff66ec35fbfbb",
+      "nid": {
+        "numeric_hex": "0x9B9FF66EC35FBFBB",
+        "encoded": "m5-2bsNfv7s"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_CONDATTR_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.c1a3dcc58891dd60",
+      "nid": {
+        "numeric_hex": "0xC1A3DCC58891DD60",
+        "encoded": "waPcxYiR3WA"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_CONDATTR_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.73f6f18f4dbb733b",
+      "nid": {
+        "numeric_hex": "0x73F6F18F4DBB733B",
+        "encoded": "c-bxj027czs"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_CONDATTR_SETCLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.eaa33790ee52dcea",
+      "nid": {
+        "numeric_hex": "0xEAA33790EE52DCEA",
+        "encoded": "6qM3kO5S3Oo"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_CONDATTR_GETCLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.eb131ec3dfab6702",
+      "nid": {
+        "numeric_hex": "0xEB131EC3DFAB6702",
+        "encoded": "6xMew9+rZwI"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_CONDATTR_SETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.0e7fc34568bdb79e",
+      "nid": {
+        "numeric_hex": "0x0E7FC34568BDB79E",
+        "encoded": "Dn-DRWi9t54"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "SCE_PTHREAD_CONDATTR_GETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.b6d1cd7d4faa0c15",
+      "nid": {
+        "numeric_hex": "0xB6D1CD7D4FAA0C15",
+        "encoded": "ttHNfU+qDBU"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEX_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.96d09f686af62461",
+      "nid": {
+        "numeric_hex": "0x96D09F686AF62461",
+        "encoded": "ltCfaGr2JGE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEX_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.ec7d224ce7224cba",
+      "nid": {
+        "numeric_hex": "0xEC7D224CE7224CBA",
+        "encoded": "7H0iTOciTLo"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEX_LOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.2bf8d785bb76827e",
+      "nid": {
+        "numeric_hex": "0x2BF8D785BB76827E",
+        "encoded": "K-jXhbt2gn4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEX_TRYLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.d99f8fa58e826898",
+      "nid": {
+        "numeric_hex": "0xD99F8FA58E826898",
+        "encoded": "2Z+PpY6CaJg"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEX_UNLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.228f7e9d329766d0",
+      "nid": {
+        "numeric_hex": "0x228F7E9D329766D0",
+        "encoded": "Io9+nTKXZtA"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEX_TIMEDLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.cad4142cdfe784be",
+      "nid": {
+        "numeric_hex": "0xCAD4142CDFE784BE",
+        "encoded": "ytQULN-nhL4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.d78ef56a33f3c61d",
+      "nid": {
+        "numeric_hex": "0xD78EF56A33F3C61D",
+        "encoded": "1471ajPzxh0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.8868ecaf5580b48d",
+      "nid": {
+        "numeric_hex": "0x8868ECAF5580B48D",
+        "encoded": "iGjsr1WAtI0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_RDLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.485c5330e7ee0a41",
+      "nid": {
+        "numeric_hex": "0x485C5330E7EE0A41",
+        "encoded": "SFxTMOfuCkE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_TRYRDLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.b08951bd0aac3766",
+      "nid": {
+        "numeric_hex": "0xB08951BD0AAC3766",
+        "encoded": "sIlRvQqsN2Y"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_WRLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.5e15879fa3f947b5",
+      "nid": {
+        "numeric_hex": "0x5E15879FA3F947B5",
+        "encoded": "XhWHn6P5R7U"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_TRYWRLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.12098ba3a11682ca",
+      "nid": {
+        "numeric_hex": "0x12098BA3A11682CA",
+        "encoded": "EgmLo6EWgso"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_UNLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.95bf259d8a3fa3b9",
+      "nid": {
+        "numeric_hex": "0x95BF259D8A3FA3B9",
+        "encoded": "lb8lnYo-o7k"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_TIMEDRDLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.f73925cc097d0863",
+      "nid": {
+        "numeric_hex": "0xF73925CC097D0863",
+        "encoded": "9zklzAl9CGM"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCK_TIMEDWRLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.d13c959383122edd",
+      "nid": {
+        "numeric_hex": "0xD13C959383122EDD",
+        "encoded": "0TyVk4MSLt0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_COND_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.4575ea8b80ad17cc",
+      "nid": {
+        "numeric_hex": "0x4575EA8B80AD17CC",
+        "encoded": "RXXqi4CtF8w"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_COND_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.3a9f130466392878",
+      "nid": {
+        "numeric_hex": "0x3A9F130466392878",
+        "encoded": "Op8TBGY5KHg"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_COND_WAIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.dbb6c08222663a1d",
+      "nid": {
+        "numeric_hex": "0xDBB6C08222663A1D",
+        "encoded": "27bAgiJmOh0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_COND_TIMEDWAIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.d8c3b2fab51fba14",
+      "nid": {
+        "numeric_hex": "0xD8C3B2FAB51FBA14",
+        "encoded": "2MOy+rUfuhQ"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_COND_SIGNAL: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.9a4c767d584d32c8",
+      "nid": {
+        "numeric_hex": "0x9A4C767D584D32C8",
+        "encoded": "mkx2fVhNMsg"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_COND_BROADCAST: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.7501d612c26da04e",
+      "nid": {
+        "numeric_hex": "0x7501D612C26DA04E",
+        "encoded": "dQHWEsJtoE4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEXATTR_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.1c5ee52b8eb1ce36",
+      "nid": {
+        "numeric_hex": "0x1C5EE52B8EB1CE36",
+        "encoded": "HF7lK46xzjY"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEXATTR_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.9839a030e19552a8",
+      "nid": {
+        "numeric_hex": "0x9839A030E19552A8",
+        "encoded": "mDmgMOGVUqg"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEXATTR_SETTYPE: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.19916523b461b90a",
+      "nid": {
+        "numeric_hex": "0x19916523B461B90A",
+        "encoded": "GZFlI7RhuQo"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEXATTR_GETTYPE: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.e6dc4a7dc3140289",
+      "nid": {
+        "numeric_hex": "0xE6DC4A7DC3140289",
+        "encoded": "5txKfcMUAok"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEXATTR_SETPROTOCOL: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.c83696c54139d2cd",
+      "nid": {
+        "numeric_hex": "0xC83696C54139D2CD",
+        "encoded": "yDaWxUE50s0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEXATTR_GETPROTOCOL: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.117bf7ced1aab433",
+      "nid": {
+        "numeric_hex": "0x117BF7CED1AAB433",
+        "encoded": "EXv3ztGqtDM"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEXATTR_SETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.3e62ff4f0294cd72",
+      "nid": {
+        "numeric_hex": "0x3E62FF4F0294CD72",
+        "encoded": "PmL-TwKUzXI"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_MUTEXATTR_GETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.c4579bb00e18b052",
+      "nid": {
+        "numeric_hex": "0xC4579BB00E18B052",
+        "encoded": "xFebsA4YsFI"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCKATTR_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.aac7668178ea4a09",
+      "nid": {
+        "numeric_hex": "0xAAC7668178EA4A09",
+        "encoded": "qsdmgXjqSgk"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCKATTR_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.f0db8e1e24ebd55c",
+      "nid": {
+        "numeric_hex": "0xF0DB8E1E24EBD55C",
+        "encoded": "8NuOHiTr1Vw"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCKATTR_SETTYPE_NP: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.97e6c6e5fb189218",
+      "nid": {
+        "numeric_hex": "0x97E6C6E5FB189218",
+        "encoded": "l+bG5fsYkhg"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCKATTR_GETTYPE_NP: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.3ae2a0fa44430fb5",
+      "nid": {
+        "numeric_hex": "0x3AE2A0FA44430FB5",
+        "encoded": "OuKg+kRDD7U"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCKATTR_SETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.56a10cb82bffa876",
+      "nid": {
+        "numeric_hex": "0x56A10CB82BFFA876",
+        "encoded": "VqEMuCv-qHY"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_RWLOCKATTR_GETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.98aa13c74dc74560",
+      "nid": {
+        "numeric_hex": "0x98AA13C74DC74560",
+        "encoded": "mKoTx03HRWA"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_CONDATTR_INIT: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.74972e4159fafc8c",
+      "nid": {
+        "numeric_hex": "0x74972E4159FAFC8C",
+        "encoded": "dJcuQVn6-Iw"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_CONDATTR_DESTROY: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.123965680a803d9a",
+      "nid": {
+        "numeric_hex": "0x123965680A803D9A",
+        "encoded": "EjllaAqAPZo"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_CONDATTR_SETCLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.7130d8c5350d3e13",
+      "nid": {
+        "numeric_hex": "0x7130D8C5350D3E13",
+        "encoded": "cTDYxTUNPhM"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_CONDATTR_GETCLOCK: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.dc1a4ff39d21053e",
+      "nid": {
+        "numeric_hex": "0xDC1A4FF39D21053E",
+        "encoded": "3BpP850hBT4"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_CONDATTR_SETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.874a94a92b8e982f",
+      "nid": {
+        "numeric_hex": "0x874A94A92B8E982F",
+        "encoded": "h0qUqSuOmC8"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/pthread::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/pthread_foundation.md"
+      ],
+      "provenance": "PTHREAD_CONDATTR_GETPSHARED: PS5Rust-adapted M33 synchronization. Implemented/registered; runtime use only where documented."
+    },
+    {
+      "id": "nid:m33.9ec628351cb0c0d8",
+      "nid": {
+        "numeric_hex": "0x9EC628351CB0C0D8",
+        "encoded": "nsYoNRywwNg"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
       "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/startup_foundation.md"
+        "knowledge/architecture/pthread_foundation.md"
       ],
-      "provenance": "scePthreadRwlockInit: PS5Rust-adapted bounded M32 contract. Runtime encountered after startup cluster; known catalogue identity, no Astero implementation."
+      "provenance": "scePthreadAttrInit: M33 real runtime observed; prototype identity from threading/nids.rs. No Astero thread lifecycle implementation/registration."
     }
   ],
   "abi": [

@@ -76,6 +76,8 @@ pub struct ClosureGuest {
     startup: Rc<RefCell<astero_libs::libc::startup::StartupState>>,
     report: ClosureReport,
     foundation: Option<super::foundation::Foundation>,
+    synchronization: Option<std::sync::Arc<astero_kernel::synchronization::owned::Synchronization>>,
+    sync_timing: Option<astero_timing::scheduler::TimingEngine>,
 }
 /// Future execution must consume this authority, not a loose readiness Boolean.
 /// No public constructor; unresolved closure never manufactures the capability.
@@ -449,7 +451,29 @@ fn close_impl(
         executable.clone(),
         migrate.then_some(bridge.return_landing()),
     );
+    let mut synchronization = None;
+    let mut sync_timing = None;
     if migrate {
+        let timing =
+            astero_timing::scheduler::TimingEngine::real(astero_timing::scheduler::Config {
+                max_pending: 128,
+                max_snapshot_entries: 128,
+            })
+            .map_err(|_| ClosureError::Allocation)?;
+        let service = std::sync::Arc::new(
+            astero_kernel::synchronization::owned::Synchronization::new(
+                timing.scheduler(),
+                1024,
+                128,
+            )
+            .map_err(|_| ClosureError::Allocation)?,
+        );
+        registrations.extend(astero_libs::pthread::exports::registrations(
+            service.clone(),
+            astero_kernel::synchronization::owned::Thread(1),
+        ));
+        synchronization = Some(service);
+        sync_timing = Some(timing);
         registrations.push(astero_libs::libc::startup::cxa_registration(
             startup.clone(),
             executable,
@@ -469,7 +493,7 @@ fn close_impl(
             Some(guest.thread.layout().thread_pointer + 8),
         ));
     }
-    guest.registry = PreparedRegistry::new(registrations, 64).map_err(ClosureError::Registry)?;
+    guest.registry = PreparedRegistry::new(registrations, 256).map_err(ClosureError::Registry)?;
     let startup_matches = keys
         .iter()
         .flatten()
@@ -598,6 +622,8 @@ fn close_impl(
         startup,
         report,
         foundation,
+        synchronization,
+        sync_timing,
     })
 }
 
@@ -633,6 +659,7 @@ pub struct FirstEntryReport {
     pub guarded_object: Option<super::traps::ObjectTrap>,
     pub guarded_relocations:
         Vec<astero_loader::elf::dynamic::relocations::observation::RawRelocation>,
+    pub synchronization: Option<astero_kernel::synchronization::owned::Snapshot>,
     pub callback_count: usize,
     pub provider_failure: Option<astero_hle::calls::memory::AccessError>,
     pub registry_failure: Option<RegistryError>,
@@ -658,6 +685,18 @@ impl EntryReadyGuest {
         let mut refused = false;
         let mut provider_failure = None;
         let mut registry_failure = None;
+        if let (Some(sync), Some(timing)) = (&owner.synchronization, &owner.sync_timing) {
+            let deadline = astero_timing::time::Deadline::after(
+                timing
+                    .scheduler()
+                    .now()
+                    .map_err(|_| BridgeError::Validation)?,
+                astero_timing::time::Span::from_millis(millis)
+                    .map_err(|_| BridgeError::Validation)?,
+            )
+            .map_err(|_| BridgeError::Validation)?;
+            sync.arm(deadline).map_err(|_| BridgeError::Validation)?;
+        }
         let started = std::time::Instant::now();
         let native = owner.bridge.execute_prepared(
             owner.guest.image.native_owner(),
@@ -756,6 +795,10 @@ impl EntryReadyGuest {
             }
         }
         let callback_count = owner.retained_callback_count();
+        if let Some(sync) = &owner.synchronization {
+            sync.shutdown();
+        }
+        let synchronization = owner.synchronization.as_ref().map(|s| s.snapshot());
         Ok(FirstEntryReport {
             source,
             initial,
@@ -766,6 +809,7 @@ impl EntryReadyGuest {
             guarded_object: object,
             guarded_relocations,
             callback_count,
+            synchronization,
             provider_failure,
             registry_failure,
             elapsed_micros: started.elapsed().as_micros(),

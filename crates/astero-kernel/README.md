@@ -4,7 +4,7 @@ Processes, threads, synchronization, clocks and execution.
 
 ## Interfaces and status
 
-M0 scaffold only. Module roots document future ownership; no runtime mechanisms are implemented.
+Native execution/preparation, timing-backed synchronization and process state are implemented; other roots retain explicit scaffold status.
 
 ## Module ownership
 
@@ -33,3 +33,5 @@ M30 execution/host owns the private Windows x64 synthetic-tested bridge, FS rest
 M31 uses astero-timing deadlines for exact-thread native supervision in the existing private host leaf. See [first entry](../../knowledge/architecture/first_native_entry.md).
 
 M32 process/environment retains bounded guest-owned value identities; exit callbacks distinguish guest and runtime-return targets. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
+
+M33 [pthread foundation](../../knowledge/architecture/pthread_foundation.md) implements owned synchronization and scoped guest adapters.

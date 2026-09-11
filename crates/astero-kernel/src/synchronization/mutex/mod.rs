@@ -1,2 +1,2 @@
-//! Planned synchronization / mutex ownership within astero-kernel.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Owned synchronization operations.
+mod operations;

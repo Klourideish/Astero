@@ -575,3 +575,13 @@ unwinding is implemented. The environment starts empty and stores values in gues
 `StartupAllowanceExhausted` means the bounded call policy was exhausted. AV/illegal instruction/
 guarded object stops immediately; `SupervisorExpired` captures an actual suspended PC.
 `WorkerFailure`/`TimeoutKilled` mean failed containment/recovery, not success.
+
+
+M33 extends the same `first-entry` command with pthread synchronization (exact libkernel providers).
+The documented 250 ms / 15000 ms command successfully initializes rwlock, condition and mutex objects
+then stops at unregistered `scePthreadAttrInit` (0x9ec628351cb0c0d8). It does not create guest threads.
+The synchronization snapshot lists opaque guest slot/ID/kind/owner and lifecycle/wait counters.
+This run observed three live objects, zero waits/wakes/timeouts, clean joined teardown and unchanged
+source hash. Object snapshot metadata is not a live resource. Timed waits use Astero timing;
+execution-deadline cancellation stops the bridge. Guest clock conversion is a documented initial
+compatibility policy, not complete realtime/paused guest clock behavior. No additional command needed.

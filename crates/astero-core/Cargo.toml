@@ -14,3 +14,6 @@ astero-memory = { path = "../astero-memory" }
 astero-kernel = { path = "../astero-kernel" }
 astero-hle = { path = "../astero-hle" }
 astero-libs = { path = "../astero-libs" }
+
+[dev-dependencies]
+astero-abi = { path = "../astero-abi" }

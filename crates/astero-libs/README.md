@@ -4,7 +4,7 @@ Guest library exports and delegation to owning services.
 
 ## Interfaces and status
 
-M0 scaffold only. Re-exports the HLE `Provider` contract; exports and dispatch are not implemented.
+Startup libc/libkernel and pthread synchronization exports delegate through exact HLE registrations; other families retain explicit scaffold status.
 
 ## Module ownership
 
@@ -25,3 +25,5 @@ and [repository contract](../../AGENTS.md).
 M30 libc/startup implements exact libc/libc startup registrations: instrumented experimental _init_env no-op and bounded atexit retention. Kernel owns callback storage. No callback executes. See [native closure](../../knowledge/architecture/native_entry_closure.md).
 
 M32 libc/primitives and libc/process adapt the PS5Rust startup cluster; startup publishes the owned guard contract. Tests alone add ABI/memory dependencies. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
+
+M33 [pthread foundation](../../knowledge/architecture/pthread_foundation.md) implements owned synchronization and scoped guest adapters.

@@ -55,3 +55,5 @@ M30 [native closure](knowledge/architecture/native_entry_closure.md) can issue e
 [M31](knowledge/architecture/first_native_entry.md) captures a first guarded-object read from real guest execution, with synthetic asynchronous-stop proof and joined teardown. This is not game boot.
 
 [M32 startup foundation](knowledge/architecture/startup_foundation.md) adds owned data providers, reusable guest heap and a bounded native libc cluster.
+
+[M33 pthread synchronization](knowledge/architecture/pthread_foundation.md) migrates owned rwlocks, mutexes, condition variables and attributes, with timing-backed interruptible waits.

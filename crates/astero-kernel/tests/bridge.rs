@@ -144,3 +144,50 @@ fn unbounded_loop_and_invalid_deadline_are_refused() {
         );
     }
 }
+
+#[test]
+fn blocked_native_hle_wait_uses_timing_and_returns_to_joined_host() {
+    let _guard = SERIAL.lock().unwrap();
+    std::thread::spawn(|| {
+        use astero_kernel::synchronization::owned::*;
+        use astero_timing::{
+            scheduler::{Config, TimingEngine},
+            time::{Deadline, Span},
+        };
+        let engine = TimingEngine::real(Config {
+            max_pending: 4,
+            max_snapshot_entries: 4,
+        })
+        .unwrap();
+        let sync = Synchronization::new(engine.scheduler(), 4, 4).unwrap();
+        let id = sync.create(8, Kind::Mutex, 1).unwrap();
+        sync.mutex_lock(id, 8, Thread(1), false, None).unwrap();
+        let mut bridge = Bridge::new().unwrap();
+        bridge.validate().unwrap();
+        sync.arm(
+            Deadline::after(
+                engine.scheduler().now().unwrap(),
+                Span::from_millis(10).unwrap(),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        let exit = bridge
+            .supervised_synthetic(SyntheticProbe::Import, 100, &mut |_, _| {
+                assert_eq!(
+                    sync.mutex_lock(id, 8, Thread(2), false, None),
+                    Err(Error::Interrupted)
+                );
+                false
+            })
+            .unwrap();
+        assert_eq!(exit.reason, 2);
+        assert!(exit.host_fs_restored && exit.host_gs_preserved);
+        let sup = exit.supervision.unwrap();
+        assert_eq!(sup.suspends, sup.resumes);
+        assert_eq!(sync.snapshot().waiters, 0);
+        assert_eq!(engine.scheduler().snapshot(4).unwrap().pending_total, 0);
+    })
+    .join()
+    .unwrap();
+}

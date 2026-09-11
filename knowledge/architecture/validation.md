@@ -1790,3 +1790,28 @@ SHA256 A15E44CAF80BE1D86B72C2C1A6D1F93A171128962390CB28080507202F6E914A.
 No fourth runtime run. Later ENOMEM propagation refinement is synthetic-tested only.
 Full context, evidence, limits and hypothesis outcomes: startup_foundation.md. Local raw logs
 remain ignored under target/m32-validation. M33 is not started; no commit/push/history changes.
+
+
+## M33 pthread synchronization migration - 2026-09-10
+
+Full workspace fmt/check/build, warnings-denied Clippy and cargo test passed: 426 executable Rust
+and 23 doctests. Added 24 tests: 19 synchronization, 4 guest-provider integration, 1 synthetic native
+blocked-HLE wait. 53 Python policy/state/structure/native/index tests passed. 16 crates, 22 internal
+edges and 250 homes. Only new dependency is core test-only ABI. Whitespace: 634 files and Git diff
+check pass. Index counts: implementation 1193, subsystems 137, modules 543, sources 529, tests 504,
+diagnostics 37, NIDs 116, ABI 2; total 3061. Registered NIDs 113, unregistered 3.
+
+Preflight passed before ONE real primary_real_elf execution, exact existing first-entry command
+with wall-ms 250 and containment-ms 15000. scePthreadRwlockInit, scePthreadCondInit and
+scePthreadMutexInit each succeeded once; three retained objects, zero waits/wakes/timeouts.
+74 total completed provider calls. New stop scePthreadAttrInit 0x9ec628351cb0c0d8, ordinal 119.
+Elapsed 1406 us, RSP 0x200800e68, host landing RIP 0x7ff72df56d06, separate guest continuation
+0x1001c2814. Clean parent containment/exit 0, FS/GS preserved/restored, joined thread, zero native
+reservations and no release errors. Hash unchanged:
+A15E44CAF80BE1D86B72C2C1A6D1F93A171128962390CB28080507202F6E914A.
+Full source/evidence/limits/outcomes: pthread_foundation.md. Logs under ignored target/m33-*.log.
+Synthetic 50 ms infinite loop stopped after 55,525 us with balanced suspend/resume. Post-run synthetic
+native HLE blocked-mutex test also passed; no second real run. No M34 implementation or commit/push.
+
+Final M33 index regeneration was byte-identical across all 17 index-directory files; freshness,
+policy/state/structure, all 53 Python tests and whitespace checks passed after the shutdown fix.

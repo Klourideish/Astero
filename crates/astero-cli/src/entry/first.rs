@@ -164,6 +164,7 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
         )
         .unwrap();
     }
+    writeln!(s, "Synchronization: {:?}", f.synchronization).unwrap();
     writeln!(s,"Unresolved key: {:?}\nGuarded object: {:?}; associated relocation count={}\nRetained callbacks={} (not invoked)\nThread joined={} native/runtime reservations={} release errors={:?}",f.unresolved,f.guarded_object,f.guarded_relocations.len(),f.callback_count,r.thread_joined,r.active_reservations,r.release_errors).unwrap();
     s
 }

@@ -58,3 +58,5 @@ M30 input/entry/closure owns validated bridge, RX import landings and NOACCESS u
 M31 input/entry owns a dedicated first-entry thread and additional worker-process containment; preparation stays independent. See [first entry](../../knowledge/architecture/first_native_entry.md).
 
 M32 entry/foundation composes residency and scoped HLE access; close_startup integrates the migrated startup cluster. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
+
+M33 composes runtime-owned synchronization and its M25 timing engine only for opted-in startup execution. See [pthread foundation](../../knowledge/architecture/pthread_foundation.md).

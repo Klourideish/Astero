@@ -66,3 +66,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [M31 first native entry](first_native_entry.md): owned execution thread, asynchronous stop and first runtime evidence.
 
 - [M32 startup foundation](startup_foundation.md): migrated object, heap and libc runtime cluster.
+
+- [M33 pthread synchronization foundation](pthread_foundation.md).
