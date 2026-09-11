@@ -711,6 +711,8 @@ pub struct FirstEntryReport {
     pub registry_failure: Option<RegistryError>,
     pub elapsed_micros: u128,
     pub heap: Option<astero_memory::allocation::heap::HeapSnapshot>,
+    pub output: Vec<u8>,
+    pub access_budget: Option<astero_hle::calls::budget::AccessSnapshot>,
     pub data_export: Option<astero_hle::providers::data::DataExport>,
 }
 impl EntryReadyGuest {
@@ -915,6 +917,21 @@ impl EntryReadyGuest {
             provider_failure,
             registry_failure,
             elapsed_micros: started.elapsed().as_micros(),
+            output: owner
+                .foundation
+                .as_ref()
+                .map(|f| {
+                    f.output
+                        .lock()
+                        .unwrap_or_else(|p| p.into_inner())
+                        .bytes()
+                        .to_vec()
+                })
+                .unwrap_or_default(),
+            access_budget: owner
+                .foundation
+                .as_ref()
+                .map(|f| f.access_budget.snapshot()),
             heap: owner
                 .foundation
                 .as_ref()

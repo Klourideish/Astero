@@ -102,6 +102,9 @@ impl ThreadStorage {
         let tls = t?;
         Ok((Self { stack, tls, layout }, [so, to]))
     }
+    pub fn native_regions(&self) -> [&NativeImage; 2] {
+        [&self.stack, &self.tls]
+    }
     pub fn observers(&self) -> [NativeObserver; 2] {
         [self.stack.observer(), self.tls.observer()]
     }

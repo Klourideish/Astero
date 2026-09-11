@@ -617,3 +617,42 @@ NID statuses, preserved uncertainties and the outside-cluster boundary. The synt
 `cargo test -p astero-kernel --test lifecycle`, `cargo test -p astero-kernel --test bridge`,
 `cargo test -p astero-core --lib workers::tests` and
 `cargo test -p astero-core --test thread_contracts`; these do not execute corpus bytes.
+
+
+## M35 large libc memory and runtime continuation
+
+Use only the trusted configured `primary_real_elf` on x86-64 Windows. Real native code executes;
+this supervisor is not a security sandbox. From the repository root, the exact validated command is:
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $corpus.artifacts.primary_real_elf.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --wall-ms 250 --containment-ms 15000
+```
+
+Expected: the valid 1,352,000-byte memset passes and libc startup continues to a structured next
+boundary. Actual final run (third within this migration): exit0/Clean, 13,256 us; memset returned
+0x100906e68, puts recorded `RezVR Start !!!`, strcpy_s and strstr returned. Next stop:
+UnresolvedFunction `sceUserServiceInitialize`, NID0x8f760cbb531534da, exact
+libSceUserService/libSceUserService, ordinal400. No UserService provider was installed.
+
+The output includes checked byte-work policy/counters and owned guest diagnostic output. Current
+policy: 64 MiB logical operation, 512 MiB total attempted work, 64 KiB copy scratch, 4096 shared
+provider attempts. Actual charged work1,380,184 bytes, one operation above1MiB, zero budget refusals.
+Heap peak7104 bytes in the existing4MiB arena (no growth). Eight workers entered condition waits;
+all were interrupted/joined at shutdown, with no signalled wake or timeout claim. All mappings
+released, no release errors, source SHA256 unchanged. Full addresses/calls and all three run results
+are in [M35 evidence](knowledge/architecture/libc_large_memory.md).
+
+Synthetic checks (no corpus execution):
+
+```powershell
+cargo test -p astero-libs --test large_memory
+cargo test -p astero-memory --test native_access --test heap
+cargo test -p astero-core --lib supervised_native_workers_perform_large_checked_memset_on_shared_heap
+```
+
+Copies validate complete mapped/permission coverage first. Gaps, guards, overflow and read-only
+writes refuse. memcpy overlap refuses; memmove handles either direction. Checked `_s` functions
+retain their documented constraint-error clearing; later OS copy failure is not transactional rollback.
+Preparation commands remain non-executing. No new runtime CLI flags or implicit execution were added.

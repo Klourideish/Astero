@@ -1854,3 +1854,31 @@ returned successfully or that unexercised lifecycle exports have runtime proof.
 Final regeneration is verified byte-identical across all 17 index files; freshness and policy checks
 are rerun after durable documentation and ready_for_cleanup tracker updates. M34 stays active pending
 approval; no M35 work, commit, push or history change.
+
+## M35 libc large-memory continuation - 2026-09-11
+
+Final workspace formatting, all-target check/build, warnings-denied all-target Clippy and workspace
+Rust tests passed: 474 executable tests and 23 doctests. Added 21 tests: 16 libc checked-memory/string/
+allocation/output tests, three native cross-mapping tests, one concurrent heap test and one composed
+synthetic native worker large-memory test. Existing CLI, M31 supervisor, M33 synchronization and M34
+worker lifecycle regressions remain included. No real corpus bytes are used by synthetic tests.
+
+Python: all 53 tests passed, including policy/state/structure and index checks. Ownership remains
+16 crates, 22 internal edges and 250 declared module homes. Index counts: implementation 1319,
+subsystems 137, modules 560, sources 545, tests 552, diagnostics 39, NIDs 201, ABI 2; total 3355.
+NIDs: 198 registered identities and 3 observation-only/unregistered. ABI records unchanged.
+
+Three authorized real runs continued only within the approved libc cluster, then stopped at the
+outside-cluster sceUserServiceInitialize boundary. Exact command: USAGE.md M35. Full evidence,
+identities and per-run PCs: libc_large_memory.md. All three exits 0, Clean containment and unchanged
+source SHA256. Final duration 13,256 us (native supervisor 12,059 us), 250 ms deadline, no asynchronous
+intervention. The 1,352,000-byte memset succeeded at [0x100906e68,0x100a50fa8). Final heap peak 7104
+bytes supports retaining one bounded 4 MiB arena rather than speculative growth. Eight workers
+joined; eight condition waits were interrupted by shutdown, with no signal wakes or timeouts.
+Final native/runtime reservations 0, release errors [], host FS restored and GS preserved.
+
+Logs remain ignored under target/m35-real-{1,2,3}.log and target/m35-final-{rust,python}.log.
+Post-run synthetic refinements preserve structured OS copy failure, alignment errno and worker access;
+the final suite passed without additional real execution. Repeated index generation is byte-identical
+across all 17 index files; freshness, policy and whitespace checks are repeated after these records.
+M35 remains ready_for_cleanup pending approval. No M36 work, commit, push or history change.

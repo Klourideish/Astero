@@ -1,7 +1,11 @@
-//! Planned libc ownership within astero-libs.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Checked libc/runtime exports adapted from PS5Rust; mechanisms remain in their owning services.
 pub mod startup;
 
 pub mod primitives;
 
 pub mod process;
+
+pub mod bulk;
+pub mod checked;
+pub mod output;
+pub mod strings;

@@ -11,6 +11,13 @@ use astero_timing::{
 use std::sync::Arc;
 struct Memory([u8; 128]);
 impl GuestMemory for Memory {
+    fn validate(&self, a: u64, n: u64, _: bool) -> std::result::Result<(), AccessError> {
+        let end = a.checked_add(n).ok_or(AccessError::Range)?;
+        self.0
+            .get(a as usize..usize::try_from(end).map_err(|_| AccessError::Range)?)
+            .map(|_| ())
+            .ok_or(AccessError::Range)
+    }
     fn read(&self, a: u64, n: u64) -> std::result::Result<Vec<u8>, AccessError> {
         self.0
             .get(a as usize..a.checked_add(n).ok_or(AccessError::Range)? as usize)

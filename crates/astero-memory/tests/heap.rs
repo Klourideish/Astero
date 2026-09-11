@@ -24,3 +24,30 @@ fn zero_null_overflow_and_identity() {
     h.free(a).unwrap();
     assert!(h.free(a).is_err());
 }
+
+#[test]
+fn concurrent_aligned_reuse_and_peak_accounting() {
+    use std::sync::{Arc, Mutex};
+    let heap = Arc::new(Mutex::new(
+        GuestHeap::new(4096, 4 * 1024 * 1024, 128).unwrap(),
+    ));
+    let hs: Vec<_> = (0..8)
+        .map(|_| {
+            let h = heap.clone();
+            std::thread::spawn(move || {
+                for _ in 0..100 {
+                    let p = h.lock().unwrap().allocate_aligned(123, 256).unwrap();
+                    assert_eq!(p % 256, 0);
+                    h.lock().unwrap().free(p).unwrap();
+                }
+            })
+        })
+        .collect();
+    for h in hs {
+        h.join().unwrap();
+    }
+    let mut h = heap.lock().unwrap();
+    assert_eq!(h.snapshot().live, 0);
+    assert!(h.snapshot().peak_bytes >= 128);
+    assert_eq!(h.allocate(4 * 1024 * 1024).unwrap(), 4096);
+}

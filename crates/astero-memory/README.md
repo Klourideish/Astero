@@ -31,3 +31,5 @@ M30 adds checked writes to already-owned RW/NX pages, without elevating protecti
 M32 allocation/heap provides bounded reusable guest arena allocation. Native owners support scoped checked HLE copies. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
 
 M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.
+
+M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.

@@ -14,10 +14,32 @@ use astero_memory::{
 pub const HEAP_BYTES: u64 = 4 * 1024 * 1024;
 pub const MAX_ALLOCATIONS: usize = 4096;
 pub const MAX_PROVIDER_CALLS: usize = 4096;
+pub(crate) fn access_error(
+    error: astero_memory::mapping::windows_native::NativeError,
+) -> AccessError {
+    use astero_memory::mapping::windows_native::NativeError;
+    match error {
+        NativeError::Os {
+            operation,
+            address,
+            size,
+            code,
+        } => AccessError::HostCopy {
+            operation,
+            address,
+            size,
+            code,
+        },
+        NativeError::Allocation => AccessError::Allocation,
+        _ => AccessError::Range,
+    }
+}
 pub struct Foundation {
     pub image: NativeImage,
     pub heap: std::sync::Mutex<GuestHeap>,
     pub guard: DataExport,
+    pub output: std::sync::Arc<std::sync::Mutex<astero_kernel::process::output::Output>>,
+    pub access_budget: astero_hle::calls::budget::AccessBudget,
 }
 impl Foundation {
     pub fn build(base: u64, page: u64, available: u64) -> Result<Self, ClosureError> {
@@ -62,6 +84,15 @@ impl Foundation {
             },
         );
         Ok(Self {
+            output: std::sync::Arc::new(std::sync::Mutex::new(
+                astero_kernel::process::output::Output::new(65536),
+            )),
+            access_budget: astero_hle::calls::budget::AccessBudget::new(
+                astero_hle::calls::budget::AccessLimits {
+                    max_operation_bytes: astero_hle::calls::memory::MAX_OPERATION_BYTES,
+                    max_total_bytes: 512 * 1024 * 1024,
+                },
+            ),
             image: image.map_err(|error| ClosureError::Native {
                 operation: "startup residency",
                 error,
@@ -79,35 +110,91 @@ pub struct Access<'a> {
     pub foundation: &'a Foundation,
 }
 impl GuestMemory for Access<'_> {
+    fn charge(&self, n: u64) -> Result<(), AccessError> {
+        self.foundation.access_budget.charge(n)
+    }
+    fn validate(&self, a: u64, n: u64, write: bool) -> Result<(), AccessError> {
+        let [stack, tls] = self.guest.thread.native_regions();
+        astero_memory::access::native::validate(
+            &[
+                self.guest.image.native_owner(),
+                stack,
+                tls,
+                &self.foundation.image,
+            ],
+            a,
+            n,
+            write,
+        )
+        .map_err(access_error)
+    }
+    fn read_window(&self, a: u64, n: u64) -> Result<Vec<u8>, AccessError> {
+        let [stack, tls] = self.guest.thread.native_regions();
+        astero_memory::access::native::read_window(
+            &[
+                self.guest.image.native_owner(),
+                stack,
+                tls,
+                &self.foundation.image,
+            ],
+            a,
+            n,
+        )
+        .map_err(access_error)
+    }
     fn read(&self, a: u64, n: u64) -> Result<Vec<u8>, AccessError> {
-        if n > astero_libs::libc::primitives::MAX_OPERATION_BYTES {
+        if n > astero_hle::calls::memory::COPY_CHUNK_BYTES {
             return Err(AccessError::Limit);
         }
-        if n == 0 {
-            return Ok(Vec::new());
-        }
-        let g = &self.guest;
-        g.image
-            .read(a, n)
-            .or_else(|_| g.thread.read_stack(a, n))
-            .or_else(|_| g.thread.read_tls(a, n))
-            .or_else(|_| self.foundation.image.read(GuestAddress(a), n))
-            .map_err(|_| AccessError::Range)
+        let [stack, tls] = self.guest.thread.native_regions();
+        astero_memory::access::native::read(
+            &[
+                self.guest.image.native_owner(),
+                stack,
+                tls,
+                &self.foundation.image,
+            ],
+            a,
+            n,
+        )
+        .map_err(access_error)
     }
     fn write(&mut self, a: u64, b: &[u8]) -> Result<(), AccessError> {
-        if b.len() as u64 > astero_libs::libc::primitives::MAX_OPERATION_BYTES {
+        if b.len() as u64 > astero_hle::calls::memory::COPY_CHUNK_BYTES {
             return Err(AccessError::Limit);
         }
-        if b.is_empty() {
-            return Ok(());
-        }
-        self.guest
-            .image
-            .native_owner()
-            .write(GuestAddress(a), b)
-            .or_else(|_| self.guest.thread.write(a, b))
-            .or_else(|_| self.foundation.image.write(GuestAddress(a), b))
-            .map_err(|_| AccessError::Range)
+        let [stack, tls] = self.guest.thread.native_regions();
+        astero_memory::access::native::write(
+            &[
+                self.guest.image.native_owner(),
+                stack,
+                tls,
+                &self.foundation.image,
+            ],
+            a,
+            b,
+        )
+        .map_err(access_error)
+    }
+    fn allocate_aligned(
+        &mut self,
+        size: u64,
+        alignment: u64,
+    ) -> std::result::Result<u64, AccessError> {
+        self.foundation
+            .heap
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .allocate_aligned(size, alignment)
+            .map_err(|_| AccessError::Allocation)
+    }
+    fn usable_size(&self, a: u64) -> std::result::Result<u64, AccessError> {
+        self.foundation
+            .heap
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .usable_size(a)
+            .map_err(|_| AccessError::InvalidAllocation)
     }
     fn allocate(&mut self, n: u64) -> Result<u64, AccessError> {
         self.foundation

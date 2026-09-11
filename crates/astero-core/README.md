@@ -62,3 +62,5 @@ M32 entry/foundation composes residency and scoped HLE access; close_startup int
 M33 composes runtime-owned synchronization and its M25 timing engine only for opted-in startup execution. See [pthread foundation](../../knowledge/architecture/pthread_foundation.md).
 
 M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.
+
+M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.

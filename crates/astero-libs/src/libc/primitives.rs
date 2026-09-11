@@ -1,11 +1,33 @@
 //! PS5Rust startup scalar/memory contracts, adapted to checked scoped guest access.
+pub use astero_hle::calls::memory::MAX_OPERATION_BYTES;
 use astero_hle::{
     calls::memory::{AccessError, GuestMemory},
     dispatch::prepared::{CallResult, ProviderKey, ProviderKind, Registration},
 };
-pub const MAX_OPERATION_BYTES: u64 = 1024 * 1024;
 /// Source numeric identities; library context is supplied explicitly by the composition policy.
 pub const EXPORTS: &[(&str, u64)] = &[
+    ("strcpy", 0x9226525c859df6f8),
+    ("strncpy", 0xeac256896491baa9),
+    ("strcat", 0x2ece2dcf38629aa4),
+    ("strncat", 0x907838e6a3c2e9fd),
+    ("strstr", 0xbe28b014c68d6a60),
+    ("strcasecmp", 0x015ea2a4235ae11c),
+    ("strncasecmp", 0xa57bdb0df721bba9),
+    ("strdup", 0x83bcf3ccb0d81b0d),
+    ("strspn", 0xfe453a6c1e0cffe9),
+    ("strcspn", 0xab417ac92feb0a6b),
+    ("strtok_r", 0x7a7a8f18b7e654d5),
+    ("memcpy_s", 0x3452ecf9d44918d8),
+    ("memset_s", 0x87c1b0a8f15bbba2),
+    ("strcpy_s", 0xe576b600234409da),
+    ("strncpy_s", 0x60dccd909cd8a848),
+    ("strcat_s", 0x2be81c9c51492957),
+    ("strncat_s", 0x342e0c481f814508),
+    ("memalign", 0x5237f72b332f4662),
+    ("aligned_alloc", 0xd81b6483c936e198),
+    ("posix_memalign", 0x7154a4f72f1445b7),
+    ("malloc_usable_size", 0x3437127dc619442f),
+    ("operator delete aligned", 0x6d9c7e1454a59143),
     ("operator new", 0x7c99e9b955416ca9),
     ("operator new[]", 0x85d9b461f31aed34),
     ("operator delete", 0xcfe3fec429d62c19),
@@ -18,6 +40,7 @@ pub const EXPORTS: &[(&str, u64)] = &[
     ("memcpy", 0x437541c425e1507b),
     ("memmove", 0xf8fe854461f82df0),
     ("memset", 0xf334c5bc120020df),
+    ("memchr", 0xf2ef253f3504abe5),
     ("memcmp", 0x0df8af3c0ae1b9c8),
     ("strlen", 0x8f856258d1c4830c),
     ("strnlen", 0xe6336e6f0e2f9400),
@@ -33,10 +56,6 @@ fn count(n: u64) -> Result<usize, AccessError> {
         usize::try_from(n).map_err(|_| AccessError::Limit)
     }
 }
-fn byte(m: &dyn GuestMemory, a: u64, i: u64) -> Result<u8, AccessError> {
-    let v = m.read(a.checked_add(i).ok_or(AccessError::Range)?, 1)?;
-    v.first().copied().ok_or(AccessError::Range)
-}
 fn allocate(m: &mut dyn GuestMemory, n: u64) -> Result<u64, AccessError> {
     match m.allocate(n) {
         Ok(p) => Ok(p),
@@ -47,9 +66,51 @@ fn allocate(m: &mut dyn GuestMemory, n: u64) -> Result<u64, AccessError> {
 pub fn call(name: &str, a: [u64; 6], m: &mut dyn GuestMemory) -> Result<u64, AccessError> {
     let [x, y, z, ..] = a;
     match name {
+        "memcpy_s" | "memset_s" | "strcpy_s" | "strncpy_s" | "strcat_s" | "strncat_s" => {
+            super::checked::call(name, a, m)
+        }
+        "malloc_usable_size" => {
+            if x == 0 {
+                Ok(0)
+            } else {
+                m.usable_size(x)
+            }
+        }
+        "memalign" | "aligned_alloc" => {
+            if x == 0 || !x.is_power_of_two() || (name == "aligned_alloc" && !y.is_multiple_of(x)) {
+                return Ok(0);
+            }
+            match m.allocate_aligned(y, x) {
+                Ok(p) => Ok(p),
+                Err(AccessError::Allocation) => Ok(0),
+                Err(e) => Err(e),
+            }
+        }
+        "posix_memalign" => {
+            if y < 8 || !y.is_power_of_two() {
+                return Ok(22);
+            }
+            if x == 0 || m.validate(x, 8, true).is_err() {
+                return Ok(14);
+            }
+            let p = match m.allocate_aligned(z, y) {
+                Ok(p) => p,
+                Err(AccessError::Allocation) => return Ok(12),
+                Err(e) => return Err(e),
+            };
+            if let Err(e) = m.write(x, &p.to_le_bytes()) {
+                m.free(p)?;
+                return Err(e);
+            }
+            Ok(0)
+        }
         "malloc" => allocate(m, x),
         "operator new" | "operator new[]" => m.allocate(x.max(1)),
-        "free" | "operator delete" | "operator delete[]" | "operator delete sized" => {
+        "operator delete aligned"
+        | "free"
+        | "operator delete"
+        | "operator delete[]"
+        | "operator delete sized" => {
             m.free(x)?;
             Ok(0)
         }
@@ -59,12 +120,11 @@ pub fn call(name: &str, a: [u64; 6], m: &mut dyn GuestMemory) -> Result<u64, Acc
             };
             count(n)?;
             let p = allocate(m, n)?;
-            if p != 0 {
-                let b = vec![0; count(n)?];
-                if let Err(e) = m.write(p, &b) {
-                    m.free(p)?;
-                    return Err(e);
-                }
+            if p != 0
+                && let Err(e) = super::bulk::fill(m, p, 0, n)
+            {
+                m.free(p)?;
+                return Err(e);
             }
             Ok(p)
         }
@@ -83,7 +143,7 @@ pub fn call(name: &str, a: [u64; 6], m: &mut dyn GuestMemory) -> Result<u64, Acc
             if p == 0 {
                 return Ok(0);
             }
-            let result = m.read(x, n).and_then(|b| m.write(p, &b));
+            let result = super::bulk::copy(m, p, x, n, false);
             if let Err(e) = result {
                 m.free(p)?;
                 return Err(e);
@@ -92,82 +152,18 @@ pub fn call(name: &str, a: [u64; 6], m: &mut dyn GuestMemory) -> Result<u64, Acc
             Ok(p)
         }
         "memcpy" | "memmove" => {
-            count(z)?;
-            let b = m.read(y, z)?;
-            m.write(x, &b)?;
+            super::bulk::copy(m, x, y, z, name == "memmove")?;
             Ok(x)
         }
         "memset" => {
-            let n = count(z)?;
-            m.write(x, &vec![y as u8; n])?;
+            super::bulk::fill(m, x, y as u8, z)?;
             Ok(x)
         }
-        "memcmp" => {
-            count(z)?;
-            let l = m.read(x, z)?;
-            let r = m.read(y, z)?;
-            Ok(l.iter()
-                .zip(r.iter())
-                .find_map(|(a, b)| (*a != *b).then_some((*a as i32 - *b as i32) as u32 as u64))
-                .unwrap_or(0))
-        }
-        "strlen" | "strnlen" => {
-            let maximum = if name == "strnlen" {
-                y
-            } else {
-                MAX_OPERATION_BYTES
-            };
-            count(maximum)?;
-            for i in 0..maximum {
-                if byte(m, x, i)? == 0 {
-                    return Ok(i);
-                }
-            }
-            if name == "strnlen" {
-                Ok(maximum)
-            } else {
-                Err(AccessError::Limit)
-            }
-        }
-        "strcmp" | "strncmp" => {
-            let maximum = if name == "strncmp" {
-                z
-            } else {
-                MAX_OPERATION_BYTES
-            };
-            count(maximum)?;
-            for i in 0..maximum {
-                let l = byte(m, x, i)?;
-                let r = byte(m, y, i)?;
-                if l != r {
-                    return Ok((l as i32 - r as i32) as u32 as u64);
-                }
-                if l == 0 {
-                    return Ok(0);
-                }
-            }
-            if name == "strncmp" {
-                Ok(0)
-            } else {
-                Err(AccessError::Limit)
-            }
-        }
-        "strchr" | "strrchr" => {
-            let mut found = 0;
-            for i in 0..MAX_OPERATION_BYTES {
-                let b = byte(m, x, i)?;
-                if b == y as u8 {
-                    found = x.checked_add(i).ok_or(AccessError::Range)?;
-                    if name == "strchr" {
-                        return Ok(found);
-                    }
-                }
-                if b == 0 {
-                    return Ok(found);
-                }
-            }
-            Err(AccessError::Limit)
-        }
+        "memcmp" => super::bulk::compare(m, x, y, z),
+        "memchr" => super::bulk::find(m, x, y as u8, z),
+        "strlen" | "strnlen" | "strcmp" | "strncmp" | "strchr" | "strrchr" | "strcpy"
+        | "strncpy" | "strcat" | "strncat" | "strstr" | "strcasecmp" | "strncasecmp" | "strdup"
+        | "strtok_r" | "strspn" | "strcspn" => super::strings::call(name, a, m),
         _ => Err(AccessError::Range),
     }
 }
@@ -190,14 +186,21 @@ pub fn registrations_with_errno(
             kind: ProviderKind::HleImplementation,
             handler: Some(Box::new(move |f, m| match call(name, f.arguments, m) {
                 Ok(v) => {
-                    if v == 0
-                        && (name == "malloc"
-                            || name == "calloc"
-                            || (name == "realloc" && f.arguments[1] != 0))
-                        && let Some(address) = errno
-                        && let Err(e) = m.write(address, &12u32.to_le_bytes())
-                    {
-                        return CallResult::AccessFailure(e);
+                    let allocation_failure = v == 0
+                        && (matches!(
+                            name,
+                            "malloc" | "calloc" | "strdup" | "memalign" | "aligned_alloc"
+                        ) || (name == "realloc" && f.arguments[1] != 0));
+                    if allocation_failure && let Some(address) = errno {
+                        let invalid_alignment = matches!(name, "memalign" | "aligned_alloc")
+                            && (f.arguments[0] == 0
+                                || !f.arguments[0].is_power_of_two()
+                                || (name == "aligned_alloc"
+                                    && !f.arguments[1].is_multiple_of(f.arguments[0])));
+                        let code = if invalid_alignment { 22u32 } else { 12u32 };
+                        if let Err(e) = m.write(address, &code.to_le_bytes()) {
+                            return CallResult::AccessFailure(e);
+                        }
                     }
                     f.rax = v;
                     CallResult::Returned

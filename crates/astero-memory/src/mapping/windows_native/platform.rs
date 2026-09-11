@@ -228,6 +228,39 @@ impl NativeImage {
     }
     /// Writes only existing owned RW/NX pages, with complete preflight and OS checked copy.
     /// No permission elevation, executable patching, or arbitrary pointer is exposed.
+    pub fn validate(
+        &self,
+        address: crate::mapping::GuestAddress,
+        size: u64,
+        write: bool,
+    ) -> Result<(), NativeError> {
+        if self.reservation.base.is_null() {
+            return Err(NativeError::Released);
+        }
+        let end = address.0.checked_add(size).ok_or(NativeError::Overflow)?;
+        if size == 0 {
+            return Ok(());
+        }
+        let page = self.layout.geometry.page_size;
+        let mut at = address.0 & !(page - 1);
+        while at < end {
+            let index = self
+                .layout
+                .pages
+                .binary_search_by_key(&at, |p| p.range.start.0)
+                .map_err(|_| NativeError::Unreadable)?;
+            let p = &self.layout.pages[index];
+            if if write {
+                !p.protection.write || p.protection.execute
+            } else {
+                !p.protection.read && !p.protection.write
+            } {
+                return Err(NativeError::Unreadable);
+            }
+            at = at.checked_add(page).ok_or(NativeError::Overflow)?;
+        }
+        Ok(())
+    }
     pub fn write(
         &self,
         address: crate::mapping::GuestAddress,
@@ -236,24 +269,7 @@ impl NativeImage {
         if self.reservation.base.is_null() {
             return Err(NativeError::Released);
         }
-        let end = address
-            .0
-            .checked_add(bytes.len() as u64)
-            .ok_or(NativeError::Overflow)?;
-        let page = self.layout.geometry.page_size;
-        let mut at = address.0 & !(page - 1);
-        while at < end {
-            let p = self
-                .layout
-                .pages
-                .iter()
-                .find(|p| p.range.start.0 == at)
-                .ok_or(NativeError::Unreadable)?;
-            if !p.protection.write || p.protection.execute {
-                return Err(NativeError::Unreadable);
-            }
-            at = at.checked_add(page).ok_or(NativeError::Overflow)?;
-        }
+        self.validate(address, bytes.len() as u64, true)?;
         if bytes.is_empty() {
             return Ok(());
         }
@@ -283,23 +299,9 @@ impl NativeImage {
         if self.reservation.base.is_null() {
             return Err(NativeError::Released);
         }
-        let end = address.0.checked_add(size).ok_or(NativeError::Overflow)?;
+        self.validate(address, size, false)?;
         if size == 0 {
             return Ok(Vec::new());
-        }
-        let page = self.layout.geometry.page_size;
-        let mut at = address.0 & !(page - 1);
-        while at < end {
-            let p = self
-                .layout
-                .pages
-                .iter()
-                .find(|p| p.range.start.0 == at)
-                .ok_or(NativeError::Unreadable)?;
-            if !p.protection.read && !p.protection.write {
-                return Err(NativeError::Unreadable);
-            }
-            at = at.checked_add(page).ok_or(NativeError::Overflow)?;
         }
         let len = usize::try_from(size).map_err(|_| NativeError::Allocation)?;
         let mut out = Vec::new();

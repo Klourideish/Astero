@@ -12,10 +12,7 @@ use astero_kernel::{
         lifecycle::{Error, Outcome, Result as ThreadResult, Thread, ThreadEnd, ThreadTable},
     },
 };
-use astero_memory::mapping::{
-    GuestAddress,
-    windows_native::{NativeImage, NativeObserver},
-};
+use astero_memory::mapping::windows_native::{NativeImage, NativeObserver};
 use std::sync::{Arc, Mutex, Weak};
 pub const MAX_WORKERS: usize = 32;
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
@@ -136,6 +133,9 @@ impl Runtime {
                 Some(errno),
             ));
         }
+        entries.push(astero_libs::libc::output::registration(
+            self.foundation.output.clone(),
+        ));
         entries.extend(astero_libs::pthread::exports::registrations(
             self.synchronization.clone(),
             thread,
@@ -384,53 +384,65 @@ impl astero_libs::pthread::thread::exports::Spawner for Spawn {
     }
 }
 pub struct Access<'a>(&'a Runtime);
+impl Access<'_> {
+    fn with_regions<T>(&self, f: impl FnOnce(&[&NativeImage]) -> T) -> T {
+        let r = self.0;
+        let storage = r.storage.lock().unwrap_or_else(|p| p.into_inner());
+        let mut regions = vec![r.image.as_ref(), &r.foundation.image];
+        regions.extend(r.main.native_regions());
+        for (_, s) in storage.iter() {
+            regions.extend(s.native_regions());
+        }
+        f(&regions)
+    }
+}
 impl GuestMemory for Access<'_> {
+    fn charge(&self, n: u64) -> std::result::Result<(), AccessError> {
+        self.0.foundation.access_budget.charge(n)
+    }
+    fn validate(&self, a: u64, n: u64, write: bool) -> std::result::Result<(), AccessError> {
+        self.with_regions(|r| astero_memory::access::native::validate(r, a, n, write))
+            .map_err(super::foundation::access_error)
+    }
+    fn read_window(&self, a: u64, n: u64) -> std::result::Result<Vec<u8>, AccessError> {
+        self.with_regions(|r| astero_memory::access::native::read_window(r, a, n))
+            .map_err(super::foundation::access_error)
+    }
     fn read(&self, a: u64, n: u64) -> std::result::Result<Vec<u8>, AccessError> {
-        if n > astero_libs::libc::primitives::MAX_OPERATION_BYTES {
+        if n > astero_hle::calls::memory::COPY_CHUNK_BYTES {
             return Err(AccessError::Limit);
         }
-        if n == 0 {
-            return Ok(Vec::new());
-        }
-        let r = self.0;
-        if let Ok(b) = r
-            .image
-            .read(GuestAddress(a), n)
-            .or_else(|_| r.main.read_stack(a, n))
-            .or_else(|_| r.main.read_tls(a, n))
-            .or_else(|_| r.foundation.image.read(GuestAddress(a), n))
-        {
-            return Ok(b);
-        }
-        for (_, s) in r.storage.lock().unwrap_or_else(|p| p.into_inner()).iter() {
-            if let Ok(b) = s.read_stack(a, n).or_else(|_| s.read_tls(a, n)) {
-                return Ok(b);
-            }
-        }
-        Err(AccessError::Range)
+        self.with_regions(|r| astero_memory::access::native::read(r, a, n))
+            .map_err(super::foundation::access_error)
     }
     fn write(&mut self, a: u64, b: &[u8]) -> std::result::Result<(), AccessError> {
-        if b.len() as u64 > astero_libs::libc::primitives::MAX_OPERATION_BYTES {
+        if b.len() as u64 > astero_hle::calls::memory::COPY_CHUNK_BYTES {
             return Err(AccessError::Limit);
         }
-        if b.is_empty() {
-            return Ok(());
-        }
-        let r = self.0;
-        if r.image
-            .write(GuestAddress(a), b)
-            .or_else(|_| r.main.write(a, b))
-            .or_else(|_| r.foundation.image.write(GuestAddress(a), b))
-            .is_ok()
-        {
-            return Ok(());
-        }
-        for (_, s) in r.storage.lock().unwrap_or_else(|p| p.into_inner()).iter() {
-            if s.write(a, b).is_ok() {
-                return Ok(());
-            }
-        }
-        Err(AccessError::Range)
+        self.with_regions(|r| astero_memory::access::native::write(r, a, b))
+            .map_err(super::foundation::access_error)
+    }
+    fn allocate_aligned(
+        &mut self,
+        size: u64,
+        alignment: u64,
+    ) -> std::result::Result<u64, AccessError> {
+        self.0
+            .foundation
+            .heap
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .allocate_aligned(size, alignment)
+            .map_err(|_| AccessError::Allocation)
+    }
+    fn usable_size(&self, a: u64) -> std::result::Result<u64, AccessError> {
+        self.0
+            .foundation
+            .heap
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .usable_size(a)
+            .map_err(|_| AccessError::InvalidAllocation)
     }
     fn allocate(&mut self, n: u64) -> std::result::Result<u64, AccessError> {
         self.0
@@ -546,15 +558,36 @@ mod tests {
         Arc<Runtime>,
         astero_timing::scheduler::TimingEngine,
     ) {
+        fixture_impl(code, nid, false)
+    }
+    fn fixture_impl(
+        code: &[u8],
+        nid: u64,
+        append_import: bool,
+    ) -> (
+        PreparedGuest,
+        astero_kernel::execution::host::Bridge,
+        Arc<Runtime>,
+        astero_timing::scheduler::TimingEngine,
+    ) {
         let mut bridge = astero_kernel::execution::host::Bridge::new().unwrap();
         bridge.validate().unwrap();
-        let bytes = if code.is_empty() {
+        let mut bytes = if code.is_empty() {
             astero_kernel::execution::preparation::boundary::import_stub(0, bridge.import_landing())
                 .unwrap()
                 .to_vec()
         } else {
             code.to_vec()
         };
+        if append_import {
+            bytes.extend_from_slice(
+                &astero_kernel::execution::preparation::boundary::import_stub(
+                    0,
+                    bridge.import_landing(),
+                )
+                .unwrap(),
+            );
+        }
         let mut b = identity::synthetic::identity_image();
         put64(&mut b, 24, 0x1100);
         put32(&mut b, 68, 5);
@@ -828,5 +861,52 @@ mod tests {
         assert_eq!(r.table.snapshot().len(), 1);
         r.stop_and_join();
         assert!(r.observers.lock().unwrap().is_empty());
+    }
+    #[test]
+    fn supervised_native_workers_perform_large_checked_memset_on_shared_heap() {
+        let _serial = SERIAL.lock().unwrap();
+        let code = [0xbe, 42, 0, 0, 0, 0xba, 0x40, 0xa1, 0x14, 0];
+        let (g, _bridge, r, _engine) = fixture_impl(&code, 0xf334c5bc120020df, true);
+        let slot = g.thread.layout().stack.start.0;
+        let mut blocks = vec![];
+        for i in 0..2 {
+            let p = r.access().allocate(1_352_000).unwrap();
+            blocks.push(p);
+            r.create(
+                Attributes::default(),
+                0x220001100,
+                p,
+                vec![],
+                slot + i * 8,
+                &mut r.access(),
+            )
+            .unwrap();
+        }
+        for (i, p) in blocks.iter().enumerate() {
+            assert_eq!(r.table.join(Thread(1), Thread(i as u64 + 2)), Ok(*p));
+            let mut at = 0;
+            while at < 1_352_000 {
+                let n = (1_352_000 - at).min(65536);
+                assert!(
+                    r.access()
+                        .read(*p + at, n)
+                        .unwrap()
+                        .iter()
+                        .all(|b| *b == 42)
+                );
+                at += n;
+            }
+            r.access().free(*p).unwrap();
+        }
+        r.stop_and_join();
+        assert_eq!(r.foundation.access_budget.snapshot().large_operations, 2);
+        assert_eq!(r.foundation.heap.lock().unwrap().snapshot().live, 0);
+        assert!(
+            r.observers
+                .lock()
+                .unwrap()
+                .iter()
+                .all(|o| o.active_reservations() == 0)
+        );
     }
 }

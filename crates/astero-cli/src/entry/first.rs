@@ -164,6 +164,13 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
         )
         .unwrap();
     }
+    writeln!(
+        s,
+        "Guest diagnostic output: {:?}",
+        String::from_utf8_lossy(&f.output)
+    )
+    .unwrap();
+    writeln!(s, "Checked memory work: {:?}", f.access_budget).unwrap();
     writeln!(s, "Synchronization: {:?}", f.synchronization).unwrap();
     for thread in &f.threads {
         writeln!(s, "Pthread lifecycle: {thread:?}").unwrap();

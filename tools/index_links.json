@@ -801,6 +801,77 @@
         "test:astero-kernel/test:bridge/attached_infinite_worker_remains_supervised_and_joinable",
         "test:astero-kernel/test:bridge/attached_worker_hle_exit_and_fault_use_existing_recovery"
       ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::bulk::fill",
+      "tests": [
+        "test:astero-libs/test:large_memory/exact_and_observed_large_fill_use_bounded_scratch",
+        "test:astero-libs/test:large_memory/invalid_tail_and_readonly_preflight_leave_destination_unchanged",
+        "test:astero-libs/test:large_memory/overflow_and_budget_refuse_before_mutation",
+        "test:astero-libs/test:large_memory/post_preflight_host_failure_reports_failure_without_claiming_rollback"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::bulk::copy",
+      "tests": [
+        "test:astero-libs/test:large_memory/large_copy_compare_and_search",
+        "test:astero-libs/test:large_memory/memmove_both_directions_cross_chunks_and_memcpy_rejects_overlap"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::strings::call",
+      "tests": [
+        "test:astero-libs/test:large_memory/page_end_nul_does_not_require_next_page",
+        "test:astero-libs/test:large_memory/copy_concat_padding_and_destination_tail_failure",
+        "test:astero-libs/test:large_memory/case_span_and_linear_substring_contracts",
+        "test:astero-libs/test:large_memory/tokenizer_state_is_caller_owned_and_dup_is_heap_owned"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::checked::call",
+      "tests": [
+        "test:astero-libs/test:large_memory/checked_string_family_preserves_constraint_clearing_and_count_semantics",
+        "test:astero-libs/test:large_memory/checked_large_memory_family_and_explicit_error_effects"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::output::registration",
+      "tests": [
+        "test:astero-libs/test:large_memory/puts_retains_raw_bytes_and_refuses_output_capacity_atomically"
+      ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "tests": [
+        "test:astero-libs/test:large_memory/aligned_registry_errors_set_only_own_thread_errno"
+      ]
+    },
+    {
+      "implementation": "impl:astero-hle/lib:astero_hle/calls::budget::impl[AccessBudget]::charge",
+      "tests": [
+        "test:astero-libs/test:large_memory/process_budget_is_atomic_and_refusal_preserves_remaining"
+      ]
+    },
+    {
+      "implementation": "impl:astero-memory/lib:astero_memory/access::native::validate",
+      "tests": [
+        "test:astero-memory/test:native_access/adjacent_owned_mappings_copy_across_boundary",
+        "test:astero-memory/test:native_access/gap_and_readonly_tail_preflight_do_not_write_prefix",
+        "test:astero-memory/test:native_access/noaccess_page_rejects_range"
+      ]
+    },
+    {
+      "implementation": "impl:astero-memory/lib:astero_memory/allocation::heap::impl[GuestHeap]::allocate_aligned",
+      "tests": [
+        "test:astero-memory/test:heap/concurrent_aligned_reuse_and_peak_accounting",
+        "test:astero-libs/test:large_memory/aligned_allocation_preserves_output_on_failure_and_owns_usable_bytes"
+      ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::workers::impl[Access < ' _ >]::with_regions",
+      "tests": [
+        "test:astero-core/lib:astero_core/input::entry::workers::tests::supervised_native_workers_perform_large_checked_memset_on_shared_heap"
+      ]
     }
   ],
   "reviews": [
@@ -1395,6 +1466,20 @@
       "evidence": [
         "knowledge/architecture/pthread_lifecycle.md"
       ]
+    },
+    {
+      "id": "diagnostic:hle.checked_memory_work",
+      "implementation": "impl:astero-hle/lib:astero_hle/calls::budget::AccessSnapshot",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "Explicit operation/aggregate byte limits, charged attempted work, large-operation and refusal counters; immutable copy of process atomics.",
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ]
     }
   ],
   "nids": [
@@ -1643,9 +1728,10 @@
       "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/startup_foundation.md"
+        "knowledge/architecture/startup_foundation.md",
+        "knowledge/architecture/libc_large_memory.md"
       ],
-      "provenance": "memcpy: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+      "provenance": "memcpy: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record. M35 runtime-confirmed in primary_real_elf, exact call counts and limits in capability record."
     },
     {
       "id": "nid:m32.f8fe854461f82df0",
@@ -1675,9 +1761,10 @@
       "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/startup_foundation.md"
+        "knowledge/architecture/startup_foundation.md",
+        "knowledge/architecture/libc_large_memory.md"
       ],
-      "provenance": "memset: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record."
+      "provenance": "memset: PS5Rust-adapted bounded M32 contract. Implemented/registered; runtime confirmation only for calls listed in the architecture record. M35 runtime-confirmed in primary_real_elf, exact call counts and limits in capability record."
     },
     {
       "id": "nid:m32.0df8af3c0ae1b9c8",
@@ -4164,6 +4251,382 @@
         "knowledge/architecture/pthread_lifecycle.md"
       ],
       "provenance": "PTHREAD_SET_NAME_NP: PS5Rust-adapted M34 lifecycle registration; supported/refused values documented. Runtime use only where recorded in capability evidence."
+    },
+    {
+      "id": "nid:m35.9226525c859df6f8",
+      "nid": {
+        "numeric_hex": "0x9226525C859DF6F8"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strcpy: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.eac256896491baa9",
+      "nid": {
+        "numeric_hex": "0xEAC256896491BAA9"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strncpy: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.2ece2dcf38629aa4",
+      "nid": {
+        "numeric_hex": "0x2ECE2DCF38629AA4"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strcat: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.907838e6a3c2e9fd",
+      "nid": {
+        "numeric_hex": "0x907838E6A3C2E9FD"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strncat: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.be28b014c68d6a60",
+      "nid": {
+        "numeric_hex": "0xBE28B014C68D6A60"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strstr: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls. M35 runtime-confirmed in primary_real_elf, exact call counts and limits in capability record."
+    },
+    {
+      "id": "nid:m35.015ea2a4235ae11c",
+      "nid": {
+        "numeric_hex": "0x015EA2A4235AE11C"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strcasecmp: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.a57bdb0df721bba9",
+      "nid": {
+        "numeric_hex": "0xA57BDB0DF721BBA9"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strncasecmp: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.83bcf3ccb0d81b0d",
+      "nid": {
+        "numeric_hex": "0x83BCF3CCB0D81B0D"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strdup: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.fe453a6c1e0cffe9",
+      "nid": {
+        "numeric_hex": "0xFE453A6C1E0CFFE9"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strspn: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.ab417ac92feb0a6b",
+      "nid": {
+        "numeric_hex": "0xAB417AC92FEB0A6B"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strcspn: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.7a7a8f18b7e654d5",
+      "nid": {
+        "numeric_hex": "0x7A7A8F18B7E654D5"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strtok_r: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.5237f72b332f4662",
+      "nid": {
+        "numeric_hex": "0x5237F72B332F4662"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "memalign: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.d81b6483c936e198",
+      "nid": {
+        "numeric_hex": "0xD81B6483C936E198"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "aligned_alloc: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.7154a4f72f1445b7",
+      "nid": {
+        "numeric_hex": "0x7154A4F72F1445B7"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "posix_memalign: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.3437127dc619442f",
+      "nid": {
+        "numeric_hex": "0x3437127DC619442F"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "malloc_usable_size: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.6d9c7e1454a59143",
+      "nid": {
+        "numeric_hex": "0x6D9C7E1454A59143"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "operator delete aligned: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.f2ef253f3504abe5",
+      "nid": {
+        "numeric_hex": "0xF2EF253F3504ABE5"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "memchr: PS5Rust-adapted M35 checked implementation/registration; not runtime-confirmed unless the capability record lists actual calls."
+    },
+    {
+      "id": "nid:m35.3452ecf9d44918d8",
+      "nid": {
+        "numeric_hex": "0x3452ECF9D44918D8"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "memcpy_s: PS5Rust-adapted M35 checked implementation/registration; runtime use only where listed in the capability record."
+    },
+    {
+      "id": "nid:m35.87c1b0a8f15bbba2",
+      "nid": {
+        "numeric_hex": "0x87C1B0A8F15BBBA2"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "memset_s: PS5Rust-adapted M35 checked implementation/registration; runtime use only where listed in the capability record."
+    },
+    {
+      "id": "nid:m35.e576b600234409da",
+      "nid": {
+        "numeric_hex": "0xE576B600234409DA"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strcpy_s: PS5Rust-adapted M35 checked implementation/registration; runtime use only where listed in the capability record. M35 runtime-confirmed in primary_real_elf, exact call counts and limits in capability record."
+    },
+    {
+      "id": "nid:m35.60dccd909cd8a848",
+      "nid": {
+        "numeric_hex": "0x60DCCD909CD8A848"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strncpy_s: PS5Rust-adapted M35 checked implementation/registration; runtime use only where listed in the capability record."
+    },
+    {
+      "id": "nid:m35.2be81c9c51492957",
+      "nid": {
+        "numeric_hex": "0x2BE81C9C51492957"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strcat_s: PS5Rust-adapted M35 checked implementation/registration; runtime use only where listed in the capability record."
+    },
+    {
+      "id": "nid:m35.342e0c481f814508",
+      "nid": {
+        "numeric_hex": "0x342E0C481F814508"
+      },
+      "guest_library": "libc and libkernel (explicit separate keys)",
+      "guest_module": "libc and libkernel (explicit separate keys)",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::primitives::registrations_with_errno",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "strncat_s: PS5Rust-adapted M35 checked implementation/registration; runtime use only where listed in the capability record."
+    },
+    {
+      "id": "nid:m35.610d276afa7e6087",
+      "nid": {
+        "numeric_hex": "0x610D276AFA7E6087"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::output::registration",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "puts: migrated as bounded owned diagnostic output, real native call returned after recording RezVR Start !!!; not host FILE or filesystem emulation."
+    },
+    {
+      "id": "nid:observed.8f760cbb531534da",
+      "nid": {
+        "numeric_hex": "0x8F760CBB531534DA",
+        "encoded": "j3YMu1MVNNo"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
+      "registration_status": "unregistered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/libc_large_memory.md"
+      ],
+      "provenance": "M35 real unresolved native import ordinal 400. Catalogue 07_NIDS/by_sysmodule/libSceUserService.sprx/019.md names sceUserServiceInitialize with approved firmware numeric corroboration. Observation/report implementation only; no Astero UserService implementation or registration."
     }
   ],
   "abi": [

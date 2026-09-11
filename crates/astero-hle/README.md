@@ -4,7 +4,7 @@ Provider interfaces, registration, resolution and dispatch.
 
 ## Interfaces and status
 
-M0 scaffold only. `providers::Provider` supplies diagnostic identity only.
+Exact callable/data provider contracts, prepared dispatch and scoped checked-memory access are implemented. Shared byte-work limits remain separate from mapping validity.
 
 ## Module ownership
 
@@ -23,3 +23,5 @@ and [repository contract](../../AGENTS.md).
 M29 dispatch/prepared implements a bounded immutable exact-key host-model registry consuming ABI call frames. Artifact declarations are not callable; native guest dispatch and registrations remain absent.
 
 M32 calls/memory provides scoped checked copies to handlers; providers/data is distinct from callable registrations. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
+
+M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
