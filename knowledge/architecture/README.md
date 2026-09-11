@@ -72,3 +72,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [M34 pthread lifecycle](pthread_lifecycle.md): owned supervised native workers and general attributes.
 
 - [M35 large libc memory](libc_large_memory.md): mapping preflight, bounded chunks and threaded runtime continuation.
+
+- [M36 UserService](user_service.md): runtime-owned single-user migration and checked outputs.

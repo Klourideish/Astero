@@ -154,7 +154,8 @@
       "pthread/tls",
       "runtime",
       "sysmodule",
-      "videoout"
+      "videoout",
+      "user_service"
     ],
     "astero-gpu": [
       "agc",

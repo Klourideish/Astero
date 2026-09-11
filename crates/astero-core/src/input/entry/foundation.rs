@@ -35,6 +35,7 @@ pub(crate) fn access_error(
     }
 }
 pub struct Foundation {
+    pub users: std::sync::Arc<std::sync::Mutex<astero_kernel::process::users::Users>>,
     pub image: NativeImage,
     pub heap: std::sync::Mutex<GuestHeap>,
     pub guard: DataExport,
@@ -84,6 +85,11 @@ impl Foundation {
             },
         );
         Ok(Self {
+            users: std::sync::Arc::new(std::sync::Mutex::new(
+                astero_kernel::process::users::Users::new(
+                    astero_libs::user_service::exports::USER_ID,
+                ),
+            )),
             output: std::sync::Arc::new(std::sync::Mutex::new(
                 astero_kernel::process::output::Output::new(65536),
             )),

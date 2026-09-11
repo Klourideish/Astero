@@ -15,6 +15,8 @@ use astero_kernel::{
 use astero_memory::mapping::windows_native::{NativeImage, NativeObserver};
 use std::sync::{Arc, Mutex, Weak};
 pub const MAX_WORKERS: usize = 32;
+/// Existing 256-entry migration allowance plus the complete M36 UserService cluster.
+pub const MAX_REGISTERED_PROVIDERS: usize = 256 + astero_libs::user_service::exports::EXPORTS.len();
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
@@ -133,6 +135,9 @@ impl Runtime {
                 Some(errno),
             ));
         }
+        entries.extend(astero_libs::user_service::exports::registrations(
+            self.foundation.users.clone(),
+        ));
         entries.push(astero_libs::libc::output::registration(
             self.foundation.output.clone(),
         ));
@@ -149,7 +154,7 @@ impl Runtime {
             thread,
             exit,
         ));
-        PreparedRegistry::new(entries, 256)
+        PreparedRegistry::new(entries, MAX_REGISTERED_PROVIDERS)
     }
     pub fn access(&self) -> Access<'_> {
         Access(self)

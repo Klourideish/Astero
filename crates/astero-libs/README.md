@@ -31,3 +31,5 @@ M33 [pthread foundation](../../knowledge/architecture/pthread_foundation.md) imp
 M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.
 
 M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
+
+M36 [user_service/](src/user_service/mod.rs) delegates exact UserService contracts to process-owned state.

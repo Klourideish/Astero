@@ -16,3 +16,5 @@ pub mod videoout;
 
 /// Provider contract shared with the HLE registry.
 pub use astero_hle::providers::Provider;
+
+pub mod user_service;

@@ -1882,3 +1882,29 @@ Post-run synthetic refinements preserve structured OS copy failure, alignment er
 the final suite passed without additional real execution. Repeated index generation is byte-identical
 across all 17 index files; freshness, policy and whitespace checks are repeated after these records.
 M35 remains ready_for_cleanup pending approval. No M36 work, commit, push or history change.
+
+
+## M36 UserService startup migration - 2026-09-11
+
+Formatting, all-target workspace check/build, warnings-denied Clippy and full Rust suite pass:
+489 executable tests and23 doctests. Fifteen added adapter tests cover lifecycle, exact identity,
+outputs, invalid ranges, queue ordering/retry, settings, concurrency and runtime ownership.
+Existing M31 supervision, M33 synchronization, M34 workers and M35 large-memory regressions pass.
+First preflight exposed the256-entry registry cap; extending it by the15 M36 entries fixed worker
+creation. Initial failure poisoned the serial test lock, producing seven secondary failures; fresh
+rerun passed all8 composed worker tests, followed by two full passing suites. No real execution
+occurred before passing full preflight/policy. A missing tracker completion list was also corrected.
+
+One primary_real_elf run: exact USAGE M36 command,250ms/15000ms limits, exit0/Clean,
+17,851us overall /16,206us native. Initialize returned0; user0x10000000 logged in,one pending login.
+No other UserService API observed. Next unresolved libc/libc vsnprintf NID0x43657E8AABE3802D,
+ordinal328; no formatting implementation added. All8 workers joined,8 waits interrupted,0 wakes/
+timeouts, native/runtime reservations0,releaseerrors[]. Host FS restored,GS preserved,sourceSHA
+unchanged; exact hash/context/arguments in user_service.md.
+
+All53 Python tests pass. Policy:16 crates,22 internal edges,251 module homes; tracker valid.
+Index total3419: implementation1343,subsystems138,modules564,sources549,tests567,diagnostics40,
+NIDs216 (213 registered,3 unregistered), ABI2. All17 index files regenerate byte-identically.
+Freshness, policy/state/structure, supplemental whitespace and git diff --check pass after final docs.
+Local logs target/m36-{preflight-rust,final-rust,final-python,worker-regression,real-1}.log stay ignored.
+M36 ready_for_cleanup pending approval; no M37, commit, push or history rewrite.

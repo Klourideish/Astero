@@ -872,6 +872,33 @@
       "tests": [
         "test:astero-core/lib:astero_core/input::entry::workers::tests::supervised_native_workers_perform_large_checked_memset_on_shared_heap"
       ]
+    },
+    {
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "tests": [
+        "test:astero-libs/test:user_service/init_repeat_terminate_reinitialize",
+        "test:astero-libs/test:user_service/before_init_and_bad_user_are_not_success",
+        "test:astero-libs/test:user_service/initial_and_list_layout",
+        "test:astero-libs/test:user_service/name_exact_capacity_and_small_refusal",
+        "test:astero-libs/test:user_service/output_invalid_tail_is_unchanged",
+        "test:astero-libs/test:user_service/output_readonly_and_overflow_refuse",
+        "test:astero-libs/test:user_service/events_are_bounded_ordered_and_do_not_relogin",
+        "test:astero-libs/test:user_service/failed_event_copy_is_retryable",
+        "test:astero-libs/test:user_service/logout_changes_enumeration_not_initial_identity",
+        "test:astero-libs/test:user_service/default_setting_outputs",
+        "test:astero-libs/test:user_service/presets_never_overwrite_small_size",
+        "test:astero-libs/test:user_service/initialize_options_are_checked_before_state",
+        "test:astero-libs/test:user_service/exact_identity_unknown_and_capacity",
+        "test:astero-libs/test:user_service/concurrent_queries_share_only_process_state",
+        "test:astero-libs/test:user_service/independent_runtime_and_drop_ownership"
+      ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/process::users::impl[Users]::consume_event",
+      "tests": [
+        "test:astero-libs/test:user_service/events_are_bounded_ordered_and_do_not_relogin",
+        "test:astero-libs/test:user_service/failed_event_copy_is_retryable"
+      ]
     }
   ],
   "reviews": [
@@ -1479,6 +1506,20 @@
       "description": "Explicit operation/aggregate byte limits, charged attempted work, large-operation and refusal counters; immutable copy of process atomics.",
       "evidence": [
         "knowledge/architecture/libc_large_memory.md"
+      ]
+    },
+    {
+      "id": "diagnostic:process.user_service",
+      "implementation": "impl:astero-kernel/lib:astero_kernel/process::users::Snapshot",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "Process-owned UserService initialization, login, deterministic user, generation and pending event count; no host-account identity.",
+      "evidence": [
+        "knowledge/architecture/user_service.md"
       ]
     }
   ],
@@ -4613,20 +4654,260 @@
       "provenance": "puts: migrated as bounded owned diagnostic output, real native call returned after recording RezVR Start !!!; not host FILE or filesystem emulation."
     },
     {
-      "id": "nid:observed.8f760cbb531534da",
+      "id": "nid:m36.8f760cbb531534da",
       "nid": {
         "numeric_hex": "0x8F760CBB531534DA",
         "encoded": "j3YMu1MVNNo"
       },
       "guest_library": "libSceUserService",
       "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceInitialize: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record. M36 real call once returned0; runtime snapshot initialized/logged-in, one login queued."
+    },
+    {
+      "id": "nid:m36.09d5a9d281d61abd",
+      "nid": {
+        "numeric_hex": "0x09D5A9D281D61ABD",
+        "encoded": "CdWp0oHWGr0"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetInitialUser: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.c28369bbee3944b9",
+      "nid": {
+        "numeric_hex": "0xC28369BBEE3944B9",
+        "encoded": "woNpu+45RLk"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetAgeLevel: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.fec0f4da6143061e",
+      "nid": {
+        "numeric_hex": "0xFEC0F4DA6143061E",
+        "encoded": "-sD02mFDBh4"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetGamePresets: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.ae71211ea1bfe31a",
+      "nid": {
+        "numeric_hex": "0xAE71211EA1BFE31A",
+        "encoded": "rnEhHqG-4xo"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetAccessibilityChatTranscription: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.64a26dc5d82fcf08",
+      "nid": {
+        "numeric_hex": "0x64A26DC5D82FCF08",
+        "encoded": "ZKJtxdgvzwg"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetAccessibilityPressAndHoldDelay: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.a96607385c2a0b16",
+      "nid": {
+        "numeric_hex": "0xA96607385C2A0B16",
+        "encoded": "qWYHOFwqCxY"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetAccessibilityVibration: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.ff763918efbf8bbf",
+      "nid": {
+        "numeric_hex": "0xFF763918EFBF8BBF",
+        "encoded": "-3Y5GO+-i78"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetAccessibilityTriggerEffect: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.843fc7f3510df558",
+      "nid": {
+        "numeric_hex": "0x843FC7F3510DF558",
+        "encoded": "hD-H81EN9Vg"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetAccessibilityZoomEnabled: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.3ba216d7f0f09bfc",
+      "nid": {
+        "numeric_hex": "0x3BA216D7F0F09BFC",
+        "encoded": "O6IW1-Dwm-w"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetAccessibilityZoomFollowFocus: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.7cf87298a36f2bf0",
+      "nid": {
+        "numeric_hex": "0x7CF87298A36F2BF0",
+        "encoded": "fPhymKNvK-A"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetLoginUserIdList: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.d71c5c3221aed9fa",
+      "nid": {
+        "numeric_hex": "0xD71C5C3221AED9FA",
+        "encoded": "1xxcMiGu2fo"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetUserName: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.c87d7b43a356b558",
+      "nid": {
+        "numeric_hex": "0xC87D7B43A356B558",
+        "encoded": "yH17Q6NWtVg"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceGetEvent: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.dd3f72e710dc7ce9",
+      "nid": {
+        "numeric_hex": "0xDD3F72E710DC7CE9",
+        "encoded": "3T9y5xDcfOk"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceLogout: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:m36.6f01634be6d7f660",
+      "nid": {
+        "numeric_hex": "0x6F01634BE6D7F660",
+        "encoded": "bwFjS+bX9mA"
+      },
+      "guest_library": "libSceUserService",
+      "guest_module": "libSceUserService",
+      "implementation": "impl:astero-libs/lib:astero_libs/user_service::exports::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/user_service.md"
+      ],
+      "provenance": "sceUserServiceTerminate: PS5Rust migrated single-user policy, implemented/registered. Runtime confirmation only for calls in M36 architecture record."
+    },
+    {
+      "id": "nid:observed.43657e8aabe3802d",
+      "nid": {
+        "numeric_hex": "0x43657E8AABE3802D",
+        "encoded": "Q2V+iqvjgC0"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
       "implementation": "impl:astero-core/lib:astero_core/input::entry::closure::FirstEntryReport",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/libc_large_memory.md"
+        "knowledge/architecture/user_service.md"
       ],
-      "provenance": "M35 real unresolved native import ordinal 400. Catalogue 07_NIDS/by_sysmodule/libSceUserService.sprx/019.md names sceUserServiceInitialize with approved firmware numeric corroboration. Observation/report implementation only; no Astero UserService implementation or registration."
+      "provenance": "M36 real unresolved import ordinal328, exact libc/libc. PS5Rust libc/nids.rs VSNPRINTF_NID names vsnprintf. Observation/report only; no implementation or registration."
     }
   ],
   "abi": [

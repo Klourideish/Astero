@@ -37,3 +37,5 @@ M32 process/environment retains bounded guest-owned value identities; exit callb
 M33 [pthread foundation](../../knowledge/architecture/pthread_foundation.md) implements owned synchronization and scoped guest adapters.
 
 M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapts owned worker lifetimes, shared process storage and exact lifecycle exports. Offline analysis remains independent.
+
+M36 process/users owns bounded single-user session/event state; no host-account backend.

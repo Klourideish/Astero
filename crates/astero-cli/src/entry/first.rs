@@ -170,6 +170,7 @@ fn render(r: &astero_core::input::entry::ExecutionReport) -> String {
         String::from_utf8_lossy(&f.output)
     )
     .unwrap();
+    writeln!(s, "UserService state: {:?}", f.users).unwrap();
     writeln!(s, "Checked memory work: {:?}", f.access_budget).unwrap();
     writeln!(s, "Synchronization: {:?}", f.synchronization).unwrap();
     for thread in &f.threads {

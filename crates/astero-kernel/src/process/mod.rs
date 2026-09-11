@@ -1,7 +1,8 @@
-//! Planned process ownership within astero-kernel.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Owned process services; guest contracts remain in libs.
 pub mod exit_callbacks;
 
 pub mod environment;
 
 pub mod output;
+
+pub mod users;

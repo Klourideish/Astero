@@ -656,3 +656,26 @@ Copies validate complete mapped/permission coverage first. Gaps, guards, overflo
 writes refuse. memcpy overlap refuses; memmove handles either direction. Checked `_s` functions
 retain their documented constraint-error clearing; later OS copy failure is not transactional rollback.
 Preparation commands remain non-executing. No new runtime CLI flags or implicit execution were added.
+
+## M36 UserService startup continuation
+
+Same trusted primary_real_elf and native supervisor; this is not a security sandbox.
+Exact validated command (REAL GUEST CODE WILL EXECUTE):
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $corpus.artifacts.primary_real_elf.path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --wall-ms 250 --containment-ms 15000
+```
+
+Expected: UserServiceInitialize succeeds, then stop at the next outside-cluster boundary.
+Actual: one run, exit0/Clean,17,851us with250ms wall limit; Initialize returned0, user0x10000000
+logged in, one pending login event. Next stop: unresolved libc/libc vsnprintf,
+NID0x43657E8AABE3802D, ordinal328. No formatting implementation was added in M36.
+Eight workers joined, eight waits interrupted (no signal/timeout claims), reservations0,
+releaseerrors[], sourceSHA unchanged. Snapshot now prints UserService lifecycle/user/queue state.
+
+Fifteen UserService exports share process-owned state and checked outputs. Only Initialize was
+observed in the real run. Synthetic tests: `cargo test -p astero-libs --test user_service`.
+Full identity table, adaptations, ABI uncertainty and raw context are in
+[M36 evidence](knowledge/architecture/user_service.md). No host user/account details are used.
