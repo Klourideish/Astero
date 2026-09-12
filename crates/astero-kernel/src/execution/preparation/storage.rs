@@ -25,6 +25,10 @@ pub struct ThreadStorage {
     layout: ThreadLayout,
 }
 impl ThreadStorage {
+    pub fn committed_bytes(&self) -> u64 {
+        self.stack.snapshot().committed_bytes + self.tls.snapshot().committed_bytes
+    }
+
     pub fn build(
         layout: ThreadLayout,
         template: &[u8],

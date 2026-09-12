@@ -58,6 +58,14 @@ impl PreparedRegistry {
     pub fn len(&self) -> usize {
         self.entries.len()
     }
+    /// Exact identity count, independent of aliases sharing a handler or duplicate registrations.
+    pub fn identity_count(&self) -> usize {
+        self.entries
+            .iter()
+            .map(|e| (&e.key.module, &e.key.library, e.key.nid))
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+    }
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }

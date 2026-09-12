@@ -8,6 +8,9 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.11"
 astero-audio = { path = "../astero-audio" }
 astero-loader = { path = "../astero-loader" }
 astero-timing = { path = "../astero-timing" }

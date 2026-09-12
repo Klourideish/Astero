@@ -29,6 +29,7 @@ pub const MAX_REGISTERED_PROVIDERS: usize = 256
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
+    pub metrics: astero_hle::calls::metrics::Metrics,
     pub ajm: Arc<astero_audio::codecs::ajm::Ajm>,
     pub guards: Arc<astero_kernel::process::guards::Guards>,
     attempts: std::sync::atomic::AtomicUsize,
@@ -43,8 +44,8 @@ pub struct Runtime {
     pub observers: Mutex<Vec<NativeObserver>>,
     pub exits: Mutex<Vec<(Thread, NativeExit)>>,
     pub calls: Mutex<Vec<(Thread, super::StartupCall)>>,
-    foundation: Arc<super::foundation::Foundation>,
-    synchronization: Arc<Synchronization>,
+    pub(super) foundation: Arc<super::foundation::Foundation>,
+    pub(super) synchronization: Arc<Synchronization>,
     startup: Arc<Mutex<astero_libs::libc::startup::StartupState>>,
     environment: Arc<Mutex<astero_kernel::process::environment::Environment>>,
     bridge: BridgeLease,
@@ -91,6 +92,8 @@ impl Runtime {
             .try_reserve_exact(4096)
             .map_err(|_| ClosureError::Allocation)?;
         Ok(Arc::new(Self {
+            metrics: astero_hle::calls::metrics::Metrics::new(keys.clone())
+                .map_err(|_| ClosureError::Allocation)?,
             ajm: Arc::new(astero_audio::codecs::ajm::Ajm::new(4096)),
             guards: Arc::new(
                 astero_kernel::process::guards::Guards::new(scheduler.clone(), 4096)
@@ -200,6 +203,19 @@ impl Runtime {
             exit,
         ));
         PreparedRegistry::new(entries, MAX_REGISTERED_PROVIDERS)
+    }
+    pub(super) fn memory_observation(&self) -> (u64, usize) {
+        let storage = self.storage.lock().unwrap_or_else(|p| p.into_inner());
+        (
+            self.image.snapshot().committed_bytes
+                + self.foundation.image.snapshot().committed_bytes
+                + self.main.committed_bytes()
+                + storage
+                    .iter()
+                    .map(|(_, s)| s.committed_bytes())
+                    .sum::<u64>(),
+            (storage.len() + 1) * 2,
+        )
     }
     pub fn access(&self) -> Access<'_> {
         Access(self)
@@ -358,13 +374,17 @@ impl Runtime {
                         }
                         let Some(key) = self.keys.get(ordinal as usize).and_then(|k| k.as_ref())
                         else {
+                            self.metrics.begin(ordinal, id.0);
+                            self.metrics.complete(ordinal, Err(RegistryError::Missing));
                             return false;
                         };
                         if !self.admit_call() {
                             return false;
                         }
                         let args = frame.arguments;
+                        self.metrics.begin(ordinal, id.0);
                         let result = registry.invoke(key, frame, &mut self.access());
+                        self.metrics.complete(ordinal, result);
                         self.calls.lock().unwrap_or_else(|p| p.into_inner()).push((
                             id,
                             StartupCall {

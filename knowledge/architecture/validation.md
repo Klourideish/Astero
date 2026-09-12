@@ -1887,7 +1887,7 @@ M35 remains ready_for_cleanup pending approval. No M36 work, commit, push or his
 ## M36 UserService startup migration - 2026-09-11
 
 Formatting, all-target workspace check/build, warnings-denied Clippy and full Rust suite pass:
-489 executable tests and23 doctests. Fifteen added adapter tests cover lifecycle, exact identity,
+489 executable tests and 23 doctests. Fifteen added adapter tests cover lifecycle, exact identity,
 outputs, invalid ranges, queue ordering/retry, settings, concurrency and runtime ownership.
 Existing M31 supervision, M33 synchronization, M34 workers and M35 large-memory regressions pass.
 First preflight exposed the256-entry registry cap; extending it by the15 M36 entries fixed worker
@@ -1902,7 +1902,7 @@ ordinal328; no formatting implementation added. All8 workers joined,8 waits inte
 timeouts, native/runtime reservations0,releaseerrors[]. Host FS restored,GS preserved,sourceSHA
 unchanged; exact hash/context/arguments in user_service.md.
 
-All53 Python tests pass. Policy:16 crates,22 internal edges,251 module homes; tracker valid.
+All 53 Python tests pass. Policy:16 crates,22 internal edges,251 module homes; tracker valid.
 Index total3419: implementation1343,subsystems138,modules564,sources549,tests567,diagnostics40,
 NIDs216 (213 registered,3 unregistered), ABI2. All17 index files regenerate byte-identically.
 Freshness, policy/state/structure, supplemental whitespace and git diff --check pass after final docs.
@@ -1949,7 +1949,7 @@ Clippy and workspace Rust suite pass:541 executable tests,23 doctests,zero failu
 Added27 tests (16 service,10 core adapters,one mutex regression); refined existing copied-mutex
 identity test. CLI, M31 supervisor, M33 waits, M34 native workers, M35 memory and M37 formatting
 regressions included. Audio manual-clock/cancellation/batch tests pass; actual audio wait/output
-behavior remains unobserved in the real workload. All53 Python tests pass, including index and
+behavior remains unobserved in the real workload. All 53 Python tests pass, including index and
 policy/state/structure. Policy:16 crates,25 internal edges,252 module homes.
 
 One primary_real_elf run used the exact M38 USAGE command:250ms wall/15000ms containment,
@@ -1975,7 +1975,7 @@ policy/index checks. Final formatting,workspace all-target check/build,warnings-
 and Rust suite pass:547 executable tests,23 doctests,zero failures/ignored. Six new tests cover
 speaker layout/global semantics/errors/ranges/selector width/shutdown. Existing CLI,native
 supervisor,M33 mutex/waits,M34 workers,M35 memory,M37 formatting,M38 AudioOut tests included.
-All53 Python tests pass; policy16 crates/25 edges/252 module homes; active state valid.
+All 53 Python tests pass; policy16 crates/25 edges/252 module homes; active state valid.
 
 One real run: exact M39 USAGE command,250ms wall/15000ms containment,exit0/Clean.
 13195us overall/12154us native. GetSpeakerInfo once returned0,PortGetState once returned0;
@@ -2035,7 +2035,7 @@ next unresolved libc/libc __cxa_guard_acquire 0xDC63E98D0740313C. Duration96841 
 FS restored/GS preserved, empty release errors, Clean containment, unchanged source SHA.
 
 One distinct named_title_elf attempt followed the passed Phase A gate. Acquisition/plan and byte
-staging succeeded; native reservation failed at0x100000000,size29134848,Windows487. No EntryReady,
+staging succeeded; native reservation failed at0x100000000,size29134848,Windows 487. No EntryReady,
 no second guest code, no second HLE calls/guest workers or runtime-duration claim. Parent reaped
 child exit1 (WorkerFailure), not reported as clean native recovery. No successful failed-branch
 reservation was published; no numeric runtime mapping snapshot is claimed for this failure path.
@@ -2052,11 +2052,11 @@ NIDs321, ABI5; total3833. M41 active ready_for_cleanup pending approval. No comm
 ## M42 native placement / cross-title / static initialization - 2026-09-11
 
 Formatting, all-target check/build, warnings-denied Clippy and full workspace tests pass:
-607 executable Rust tests and23 doctests, zero failures/ignored. Thirteen new tests: ten guard
+607 executable Rust tests and 23 doctests, zero failures/ignored. Thirteen new tests: ten guard
 provider/concurrency/deadline tests and three Windows placement tests; the existing collision test
 now asserts bounded error evidence. Canonical-base sequential 4 KiB /29,134,848-byte synthetic
 images run in an isolated child process and release cleanly. Existing supervisor/native worker,
-synchronization, scalar math and CLI regressions pass. All53 Python tests pass, including active
+synchronization, scalar math and CLI regressions pass. All 53 Python tests pass, including active
 state, structure and index freshness. Initial development failures (old error expectation, missing
 Config default and unarmed test deadline) were corrected before real primary continuation.
 
@@ -2073,7 +2073,7 @@ Historical M41 failure cause is not retroactively proven: diagnostic code did no
 M42's same envelope succeeds. This validation must not be cited as a reproduced placement fix.
 No bias/arena/allocation-order change,random fallback or title rule was made. No new unsafe leaf,
 crate or dependency. Six ABI records;326 NID records (322 registered/4 unregistered).
-Indexes:implementation1513,subsystems138,modules589,sources574,tests685,diagnostics43,NIDs326,ABI6;
+Indexes:implementation1513,subsystems138,modules589,sources574,tests685,diagnostics43,NIDs326,ABI 6;
 total3874. Sixteen crates,25internal edges,253module homes. Raw logs target/m42-* remain local-only.
 M42 awaits approved tracker cleanup; no M43 implementation,commit,push or history rewrite.
 
@@ -2107,6 +2107,46 @@ remain unsupported, not synthetically or runtime confirmed. See ajm_c11_startup.
 contexts and confidence limits. Historical error487 remains unresolved/unreproduced.
 
 Indexes:implementation1539,subsystems138,modules594,sources579,tests705,diagnostics44,NIDs344,
-ABI6;3949 total. NIDs340 registered/4 observation-only. Sixteen crates,26 internal edges,
+ABI 6;3949 total. NIDs340 registered/4 observation-only. Sixteen crates,26 internal edges,
 253 declared homes. No new production dependency,crate or unsafe code. Test-only libs->timing
 is explicit in policy. Generated JSON and raw target logs remain local-only.
+
+
+## M44 runtime observability validation
+
+Commands: `cargo fmt --all -- --check`, `cargo check --workspace --all-targets`,
+`cargo build --workspace --all-targets`, `cargo clippy --workspace --all-targets -- -D warnings`,
+`cargo test --workspace`; `python tools/generate_indexes.py`, `python tools/check_policy.py`,
+`python -m unittest discover -s tools -p 'test_*.py' -v`, `python tools/check_whitespace.py`,
+`git -c core.safecrlf=false diff --check`. Full workspace Rust suites include native bridge/
+supervisor/worker, pthread/C11, heap, AudioOut/AJM, scalar math, timing, CLI and doctests.
+
+M44 adds 21 executable tests: four HLE metrics tests, three bounded sampler unit tests, two
+synthetic native bridge tests, two core health aggregation unit tests, five core observer/JSON/
+failure tests and five CLI presentation/mode/output tests. Total 648 executable tests and 23
+doctests; all pass. All 53 Python tests pass. Sampling's infinite-loop regression captures an
+actual guest-range RIP, balances every suspension/resume, restores host FS/GS and joins/releases
+thread storage. Actual-PC counts are not instruction counts. Full source/file hashes, final
+frontiers and runtime observations are in runtime_observability.md.
+
+Manual commands: `& ./target/m44-primary.ps1` (initial diagnostic-row failure then corrected
+TERM=dumb retry); `$env:TERM='xterm-256color'; & ./target/m44-primary-live.ps1` and second-live
+(ConPTY alternate screen); primary-final (compact dashboard with 20 ms sampling), second-final
+(--no-dashboard --verbose); primary-verified (--no-dashboard,20ms sampling) and second-verified
+(--trace). Exact reusable command bodies/limits are in USAGE. Fresh output paths prevent evidence
+overwrite. JSON files parse, identity hashes match, latest/boundary PCs are distinguished, counters
+match the observed frontiers, plain output contains no ANSI escape bytes and log files preserve
+forensic output. Post-review log files also contain the JSON fingerprint prefix.
+
+The first primary development smoke found an unknown-row unwrap after native return. It was
+reported as WorkerFailure, not clean recovery. The observer now inserts an Unclassified row and
+has targeted regression tests; preparation panic/error paths produce Failed without fabricated
+cleanup. Subsequent primary and second runs all reported Clean containment, unchanged source,
+joined workers, restored FS/GS and zero reservations/release errors/waiters/sleep tickets.
+
+No provider/guest ABI implementation changed. NID records remain 340 registered and 4 unregistered;
+ABI 6. Runtime 385 callable keys are distinct from grouped NID records (explicit library aliases).
+16 crates, 26 internal edges, 254 declared homes. External dependencies are diagnostic serialization/
+hashing and terminal handling only. Historical Windows 487 remains unresolved/unreproduced.
+
+Final indexes: implementation1602, subsystems138, modules605, NIDs344, ABI6, diagnostics45, tests726, sources587; total4053. All16 generated index files reproduce byte-identically (17 files including the human README). M44 remains ready_for_cleanup awaiting approval; no commit, push or M45 work.

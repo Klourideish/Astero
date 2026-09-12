@@ -13,6 +13,7 @@ pub enum Error {
 pub struct Snapshot {
     pub contexts: usize,
     pub instances: usize,
+    pub modules: usize,
     pub memories: usize,
     pub stopped: bool,
 }
@@ -155,6 +156,7 @@ impl Ajm {
         let s = self.lock();
         Snapshot {
             contexts: s.contexts.len(),
+            modules: s.contexts.values().map(|c| c.modules.len()).sum(),
             instances: s.contexts.values().map(|c| c.instances.len()).sum(),
             memories: s.contexts.values().map(|c| c.memory.len()).sum(),
             stopped: s.stopped,

@@ -28,3 +28,5 @@ M39 owns logical Stereo speaker-query state independently of input port format; 
 topology claim. See [M39](../../knowledge/architecture/audio_speaker_info.md).
 
 M43 codecs/ajm owns bounded AJM lifecycle and ATRAC9 configuration parsing. Batch/decode execution remains unsupported; no codec playback claim. See [M43](../../knowledge/architecture/ajm_c11_startup.md).
+
+M44 AJM snapshots include registered module counts for the shared runtime dashboard. Context bookkeeping remains distinct from decoding or host playback. See [runtime observability](../../knowledge/architecture/runtime_observability.md).

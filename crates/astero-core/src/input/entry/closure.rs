@@ -736,7 +736,11 @@ pub struct FirstEntryReport {
 }
 impl EntryReadyGuest {
     /// Consumes authority on the dedicated owning thread. Does not invoke initializers/fini.
-    fn execute_first(mut self, millis: u64) -> Result<FirstEntryReport, BridgeError> {
+    fn execute_first(
+        mut self,
+        millis: u64,
+        observer: &super::observability::Observer,
+    ) -> Result<FirstEntryReport, BridgeError> {
         let call_budget = self.call_budget;
         let owner = &mut self.owner;
         if let Some(runtime) = &owner.runtime {
@@ -785,6 +789,10 @@ impl EntryReadyGuest {
             millis,
             &mut |ordinal, frame| {
                 let Some(key) = keys.get(ordinal as usize).and_then(|k| k.as_ref()) else {
+                    if let Some(r) = &owner.runtime {
+                        r.metrics.begin(ordinal, 1);
+                        r.metrics.complete(ordinal, Err(RegistryError::Missing));
+                    }
                     return false;
                 };
                 if calls.len() >= call_budget {
@@ -813,7 +821,12 @@ impl EntryReadyGuest {
                         exhausted = true;
                         return false;
                     }
-                    registry.invoke(key, frame, &mut runtime.access())
+                    {
+                        runtime.metrics.begin(ordinal, 1);
+                        let result = registry.invoke(key, frame, &mut runtime.access());
+                        runtime.metrics.complete(ordinal, result);
+                        result
+                    }
                 } else if let Some(f) = &mut owner.foundation {
                     let mut access = super::foundation::Access {
                         guest: &owner.guest,
@@ -890,6 +903,7 @@ impl EntryReadyGuest {
                 guarded_relocations.push(r.raw.clone());
             }
         }
+        observer.detach();
         let callback_count = owner.retained_callback_count();
         if let Some(runtime) = &owner.runtime {
             use astero_kernel::threading::thread::lifecycle::{Outcome, ThreadEnd};
@@ -1000,13 +1014,111 @@ pub fn execute_first_entry<F>(prepare: F, millis: u64) -> Result<ExecutionReport
 where
     F: FnOnce() -> Result<EntryReadyGuest, String> + Send + 'static,
 {
+    execute_first_entry_observed(
+        prepare,
+        millis,
+        super::observability::Observer::new("artifact".into(), None)?,
+    )
+}
+/// Same execution authority with an explicitly supplied read-only observer.
+pub fn execute_first_entry_observed<F>(
+    prepare: F,
+    millis: u64,
+    observer: std::sync::Arc<super::observability::Observer>,
+) -> Result<ExecutionReport, String>
+where
+    F: FnOnce() -> Result<EntryReadyGuest, String> + Send + 'static,
+{
     if !(1..=500).contains(&millis) {
         return Err("execution limit must be 1..=500 ms".into());
     }
-    std::thread::Builder::new()
+    let outer_observer = observer.clone();
+    let result: Result<ExecutionReport, String> = std::thread::Builder::new()
         .name("astero-first-guest".into())
         .spawn(move || {
-            let ready = prepare()?;
+            let mut ready = prepare()?;
+            use super::observability::{Health, Snapshot, Subsystem, address};
+            use astero_kernel::execution::host::sampling::{Domain, Range, Sampler};
+            use sha2::{Digest, Sha256};
+            let mut snapshot = Snapshot::preparing(observer.snapshot().artifact);
+            let plan = ready.owner.guest.image.plan();
+            let source = plan.input().linkage().source().clone();
+            let bytes = source
+                .read(
+                    &source
+                        .checked_range(0, source.len())
+                        .map_err(|e| e.to_string())?,
+                )
+                .map_err(|e| e.to_string())?;
+            snapshot.sha256 = Some(
+                Sha256::digest(bytes)
+                    .iter()
+                    .map(|b| format!("{b:02X}"))
+                    .collect(),
+            );
+            snapshot.source_bytes = Some(source.len());
+            snapshot.entry_rip = Some(address(ready.owner.guest.context.rip));
+            snapshot.initial_rsp = Some(address(ready.owner.guest.context.rsp));
+            snapshot.load_bias = Some(address(plan.image_bias().0));
+            snapshot.mapped_image_bytes = ready.owner.guest.image.snapshot().committed_bytes;
+            snapshot.guest_modules_observed = 1;
+            snapshot.declared_dependencies = plan.dependencies().len();
+            snapshot.registered_callable_identities = ready.owner.guest.registry.identity_count();
+            snapshot.data_exports = usize::from(ready.owner.foundation.is_some());
+            snapshot.runtime_state = "Running".into();
+            snapshot.subsystems.insert(
+                "Loader".into(),
+                Subsystem {
+                    state: Health::Initialized,
+                    detail: "Native image mapped; executable protections verified".into(),
+                },
+            );
+            let sampler = {
+                let interval = observer.sample_interval().unwrap_or(20);
+                let mut ranges: Vec<_> = ready
+                    .owner
+                    .guest
+                    .image
+                    .pages()
+                    .iter()
+                    .filter(|p| p.protection.execute)
+                    .map(|p| Range {
+                        start: p.range.start.0,
+                        size: p.range.size,
+                        domain: Domain::GuestImage,
+                        source: 0,
+                    })
+                    .collect();
+                ranges.extend(
+                    ready
+                        .owner
+                        .landings
+                        .pages()
+                        .iter()
+                        .filter(|p| p.protection.execute)
+                        .map(|p| Range {
+                            start: p.range.start.0,
+                            size: p.range.size,
+                            domain: Domain::ImportLanding,
+                            source: 0,
+                        }),
+                );
+                let sampler = std::sync::Arc::new(
+                    Sampler::new(interval, 4096, ranges).map_err(str::to_string)?,
+                );
+                if observer.sample_interval().is_some() {
+                    ready
+                        .owner
+                        .bridge
+                        .observe_pc(sampler.clone())
+                        .map_err(|e| format!("Sampler: {e:?}"))?;
+                }
+                Some(sampler)
+            };
+            snapshot.pc.enabled = observer.sample_interval().is_some();
+            snapshot.pc.interval_ms = observer.sample_interval();
+            observer.attach(ready.owner.runtime.as_ref(), snapshot, sampler);
+
             let mut observers = ready.owner.guest.thread.observers().to_vec();
             observers.push(ready.owner.guest.image.native_owner().observer());
             observers.push(ready.owner.landings.observer());
@@ -1017,8 +1129,20 @@ where
                 observers.push(f.image.observer());
             }
             let first = ready
-                .execute_first(millis)
+                .execute_first(millis, &observer)
                 .map_err(|e| format!("Bridge: {e:?}"))?;
+            let bytes = source
+                .read(
+                    &source
+                        .checked_range(0, source.len())
+                        .map_err(|e| e.to_string())?,
+                )
+                .map_err(|e| e.to_string())?;
+            let after: String = Sha256::digest(bytes)
+                .iter()
+                .map(|b| format!("{b:02X}"))
+                .collect();
+            observer.source_verified(&after);
             let active_reservations = observers
                 .iter()
                 .map(|o| o.active_reservations())
@@ -1037,9 +1161,18 @@ where
                 release_errors,
             })
         })
-        .map_err(|e| format!("Guest thread start: {e}"))?
-        .join()
-        .map_err(|_| "Guest thread panicked".to_string())?
+        .map_err(|e| format!("Guest thread start: {e}"))
+        .and_then(|thread| {
+            thread
+                .join()
+                .map_err(|_| "Guest thread panicked".to_string())
+        })
+        .and_then(|result| result);
+    match &result {
+        Ok(report) => outer_observer.finish(report),
+        Err(error) => outer_observer.failed(error),
+    }
+    result
 }
 
 #[derive(Debug, PartialEq, Eq)]

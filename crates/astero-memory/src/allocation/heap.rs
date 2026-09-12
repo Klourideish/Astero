@@ -13,6 +13,7 @@ pub struct HeapSnapshot {
     pub allocations: u64,
     pub frees: u64,
     pub peak_bytes: u64,
+    pub peak_live: usize,
     pub arena_bytes: u64,
 }
 pub struct GuestHeap {
@@ -22,6 +23,7 @@ pub struct GuestHeap {
     allocations: u64,
     frees: u64,
     peak_bytes: u64,
+    peak_live: usize,
     arena_bytes: u64,
 }
 impl GuestHeap {
@@ -43,6 +45,7 @@ impl GuestHeap {
             allocations: 0,
             frees: 0,
             peak_bytes: 0,
+            peak_live: 0,
             arena_bytes: size,
         })
     }
@@ -77,6 +80,7 @@ impl GuestHeap {
         }
         self.free.sort_unstable();
         self.live.push((address, extent, size));
+        self.peak_live = self.peak_live.max(self.live.len());
         self.peak_bytes = self
             .peak_bytes
             .max(self.live.iter().map(|(_, n, _)| *n).sum());
@@ -128,6 +132,7 @@ impl GuestHeap {
             allocations: self.allocations,
             frees: self.frees,
             peak_bytes: self.peak_bytes,
+            peak_live: self.peak_live,
             arena_bytes: self.arena_bytes,
         }
     }

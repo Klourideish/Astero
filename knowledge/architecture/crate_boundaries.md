@@ -107,3 +107,5 @@ guest structures/NIDs; audio owns ports, queues and null-sink periods. No loader
 See [AudioOut](audio_startup.md).
 
 M43 permits libs -> timing only in tests to instantiate the shared pthread service. Production C11 adapters do not own or construct schedulers.
+
+M44: core composes runtime fingerprints from owner snapshots; CLI terminal rendering consumes them. HLE owns counters, kernel owns sampling/thread/wait mechanisms, audio and memory expose their own state. No service depends on the dashboard or serde.

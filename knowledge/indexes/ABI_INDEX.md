@@ -11,6 +11,6 @@ Discovery and lexical references do not prove passing tests, runtime support or 
 | abi:audio.speaker_info | astero-abi / SpeakerInfo | implemented | [crates/astero-abi/src/layouts/audio.rs](../../crates/astero-abi/src/layouts/audio.rs) : 5-7 |
 | abi:guest.timespec | astero-abi / Timespec | implemented | [crates/astero-abi/src/layouts/time.rs](../../crates/astero-abi/src/layouts/time.rs) : 3-6 |
 | abi:libc.guest_varargs | astero-abi / VaList | implemented | [crates/astero-abi/src/layouts/varargs.rs](../../crates/astero-abi/src/layouts/varargs.rs) : 3-8 |
-| abi:native.synthetic_bridge | astero-kernel / synthetic | implemented | [crates/astero-kernel/src/execution/host/platform.rs](../../crates/astero-kernel/src/execution/host/platform.rs) : 257-266 |
+| abi:native.synthetic_bridge | astero-kernel / synthetic | implemented | [crates/astero-kernel/src/execution/host/platform.rs](../../crates/astero-kernel/src/execution/host/platform.rs) : 270-279 |
 | abi:process_entry.arguments | astero-abi / process_arguments | implemented | [crates/astero-abi/src/layouts/entry/mod.rs](../../crates/astero-abi/src/layouts/entry/mod.rs) : 36-41 |
 | abi:static.guard | astero-libs / call | implemented | [crates/astero-libs/src/runtime/guards.rs](../../crates/astero-libs/src/runtime/guards.rs) : 37-78 |

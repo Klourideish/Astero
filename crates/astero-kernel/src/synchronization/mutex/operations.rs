@@ -40,7 +40,7 @@ impl Synchronization {
                 return Err(Error::Deadlock);
             }
             self.expired(&s, deadline)?;
-            let t = self.ticket(&mut s, id, None, deadline)?;
+            let t = self.ticket(&mut s, thread, id, None, deadline)?;
             drop(s);
             if matches!(t.wait(), astero_timing::scheduler::Completion::Stopped(_)) {
                 self.shutdown();

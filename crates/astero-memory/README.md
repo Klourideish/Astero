@@ -35,3 +35,5 @@ M34 [pthread lifecycle](../../knowledge/architecture/pthread_lifecycle.md) adapt
 M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
 
 M42 adds bounded exact-reservation failure evidence; identity placement and transactional release remain unchanged.
+
+M44 heap snapshots include peak live allocation count alongside peak bytes. Ownership and allocation semantics are unchanged. See [runtime observability](../../knowledge/architecture/runtime_observability.md).

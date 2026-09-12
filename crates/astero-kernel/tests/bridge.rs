@@ -344,3 +344,70 @@ fn blocked_native_hle_wait_uses_timing_and_returns_to_joined_host() {
     .join()
     .unwrap();
 }
+
+#[test]
+fn sampled_infinite_worker_captures_actual_guest_pc_and_balances_resume() {
+    use astero_kernel::execution::host::sampling::{Domain, Range, Sampler};
+    let _guard = SERIAL.lock().unwrap();
+    let mut b = Bridge::new().unwrap();
+    b.validate().unwrap();
+    let image = worker_image(&[0xeb, 0xfe]);
+    b.prepare_ranges(&[(0x740000000, 4096)]).unwrap();
+    let sampler = std::sync::Arc::new(
+        Sampler::new(
+            5,
+            64,
+            vec![Range {
+                start: 0x740000000,
+                size: 4096,
+                domain: Domain::GuestImage,
+                source: 0,
+            }],
+        )
+        .unwrap(),
+    );
+    b.observe_pc(sampler.clone()).unwrap();
+    let l = b.worker_lease().unwrap();
+    let s = worker_storage(0, b.return_landing());
+    let observers = s.observers();
+    let r = std::thread::spawn(move || {
+        l.attach()
+            .execute_worker(&image, &s, (0x740000000, 0), 60, &mut |_, _| false)
+            .unwrap()
+    })
+    .join()
+    .unwrap();
+    assert_eq!(r.reason, 4);
+    assert!(r.host_fs_restored && r.host_gs_preserved);
+    let sample = sampler.snapshot();
+    assert!(sample.total > 0);
+    assert_eq!(sample.suspends, sample.resumes);
+    assert!(
+        sample
+            .samples
+            .iter()
+            .any(|s| s.rip == 0x740000000 && s.domain == Domain::GuestImage)
+    );
+    assert!(observers.iter().all(|o| o.active_reservations() == 0));
+}
+#[test]
+fn sampling_preserves_return_import_and_fault_stop_paths() {
+    use astero_kernel::execution::host::sampling::Sampler;
+    let _guard = SERIAL.lock().unwrap();
+    let mut b = Bridge::new().unwrap();
+    b.validate().unwrap();
+    b.observe_pc(std::sync::Arc::new(Sampler::new(5, 64, vec![]).unwrap()))
+        .unwrap();
+    for p in [
+        SyntheticProbe::Return,
+        SyntheticProbe::Import,
+        SyntheticProbe::AccessViolation,
+        SyntheticProbe::IllegalInstruction,
+    ] {
+        let r = b.supervised_synthetic(p, 100, &mut |_, _| false).unwrap();
+        assert!(r.host_fs_restored && r.host_gs_preserved);
+        let s = r.supervision.unwrap();
+        assert_eq!(s.suspends, s.resumes);
+        assert!(!s.redirected);
+    }
+}

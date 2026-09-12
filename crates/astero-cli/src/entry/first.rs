@@ -20,7 +20,11 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
     let mut wall = None;
     let mut outer = None;
     let mut hle = None;
+    let mut options = super::dashboard::Options::default();
     while let Some(k) = a.next() {
+        if options.take(&k, &mut a)? {
+            continue;
+        }
         if k == "--wall-ms" || k == "--containment-ms" || k == "--max-hle-calls" {
             let slot = if k == "--wall-ms" {
                 &mut wall
@@ -77,7 +81,21 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
     if std::env::var_os("ASTERO_FIRST_ENTRY_WORKER").as_deref() != Some(std::ffi::OsStr::new("1")) {
         return Err("Internal worker requires containment parent".into());
     }
-    let report = entry::execute_first_entry(
+    let (mut log, mut json) = options.files()?;
+    let label = args
+        .windows(2)
+        .find(|a| a[0] == "--path")
+        .map(|a| {
+            std::path::Path::new(&a[1])
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into_owned()
+        })
+        .unwrap_or_else(|| "artifact".into());
+    let observer = entry::observability::Observer::new(label, options.sample)?;
+    let live = super::dashboard::Live::start(observer.clone(), &options);
+    let result = entry::execute_first_entry_observed(
         move || {
             let plan = crate::load_plan::execute(&r.native.staging.plan)
                 .map_err(|e| format!("Plan: {e:?}"))?;
@@ -106,17 +124,36 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
             let ready = closed
                 .try_ready()
                 .map_err(|_| "PreparedBlocked; no execution".to_string())?;
-            println!(
-                "EntryReady verified; arming {wall} ms execution lease, {hle} HLE calls; entry owns DT_INIT"
-            );
-            std::io::stdout().flush().map_err(|e| e.to_string())?;
             ready
                 .with_call_budget(hle as usize)
                 .map_err(|e| format!("Call budget: {e:?}"))
         },
         wall,
-    )?;
-    println!("{}", render(&report));
+        observer.clone(),
+    );
+    drop(live);
+    let snapshot = observer.snapshot();
+    if let Some(file) = &mut json {
+        file.write_all(snapshot.json().map_err(|e| e.to_string())?.as_bytes())
+            .map_err(|e| e.to_string())?;
+    }
+    println!("{}", super::dashboard::render(&snapshot, options.verbose));
+    if let Some(file) = &mut log {
+        file.write_all(snapshot.json().map_err(|e| e.to_string())?.as_bytes())
+            .and_then(|_| file.write_all(b"\n"))
+            .map_err(|e| e.to_string())?;
+    }
+    let report = result?;
+    if options.trace || log.is_some() {
+        let detail = render(&report);
+        if let Some(file) = &mut log {
+            file.write_all(detail.as_bytes())
+                .map_err(|e| e.to_string())?;
+        }
+        if options.trace {
+            println!("{detail}");
+        }
+    }
     if !report.thread_joined || report.active_reservations != 0 || !report.release_errors.is_empty()
     {
         return Err("Execution teardown incomplete".into());

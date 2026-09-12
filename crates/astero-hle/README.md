@@ -25,3 +25,5 @@ M29 dispatch/prepared implements a bounded immutable exact-key host-model regist
 M32 calls/memory provides scoped checked copies to handlers; providers/data is distinct from callable registrations. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
 
 M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
+
+M44 calls/metrics owns bounded atomic per-import counters with exact raw provider keys and coherent last-ordinal/thread pairs. Registration identity counting distinguishes runtime keys from grouped index records. See [runtime observability](../../knowledge/architecture/runtime_observability.md).

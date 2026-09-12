@@ -23,7 +23,8 @@
       "input/load_plan",
       "input/staging",
       "input/native",
-      "input/entry"
+      "input/entry",
+      "input/entry/observability"
     ],
     "astero-loader": [
       "admission",

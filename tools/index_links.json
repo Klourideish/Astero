@@ -1067,6 +1067,20 @@
         "test:astero-core/test:scalar_math/nextafter_exact_ieee_steps",
         "test:astero-core/test:scalar_math/logb_special_and_subnormal"
       ]
+    },
+    {
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::observability::model::Snapshot",
+      "tests": [
+        "test:astero-core/test:observability/schema_is_stable_typed_and_preserves_64_bit_addresses",
+        "test:astero-core/test:observability/preparation_never_claims_activity_or_cleanup"
+      ]
+    },
+    {
+      "implementation": "impl:astero-kernel/lib:astero_kernel/execution::host::sampling::Sampler",
+      "tests": [
+        "test:astero-kernel/test:bridge/sampled_infinite_worker_captures_actual_guest_pc_and_balances_resume",
+        "test:astero-kernel/test:bridge/sampling_preserves_return_import_and_fault_stop_paths"
+      ]
     }
   ],
   "reviews": [
@@ -1744,6 +1758,20 @@
       "description": "Runtime-owned AJM context, instance and registered range counts after shutdown; no codec completion claim.",
       "evidence": [
         "knowledge/architecture/ajm_c11_startup.md"
+      ]
+    },
+    {
+      "id": "diagnostic:runtime.fingerprint",
+      "implementation": "impl:astero-core/lib:astero_core/input::entry::observability::model::Snapshot",
+      "consumers": [
+        "impl:astero-core/lib:astero_core/input::entry::observability::impl[Observer]::snapshot"
+      ],
+      "surfaces": [
+        "impl:astero-cli/lib:astero_cli/entry::first::run"
+      ],
+      "description": "M44 schema-v1 runtime fingerprint, honest subsystem activity, bounded actual-PC samples and distinct post-join cleanup; no boot percentage.",
+      "evidence": [
+        "knowledge/architecture/runtime_observability.md"
       ]
     }
   ],

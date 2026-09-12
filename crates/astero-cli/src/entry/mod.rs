@@ -234,3 +234,6 @@ fn run_windows(r: &Request) -> Result<String, String> {
 }
 
 pub mod first;
+
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod dashboard;

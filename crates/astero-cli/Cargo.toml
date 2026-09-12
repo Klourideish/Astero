@@ -8,6 +8,7 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
+crossterm = { version = "0.29", default-features = false, features = ["windows"] }
 astero-core = { path = "../astero-core" }
 astero-debug = { path = "../astero-debug" }
 

@@ -58,3 +58,5 @@ M30 entry-readiness --close-entry explicitly runs experimental closure and Aster
 M31 first-entry is explicit trusted-input execution with required wall/containment limits; entry-readiness remains preparation only. See [first entry](../../knowledge/architecture/first_native_entry.md).
 
 M32 first-entry uses migrated startup closure with bounded provider policy and heap/object diagnostics. See [startup foundation](../../knowledge/architecture/startup_foundation.md).
+
+M44 first-entry defaults to a 5 Hz dashboard on supported interactive terminals, plain output otherwise. --verbose, --trace, --no-dashboard, --log-file, --report-json and --pc-sample-ms preserve deliberate control. Crossterm handles terminal mechanics; core owns metrics and JSON. See [runtime observability](../../knowledge/architecture/runtime_observability.md).

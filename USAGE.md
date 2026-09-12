@@ -633,7 +633,7 @@ $planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program
 Expected: the valid 1,352,000-byte memset passes and libc startup continues to a structured next
 boundary. Actual final run (third within this migration): exit0/Clean, 13,256 us; memset returned
 0x100906e68, puts recorded `RezVR Start !!!`, strcpy_s and strstr returned. Next stop:
-UnresolvedFunction `sceUserServiceInitialize`, NID0x8f760cbb531534da, exact
+UnresolvedFunction `sceUserServiceInitialize`, NID 0x8f760cbb531534da, exact
 libSceUserService/libSceUserService, ordinal400. No UserService provider was installed.
 
 The output includes checked byte-work policy/counters and owned guest diagnostic output. Current
@@ -671,7 +671,7 @@ $planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program
 Expected: UserServiceInitialize succeeds, then stop at the next outside-cluster boundary.
 Actual: one run, exit0/Clean,17,851us with250ms wall limit; Initialize returned0, user0x10000000
 logged in, one pending login event. Next stop: unresolved libc/libc vsnprintf,
-NID0x43657E8AABE3802D, ordinal328. No formatting implementation was added in M36.
+NID 0x43657E8AABE3802D, ordinal328. No formatting implementation was added in M36.
 Eight workers joined, eight waits interrupted (no signal/timeout claims), reservations0,
 releaseerrors[], sourceSHA unchanged. Snapshot now prints UserService lifecycle/user/queue state.
 
@@ -701,7 +701,7 @@ Expected: formatting succeeds, then structured stop at the next outside-cluster 
 Actual: one run, exit0/Clean,12,797us; vsnprintf3 and printf3 returned36/47/38 each.
 No truncation, no formatting refusal. Console now exposes three `SCREAM: couldn't create
 mutex` messages for synth/synthClientBatch/effects. These are observations, not diagnosed fixes.
-Next stop: unresolved NID0x836B558852288471, libSceAudioOut2/libSceAudioOut, ordinal138.
+Next stop: unresolved NID 0x836B558852288471, libSceAudioOut2/libSceAudioOut, ordinal138.
 All eight workers joined,all reservations released,source SHA unchanged. No audio implemented.
 
 The existing report adds bounded Formatting records: format/destination addresses,capacity,
@@ -807,7 +807,7 @@ $after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
 
 The migrated timing family uses M25. One sceKernelUsleep(1000) returned0: 1ms requested,
 12.582ms observed (11.582ms lateness). No clock query was observed. The next stop was
-libc/libc powf, NID0xD43D07D8A363B211. Total29.017ms; all eight workers joined,
+libc/libc powf, NID 0xD43D07D8A363B211. Total29.017ms; all eight workers joined,
 zero pending timing/native resources, source hash unchanged. Guest timing diagnostics distinguish
 requested duration, elapsed duration and lateness. No Windows precision guarantee is implied.
 CPU-time domains are explicitly unsupported. No second-title run occurred.
@@ -939,3 +939,66 @@ Both clean containment, FS/GS restoration, joined threads and zero native reserv
 unchanged. AJM snapshot is taken after shutdown; runtime call records retain the successful
 initialization evidence. No AJM jobs submitted; no C11 waits exercised by these artifacts.
 See [M43](knowledge/architecture/ajm_c11_startup.md) for limits and remaining unsupported contracts.
+
+
+## M44 runtime dashboard and fingerprints
+
+The existing `first-entry` command uses an in-place dashboard on interactive terminals of at
+least 80x20 with terminal support. It updates at most 5 Hz and restores the main screen with a
+persistent stop report. Non-TTY, TERM=dumb and unsupported/small terminals use plain output.
+A sub-millisecond run may go straight from Preparing to the final report; no delay is added.
+
+Modes (combine with the existing mandatory execution/acquisition limits):
+
+- `--no-dashboard`: plain CI/script summary; no terminal control sequences.
+- `--verbose`: bounded provider summary and selected live detail.
+- `--trace`: complete retained forensic report after execution, without the dashboard.
+- `--log-file <new-path>`: fingerprint plus full retained diagnostics, keeping the dashboard clean.
+- `--report-json <new-path>`: final schema-v1 fingerprint. Paths must not already exist.
+- `--pc-sample-ms <5..1000>`: optional actual-PC sampling per supervised native thread;
+  disabled by default. 20 ms was validated. Suspension perturbs timing; these are samples, not
+  instruction/cycle counts or coverage percentages. Host/HLE PCs are explicitly grouped.
+
+Exact final primary validation command (PowerShell, repo root; the local m44-primary-final.ps1
+uses this body and hashes `$path` before/after):
+
+```powershell
+$corpus = Get-Content .\LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$path = $corpus.artifacts.primary_real_elf.path
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+$planLimits = @('--max-bytes','16777216','--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+& .\target\debug\astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --max-hle-calls 65536 --wall-ms 250 --containment-ms 15000 --pc-sample-ms 20 --report-json target/m44-primary-final.json --log-file target/m44-primary-final-trace.log
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+$before -eq $after
+```
+
+For the exact second plain validation, use `$corpus.artifacts.named_title_elf.path`, change
+`$planLimits[1]` to `'33554432'`, and run the same command with `--no-dashboard --verbose`
+in place of `--pc-sample-ms 20`, and new output names `target/m44-second-final.json` /
+`target/m44-second-final-trace.log`. The second interactive smoke omitted --no-dashboard and
+--verbose. A real ConPTY test used TERM=xterm-256color; do not override TERM=dumb in an actually
+unsupported terminal. Choose fresh output filenames on reruns rather than overwriting evidence.
+
+Synthetic supervisor regression: `cargo test -p astero-kernel --test bridge`.
+JSON contract tests: `cargo test -p astero-core --test observability`.
+
+The final primary report shows 10998 entered HLE calls, 52 unique used / 50 with returns, AJM
+Partial (one context/four modules, decode unavailable), Audio Initialized (null backend), and
+Kernel Blocked at direct-memory-size NID 0xA4EF7A4F0CCE9B91. Eight workers join; zero reservations
+and waiters remain. The second report shows 42 calls and Kernel Blocked at semaphore
+NID 0xD7CF31E7B258A748, with C11 sync Active and no worker threads. Both source hashes unchanged.
+No new providers were migrated. See the [full record](knowledge/architecture/runtime_observability.md).
+
+NotReached is no observed use; Present is entered without return; Initialized comes from owner
+state; Active is observed returned activity; Partial is reached but incomplete; Blocked is
+unknown/refused dispatch. Failed/Unavailable require explicit evidence. No boot percentage.
+Frozen runtime counters precede teardown; the separate teardown fields describe the joined,
+released state. Captured host/import-boundary RIP is never labeled a guest executing RIP; the
+separate guest continuation and optional actual-PC samples preserve that distinction.
+
+**REAL GUEST CODE WILL EXECUTE. Trusted experimental corpus only; this is not a security sandbox.**
+The 250 ms wall and 15000 ms outer containment bounds remain unchanged. Killed/crashed containment
+is not clean recovery and may have no final JSON/log. Full deep diagnostics are retained by
+--trace/--log-file; no raw audio payload or fake CPU/instruction count is introduced.
+
+Post-review verification reused the bodies above with fresh `m44-primary-verified` / `m44-second-verified` output names: primary adds --no-dashboard; second substitutes --trace for --verbose. Both exited cleanly at the same boundaries. Identity-only last/stop provider objects are separate from provider counters in schema v1.

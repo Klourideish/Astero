@@ -41,6 +41,8 @@ pub struct Object {
 pub struct Snapshot {
     pub objects: Vec<Object>,
     pub waiters: usize,
+    pub waiting_threads: Vec<Thread>,
+    pub shutdown_interruptions: u64,
     pub created: u64,
     pub destroyed: u64,
     pub waits: u64,
@@ -49,6 +51,7 @@ pub struct Snapshot {
     pub stopped: bool,
 }
 pub(super) struct Waiter {
+    pub thread: Thread,
     pub ticket: Ticket,
     pub object: u64,
     pub mutex: Option<u64>,
@@ -58,6 +61,7 @@ pub(super) struct State {
     pub objects: Vec<Object>,
     pub waiters: Vec<Waiter>,
     next: u64,
+    shutdown_interruptions: u64,
     pub stopped: bool,
     pub limit: Option<Deadline>,
     created: u64,
@@ -87,6 +91,7 @@ impl Synchronization {
                 objects,
                 waiters,
                 next: 1,
+                shutdown_interruptions: 0,
                 stopped: false,
                 limit: None,
                 created: 0,
@@ -217,6 +222,7 @@ impl Synchronization {
     pub(super) fn ticket(
         &self,
         s: &mut State,
+        thread: Thread,
         id: u64,
         mutex: Option<u64>,
         deadline: Option<Deadline>,
@@ -234,6 +240,7 @@ impl Synchronization {
             .schedule(due, Label::new("pthread wait").map_err(|_| Error::Invalid)?)
             .map_err(|_| Error::Capacity)?;
         s.waiters.push(Waiter {
+            thread,
             ticket: t.clone(),
             object: id,
             mutex,
@@ -264,6 +271,8 @@ impl Synchronization {
         Snapshot {
             objects: s.objects.clone(),
             waiters: s.waiters.len(),
+            waiting_threads: s.waiters.iter().map(|w| w.thread).collect(),
+            shutdown_interruptions: s.shutdown_interruptions,
             created: s.created,
             destroyed: s.destroyed,
             waits: s.waits,
@@ -274,6 +283,9 @@ impl Synchronization {
     }
     pub fn shutdown(&self) {
         let mut s = self.lock();
+        if !s.stopped {
+            s.shutdown_interruptions += s.waiters.len() as u64;
+        }
         s.stopped = true;
         for w in &s.waiters {
             let _ = self.scheduler.cancel(&w.ticket);

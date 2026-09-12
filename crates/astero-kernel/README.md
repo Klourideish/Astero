@@ -46,3 +46,5 @@ process output supports bounded raw-byte append shared by printf-family and puts
 M40 [guest timing](../../knowledge/architecture/kernel_timing.md) shares M25 scheduling across clocks, sleeps and pthread absolute deadlines.
 
 M42 process/guards owns bounded static-initializer exclusion using existing synchronization and timing.
+
+M44 execution/host/sampling aggregates optional actual-PC captures in the existing owned watchdog. Synchronization exposes waiter identities and shutdown cancellations; thread storage exposes committed bytes and the table reports peak live/starting records. No new guest behavior. See [runtime observability](../../knowledge/architecture/runtime_observability.md).

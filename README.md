@@ -18,7 +18,7 @@ Use [generated navigation](knowledge/indexes/README.md) to locate subsystem owne
 Start with [architecture](knowledge/architecture/README.md), [session contract](knowledge/architecture/session_observation.md),
 [GUI decisions](knowledge/architecture/gui_framework.md), [agent instructions](AGENTS.md),
 [active work](PROJECT_STATE.json) and [validation](knowledge/architecture/validation.md).
-There are 16 packages; GUI alone has external dependencies. Rust edition 2024 is used; no MSRV is promised.
+There are 16 packages; GUI, core diagnostic serialization/hashing and CLI terminal handling have external dependencies. Rust edition 2024 is used; no MSRV is promised.
 ImGui needs a C++ build toolchain. Vulkan is the primary host graphics choice, not the PS5 guest API.
 
 Project licensing remains unresolved: LICENSE is empty and no licence grant is asserted.
@@ -57,3 +57,5 @@ M30 [native closure](knowledge/architecture/native_entry_closure.md) can issue e
 [M32 startup foundation](knowledge/architecture/startup_foundation.md) adds owned data providers, reusable guest heap and a bounded native libc cluster.
 
 [M33 pthread synchronization](knowledge/architecture/pthread_foundation.md) migrates owned rwlocks, mutexes, condition variables and attributes, with timing-backed interruptible waits.
+
+M44 adds a live first-entry dashboard, optional actual-PC sampling and schema-v1 runtime fingerprints. See [observability](knowledge/architecture/runtime_observability.md) and [USAGE](USAGE.md).

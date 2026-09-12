@@ -69,10 +69,12 @@ pub struct ThreadTable {
     deadline: Mutex<Option<Deadline>>,
     stopped: AtomicBool,
     capacity: usize,
+    peak: std::sync::atomic::AtomicUsize,
 }
 impl ThreadTable {
     pub fn new(scheduler: Scheduler, capacity: usize) -> Self {
         Self {
+            peak: std::sync::atomic::AtomicUsize::new(1),
             records: Mutex::new(vec![Owned {
                 record: Record {
                     layout: None,
@@ -176,6 +178,12 @@ impl ThreadTable {
             handle: None,
             waiter: None,
         });
+        self.peak.fetch_max(
+            s.iter()
+                .filter(|o| matches!(o.record.state, State::Created | State::Running))
+                .count(),
+            Ordering::Relaxed,
+        );
         Ok(id)
     }
     /// Spawn remains behind a publication gate. Failed guest-handle copy joins the unstarted host.
@@ -372,6 +380,9 @@ impl ThreadTable {
         }
         o.record.layout = Some(layout);
         Ok(())
+    }
+    pub fn peak_threads(&self) -> usize {
+        self.peak.load(Ordering::Relaxed)
     }
     pub fn snapshot(&self) -> Vec<Record> {
         self.records

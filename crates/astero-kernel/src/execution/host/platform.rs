@@ -124,6 +124,7 @@ unsafe extern "system" {
     fn IsProcessorFeaturePresent(feature: u32) -> i32;
 }
 unsafe extern "system" {
+    fn enter();
     fn checked_enter(frame: *mut c_void) -> u64;
     fn landing();
     fn import_landing();
@@ -150,6 +151,7 @@ pub struct Bridge {
 }
 /// One process adapter; every attached thread retains it until its active frame is cleared.
 struct Adapter {
+    sampler: std::sync::OnceLock<std::sync::Arc<super::sampling::Sampler>>,
     slot: u32,
     handler: usize,
 }
@@ -170,6 +172,16 @@ impl BridgeLease {
     }
 }
 impl Bridge {
+    /// Configure once before native entry; attached workers share this bounded collector.
+    pub fn observe_pc(
+        &mut self,
+        sampler: std::sync::Arc<super::sampling::Sampler>,
+    ) -> Result<(), BridgeError> {
+        self.adapter
+            .sampler
+            .set(sampler)
+            .map_err(|_| BridgeError::Validation)
+    }
     pub fn worker_lease(&self) -> Result<BridgeLease, BridgeError> {
         if !self.validated {
             return Err(BridgeError::Validation);
@@ -216,6 +228,7 @@ impl Bridge {
         }
         Ok(Self {
             adapter: std::sync::Arc::new(Adapter {
+                sampler: std::sync::OnceLock::new(),
                 slot,
                 handler: handler as usize,
             }),
@@ -411,7 +424,7 @@ impl Bridge {
         }
         let _active_tls = ActiveTls(self.adapter.slot);
         let (preservation, supervision) = match millis {
-            Some(ms) => supervised_call(frame, ms)?,
+            Some(ms) => supervised_call(frame, ms, self.adapter.sampler.get())?,
             None => (
                 unsafe { checked_enter((frame as *mut Frame<'_>).cast()) },
                 None,
@@ -701,10 +714,11 @@ unsafe extern "system" {
 fn supervised_call(
     frame: &mut Frame<'_>,
     millis: u64,
+    sampler: Option<&std::sync::Arc<super::sampling::Sampler>>,
 ) -> Result<(u64, Option<Supervision>), BridgeError> {
     use astero_timing::{
         scheduler::{Completion, Config, Label, TimingEngine},
-        time::Span,
+        time::{Deadline, Span},
     };
     let engine = TimingEngine::real(Config {
         max_pending: 2,
@@ -712,12 +726,13 @@ fn supervised_call(
     })
     .map_err(|_| BridgeError::Os("timing start"))?;
     let scheduler = engine.scheduler();
-    let ticket = scheduler
-        .after(
-            Span::from_millis(millis).map_err(|_| BridgeError::Validation)?,
-            Label::new("native deadline").map_err(|_| BridgeError::Validation)?,
-        )
-        .map_err(|_| BridgeError::Os("deadline"))?;
+    let end = Deadline::after(
+        scheduler
+            .now()
+            .map_err(|_| BridgeError::Os("supervisor clock"))?,
+        Span::from_millis(millis).map_err(|_| BridgeError::Validation)?,
+    )
+    .map_err(|_| BridgeError::Validation)?;
     let id = unsafe { GetCurrentThreadId() };
     let handle = unsafe { OpenThread(0x0002 | 0x0008 | 0x0010, 0, id) };
     if handle.is_null() {
@@ -739,48 +754,75 @@ fn supervised_call(
                 suspends: 0,
                 resumes: 0,
             };
-            if matches!(ticket.wait(), Completion::Fired(_)) {
-                while !done.load(Ordering::Acquire) {
-                    // Fully initialize the aligned buffer before suspension.
-                    let mut ctx: FullContext = unsafe { std::mem::zeroed() };
-                    ctx.prefix.flags = 0x100003;
-                    let h = raw as *mut c_void;
-                    let prior = unsafe { SuspendThread(h) };
-                    if prior == u32::MAX {
-                        std::process::abort();
-                    }
-                    report.suspends += 1;
-                    let got = unsafe { GetThreadContext(h, &mut ctx) } != 0;
-                    let in_guest = got
-                        && ranges
-                            .iter()
-                            .any(|&(a, n)| ctx.prefix.rip >= a && ctx.prefix.rip - a < n);
-                    let mut set = true;
-                    if prior == 0 && in_guest {
-                        report.rip = ctx.prefix.rip;
-                        report.registers = ctx.prefix.regs;
-                        ctx.prefix.rip = expired_landing as *const () as u64;
-                        set = unsafe { SetThreadContext(h, &ctx) } != 0;
-                        report.redirected = set;
-                    }
-                    let resumed = unsafe { ResumeThread(h) };
-                    if resumed != u32::MAX {
-                        report.resumes += 1;
-                    }
-                    if !got || !set || prior != 0 || resumed != 1 {
-                        std::process::abort();
-                    }
-                    if report.redirected {
-                        break;
-                    }
-                    // Host/bridge PC is never redirected. Retrying uses the canonical scheduler.
-                    let next = scheduler
-                        .after(
-                            Span::from_millis(1).unwrap(),
-                            Label::new("native retry").unwrap(),
-                        )
-                        .unwrap();
-                    next.wait();
+            while !done.load(Ordering::Acquire) {
+                let now = match scheduler.now() {
+                    Ok(t) => t,
+                    Err(_) if done.load(Ordering::Acquire) => break,
+                    Err(_) => std::process::abort(),
+                };
+                let due = if end.is_due(now) {
+                    Deadline::after(now, Span::from_millis(1).unwrap()).unwrap()
+                } else if let Some(sample) = sampler {
+                    Deadline::after(now, Span::from_millis(sample.interval_ms()).unwrap())
+                        .unwrap()
+                        .min(end)
+                } else {
+                    end
+                };
+                let next = match scheduler
+                    .schedule(due, Label::new("native observation/deadline").unwrap())
+                {
+                    Ok(t) => t,
+                    Err(_) if done.load(Ordering::Acquire) => break,
+                    Err(_) => std::process::abort(),
+                };
+                if !matches!(next.wait(), Completion::Fired(_)) || done.load(Ordering::Acquire) {
+                    break;
+                }
+                let now = match scheduler.now() {
+                    Ok(t) => t,
+                    Err(_) if done.load(Ordering::Acquire) => break,
+                    Err(_) => std::process::abort(),
+                };
+                let expired = end.is_due(now);
+                // Initialize before suspension. No locks, allocations, logging or callbacks until resume.
+                let mut ctx: FullContext = unsafe { std::mem::zeroed() };
+                ctx.prefix.flags = 0x100003;
+                let h = raw as *mut c_void;
+                let prior = unsafe { SuspendThread(h) };
+                if prior == u32::MAX {
+                    std::process::abort();
+                }
+                report.suspends += 1;
+                let got = unsafe { GetThreadContext(h, &mut ctx) } != 0;
+                let rip = ctx.prefix.rip;
+                let rsp = ctx.prefix.regs[4];
+                let in_guest = got && ranges.iter().any(|&(a, n)| rip >= a && rip - a < n);
+                let mut set = true;
+                if expired && prior == 0 && in_guest {
+                    report.rip = rip;
+                    report.registers = ctx.prefix.regs;
+                    ctx.prefix.rip = expired_landing as *const () as u64;
+                    set = unsafe { SetThreadContext(h, &ctx) } != 0;
+                    report.redirected = set;
+                }
+                let resumed = unsafe { ResumeThread(h) };
+                if resumed != u32::MAX {
+                    report.resumes += 1;
+                }
+                if !got || !set || prior != 0 || resumed != 1 {
+                    std::process::abort();
+                }
+                if let Some(s) = sampler {
+                    s.record(
+                        id,
+                        rip,
+                        rsp,
+                        rip >= enter as *const () as u64 && rip < probes_end as *const () as u64,
+                    );
+                }
+                if report.redirected {
+                    break;
                 }
             }
             report.elapsed_micros = started.elapsed().as_micros();
@@ -788,7 +830,8 @@ fn supervised_call(
         });
         let preservation = unsafe { checked_enter((frame as *mut Frame<'_>).cast()) };
         done.store(true, Ordering::Release);
-        let _ = scheduler.cancel(&ticket);
+        // Stop current observation/retry wait before joining; no sampler thread outlives this lease.
+        engine.shutdown().expect("supervisor timing shutdown");
         let report = watch.join().expect("supervisor thread");
         (preservation, Some(report))
     });

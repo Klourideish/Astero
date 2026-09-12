@@ -144,3 +144,5 @@ M29 moves the empty ABI layouts.rs to layouts/mod.rs and adds layouts/entry. Ker
 M30 extends existing execution/host, process, libc and input/entry homes with focused leaves; no new crate or growth root. Assembly is embedded in the private platform.rs leaf so source fingerprints include it.
 
 M41 adds libs/libc/math for the coherent stateless scalar family; exports and numerical adaptations stay separate. The declared module inventory now has 253 homes.
+
+M44 adds core/input/entry/observability (model, collection, weak observer) within the existing execution composition. Kernel host/sampling and CLI entry/dashboard remain focused leaves. Inventory:254 homes; no new crate.

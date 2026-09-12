@@ -1,6 +1,7 @@
-//! Planned calls ownership within astero-hle.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Checked guest access, resource budgets and bounded runtime call metrics.
 
 pub mod memory;
 
 pub mod budget;
+
+pub mod metrics;

@@ -18,7 +18,7 @@ impl Synchronization {
             return Err(Error::Deadlock);
         }
         // Ticket registration and mutex release share the signal coordination lock.
-        let t = self.ticket(&mut s, cond.0, Some(mutex.0), deadline)?;
+        let t = self.ticket(&mut s, thread, cond.0, Some(mutex.0), deadline)?;
         s.objects[mi].owner = None;
         s.objects[mi].depth = 0;
         self.wake(&mut s, mutex.0, false);
