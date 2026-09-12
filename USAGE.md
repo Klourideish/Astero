@@ -1081,3 +1081,19 @@ Second read420bytes from `/app0/Media/boot.config` and reached __getpctype,
 NID0xB143F58416A8B8EC. Both stopped cleanly with unchanged source hashes.
 See [M47 evidence](knowledge/architecture/filesystem_startup.md) for exact
 contexts, provider status, mount limitations and teardown evidence.
+
+## Synthetic host presentation (M48)
+
+```text
+cargo test -p astero-video --test presentation
+cargo run -p astero-gui -- --presentation-smoke
+```
+
+SYNTHETIC HOST PRESENTATION ONLY. No guest code, VideoOut flips or GPU emulation.
+The window alternates a 640x360 red/cyan checkerboard at 2 FPS. Resize/maximize it to
+check scaling; close normally or let the 60-second bound expire. The existing debug
+UI remains available with no arguments. Ordinary first-entry/offline commands stay
+window-free. Host Presentation in dashboard/JSON is independent of Guest VideoOut and
+GPU/AGC health; Ready means attached, Active means a frame completed, not guest activity.
+The host-test raster adapter is bounded to 16,384 color runs and CPU RGBA8/BGRA8;
+GPU resources and general texture upload are not implemented. See [M48 architecture](knowledge/architecture/host_presentation.md).

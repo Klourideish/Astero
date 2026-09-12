@@ -69,6 +69,14 @@ class PolicyTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "dependency-free package declares dependencies"):
                     check_dependencies(metadata, self.policy)
 
+    def test_host_presentation_edge_does_not_allow_guest_gpu(self):
+        self.edge("astero-gui", "astero-video")
+        self.edge("astero-core", "astero-video")
+        self.assertEqual(check_dependencies(self.metadata, self.policy), 2)
+        self.policy["allowed_internal_dependencies"]["astero-gui"].append("astero-gpu")
+        with self.assertRaisesRegex(ValueError, "GUI must not allow runtime"):
+            check_dependencies(self.metadata, self.policy)
+
     def test_valid(self):
         check_state(self.state)
         self.edge("astero-libs", "astero-hle")

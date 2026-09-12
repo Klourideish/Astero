@@ -4,7 +4,14 @@ Display/output state, presentation and presentation timing.
 
 ## Interfaces and status
 
-M0 scaffold only. Module roots document future ownership; no runtime mechanisms are implemented.
+M48 implements host presentation: validated CPU RGBA8/BGRA8 frames, an owned-resource
+extension seam, a bounded thread-safe endpoint and a deterministic headless consumer.
+No dependency on GUI, ImGui or Vulkan. Guest VideoOut APIs, flips, vblank and guest GPU
+integration remain absent. See [host presentation](../../knowledge/architecture/host_presentation.md).
+
+Run `cargo test -p astero-video --test presentation` for headless proof.
+The optional Windows adapter runs with `cargo run -p astero-gui -- --presentation-smoke`.
+This is synthetic host output only.
 
 ## Module ownership
 

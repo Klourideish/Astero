@@ -44,7 +44,7 @@ def check_dependencies(metadata, policy):
         require(set(targets) <= set(packages) - {name}, "unknown/self allowlist target")
         if name not in {"astero-cli", "astero-gui", "astero-gpu-smoke", "astero-core", "astero-debug"}:
             require(not {"astero-core", "astero-debug"}.intersection(targets), "runtime cannot allow core/debug")
-    require(set(allowed["astero-gui"]) <= {"astero-core", "astero-debug"}, "GUI must not allow runtime dependencies")
+    require(set(allowed["astero-gui"]) <= {"astero-core", "astero-debug", "astero-video"}, "GUI must not allow runtime dependencies")
     require("astero-debug" not in allowed["astero-core"], "core cannot allow debug")
     require("astero-libs" not in allowed["astero-hle"], "HLE cannot allow libs")
     dependency_free = policy.get("dependency_free_packages", [])

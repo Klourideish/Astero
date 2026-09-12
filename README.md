@@ -9,9 +9,10 @@ M32 migrates the PS5Rust libkernel/libc startup foundation. M27 stages real gues
 - `cargo run -p astero-cli`: create an unloaded host session and print state/capabilities.
 - `cargo run -p astero-gui`: real Winit/ImGui window using an independent Ash/Vulkan context.
   Requires a Vulkan loader/driver and graphics/present-capable device; failures return errors without fallback.
+- `cargo run -p astero-gui -- --presentation-smoke`: bounded synthetic host frame output; no guest VideoOut.
 - `cargo run -p astero-gpu-smoke`: unchanged scaffold; no guest GPU validation occurs.
 
-Core owns session state; presentation holds read-only handles. Ready means host initialization,
+Core owns session state; debugger views hold read-only handles. Host frame endpoints are optionally session-owned. Ready means host initialization,
 not guest readiness. Guest debugger features remain explicitly unsupported.
 
 Use [generated navigation](knowledge/indexes/README.md) to locate subsystem owners, source symbols and tests.

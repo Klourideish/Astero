@@ -155,6 +155,13 @@ pub fn render(s: &Snapshot, verbose: bool) -> String {
         f.open, f.streams, f.peak, f.bytes_read, f.bytes_written, f.failures
     )
     .unwrap();
+    let p = &s.host_presentation;
+    writeln!(
+        out,
+        "Host Presentation: {} {} | frames {}/{} | last presented {:?} {}x{} {:?} | drops/refusals {}/{}",
+        p.sink, p.state, p.presented, p.received, p.last_presented_id, p.width, p.height, p.format, p.dropped, p.refused
+    )
+    .unwrap();
     let modules = &s.modules;
     writeln!(
         out,
@@ -307,6 +314,17 @@ fn compact(s: &Snapshot, verbose: bool) -> String {
         s.supervisor_interventions
     )
     .unwrap();
+    let p = &s.host_presentation;
+    writeln!(
+        out,
+        "Host Presentation {} {} | frames {}/{} | drops {}",
+        clean(&p.sink, 10),
+        clean(&p.state, 12),
+        p.presented,
+        p.received,
+        p.dropped
+    )
+    .unwrap();
     let states: Vec<_> = s
         .subsystems
         .iter()
@@ -440,7 +458,7 @@ mod tests {
     fn compact_fits_minimum_terminal_without_event_spam() {
         let s = Snapshot::preparing("x".into());
         let text = compact(&s, true);
-        assert!(text.lines().count() <= 19);
+        assert!(text.lines().count() <= 20);
         assert!(text.lines().all(|l| l.len() < 80));
     }
     #[test]
@@ -482,6 +500,20 @@ mod tests {
         assert!(text.contains("captured RIP 0xhost [RuntimeBridge]"));
         assert!(text.contains("continuation: 0xguest"));
         assert!(!text.contains('\x1b'));
+    }
+    #[test]
+    fn host_ready_does_not_promote_guest_videoout() {
+        let mut s = Snapshot::preparing("synthetic".into());
+        s.host_presentation.sink = "headless".into();
+        s.host_presentation.state = "Ready".into();
+        assert!(compact(&s, false).contains("Host Presentation headless Ready"));
+        assert!(compact(&s, false).contains("VideoOut: NotReached"));
+        s.host_presentation.state = "Active".into();
+        s.host_presentation.presented = 2;
+        s.host_presentation.received = 3;
+        s.host_presentation.dropped = 1;
+        assert!(render(&s, false).contains("frames 2/3"));
+        assert!(render(&s, false).contains("drops/refusals 1/0"));
     }
     #[test]
     fn sampler_option_limits() {

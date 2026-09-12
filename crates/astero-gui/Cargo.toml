@@ -12,6 +12,7 @@ unsafe_code = "deny"
 all = "warn"
 
 [dependencies]
+astero-video = { path = "../astero-video" }
 astero-core = { path = "../astero-core" }
 astero-debug = { path = "../astero-debug" }
 winit = "=0.30.13"

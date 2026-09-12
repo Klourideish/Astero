@@ -36,6 +36,7 @@ pub enum SessionError {
 pub struct Session {
     state: Arc<Mutex<SessionSnapshot>>,
     timing: Option<super::timing::TimingEngine>,
+    presentation: Option<astero_video::presentation::Endpoint>,
 }
 
 #[derive(Clone)]
@@ -44,6 +45,20 @@ pub struct SessionObserver {
 }
 
 impl Session {
+    pub fn attach_presentation(&mut self, endpoint: astero_video::presentation::Endpoint) {
+        self.detach_presentation();
+        self.presentation = Some(endpoint);
+    }
+    pub fn presentation(&self) -> Option<astero_video::presentation::Endpoint> {
+        self.presentation.clone()
+    }
+    pub fn detach_presentation(&mut self) {
+        use astero_video::presentation::PresentationSink;
+        if let Some(p) = self.presentation.take() {
+            p.close();
+        }
+    }
+
     pub fn new() -> Result<Self, SessionError> {
         Self::with_inputs(super::inputs::SessionInputs::default())
     }
@@ -55,6 +70,7 @@ impl Session {
             .map_err(|_| SessionError::IdentityExhausted)?;
         Ok(Self {
             timing: None,
+            presentation: None,
             state: Arc::new(Mutex::new(SessionSnapshot {
                 id: SessionId(id),
                 lifecycle: Lifecycle::Created,
@@ -109,6 +125,7 @@ impl Session {
 
     pub fn stop(&mut self) -> Result<(), SessionError> {
         self.change(Lifecycle::Stopped, None)?;
+        self.detach_presentation();
         if let Some(timing) = &self.timing {
             timing
                 .shutdown()
@@ -176,5 +193,11 @@ impl ObserveSession for SessionObserver {
             .lock()
             .map(|s| s.clone())
             .map_err(|_| ObservationError::StateUnavailable)
+    }
+}
+
+impl Drop for Session {
+    fn drop(&mut self) {
+        self.detach_presentation();
     }
 }

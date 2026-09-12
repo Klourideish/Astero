@@ -72,3 +72,8 @@ M38 runtime owns/shuts down AudioService before joining workers; all audio waits
 M42 injects process guard ownership/deadlines into shared main/worker registries; both configured real images execute to structured stops.
 
 M44 input/entry/observability composes bounded owner snapshots into one typed fingerprint. The weak observer is detached before resource teardown; it cannot grant execution authority. serde/serde_json own encoding and sha2 owns source hashing. Offline loader paths remain independent. See [runtime observability](../../knowledge/architecture/runtime_observability.md).
+
+M48 Session optionally owns an astero-video presentation endpoint, closed on detach/drop.
+Execution Observer can weakly observe its host status without retaining frame resources or
+changing guest VideoOut/GPU health. No window is created by default. See
+[host presentation](../../knowledge/architecture/host_presentation.md).

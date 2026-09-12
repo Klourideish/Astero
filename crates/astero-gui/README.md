@@ -1,6 +1,6 @@
 # astero-gui
 
-Real Winit 0.30 / ImGui / Ash 0.38 Vulkan shell. main retains the core Session owner; presentation receives only SessionObserver. GUI rendering does not depend on astero-gpu.
+Real Winit 0.30 / ImGui / Ash 0.38 Vulkan shell. main retains the core Session owner; debug UI receives only SessionObserver. GUI rendering does not depend on astero-gpu.
 
 ## Module ownership
 
@@ -19,3 +19,9 @@ See [boundaries](../../knowledge/architecture/crate_boundaries.md),
 [validation](../../knowledge/architecture/validation.md).
 
 M13 [model/linkage](src/model/linkage/mod.rs) borrows session evidence; ui/modules renders a read-only selectable detail pane. Launch with --synthetic-linkage for shared generated evidence, or no arguments for absent evidence. See [GUI evidence](../../knowledge/architecture/gui_linkage_evidence.md).
+
+M48 adds an opt-in host adapter under window/presentation and renderer/vulkan. It consumes
+astero-video frames through the same endpoint as headless tests, without creating ImGui.
+The debug UI and output window are separate application modes; neither owns emulator video
+state. A Session closes its attached endpoint. No astero-video -> GUI or GUI -> GPU edge.
+See [host presentation](../../knowledge/architecture/host_presentation.md) for limits and smoke.

@@ -17,6 +17,12 @@ pub(crate) struct Graphics {
 
 impl Graphics {
     pub fn new(window: &Window, imgui: &mut imgui::Context) -> Result<Self> {
+        Self::create(window, Some(imgui))
+    }
+    pub fn host(window: &Window) -> Result<Self> {
+        Self::create(window, None)
+    }
+    fn create(window: &Window, imgui: Option<&mut imgui::Context>) -> Result<Self> {
         let context = Context::new(window)?;
         let mut graphics = Self {
             context,
@@ -44,7 +50,7 @@ impl Graphics {
                 None,
             )?;
         }
-        graphics.prepare(window, imgui)?;
+        graphics.prepare_inner(window, imgui)?;
         Ok(graphics)
     }
 
@@ -54,6 +60,16 @@ impl Graphics {
 
     /// Rebuild only before creating ImGui's frame, so font upload cannot invalidate draw data.
     pub fn prepare(&mut self, window: &Window, imgui: &mut imgui::Context) -> Result<bool> {
+        self.prepare_inner(window, Some(imgui))
+    }
+    pub fn prepare_host(&mut self, window: &Window) -> Result<bool> {
+        self.prepare_inner(window, None)
+    }
+    fn prepare_inner(
+        &mut self,
+        window: &Window,
+        imgui: Option<&mut imgui::Context>,
+    ) -> Result<bool> {
         let size = window.inner_size();
         if size.width == 0 || size.height == 0 {
             return Ok(false);
@@ -67,25 +83,38 @@ impl Graphics {
             self.swap.take();
             self.swap = Some(Swapchain::new(&self.context, [size.width, size.height])?);
             let swap = self.swap.as_ref().expect("just created");
-            self.renderer = Some(Renderer::with_default_allocator(
-                &self.context.instance,
-                self.context.physical,
-                self.context.device().clone(),
-                self.context.queue,
-                self.context.pool,
-                swap.pass,
-                imgui,
-                Some(Options {
-                    in_flight_frames: 1,
-                    ..Default::default()
-                }),
-            )?);
+            if let Some(imgui) = imgui {
+                self.renderer = Some(Renderer::with_default_allocator(
+                    &self.context.instance,
+                    self.context.physical,
+                    self.context.device().clone(),
+                    self.context.queue,
+                    self.context.pool,
+                    swap.pass,
+                    imgui,
+                    Some(Options {
+                        in_flight_frames: 1,
+                        ..Default::default()
+                    }),
+                )?);
+            }
             self.dirty = false;
         }
         Ok(true)
     }
 
     pub fn draw(&mut self, data: &imgui::DrawData) -> Result<()> {
+        self.draw_inner(Some(data), &[]).map(|_| ())
+    }
+    pub fn draw_host(&mut self, frame: &astero_video::presentation::Frame) -> Result<bool> {
+        let runs = super::pixels::runs(frame).map_err(|e| format!("Host frame: {e:?}"))?;
+        self.draw_inner(None, &runs)
+    }
+    fn draw_inner(
+        &mut self,
+        data: Option<&imgui::DrawData>,
+        runs: &[super::pixels::Run],
+    ) -> Result<bool> {
         let swap = self.swap.as_ref().ok_or("GUI swapchain unavailable")?;
         let device = self.context.device();
         // SAFETY: exactly one frame is in flight. Fence completion protects the command buffer,
@@ -101,9 +130,9 @@ impl Graphics {
                 Ok(result) => result,
                 Err(vk::Result::ERROR_OUT_OF_DATE_KHR) => {
                     self.dirty = true;
-                    return Ok(());
+                    return Ok(false);
                 }
-                Err(vk::Result::TIMEOUT | vk::Result::NOT_READY) => return Ok(()),
+                Err(vk::Result::TIMEOUT | vk::Result::NOT_READY) => return Ok(false),
                 Err(error) => return Err(error.into()),
             };
             self.dirty |= suboptimal;
@@ -130,10 +159,41 @@ impl Graphics {
                     .clear_values(&clear),
                 vk::SubpassContents::INLINE,
             );
-            self.renderer
-                .as_mut()
-                .ok_or("ImGui renderer unavailable")?
-                .cmd_draw(self.command, data)?;
+            if let Some(data) = data {
+                self.renderer
+                    .as_mut()
+                    .ok_or("ImGui renderer unavailable")?
+                    .cmd_draw(self.command, data)?;
+            } else {
+                // SAFETY: bounded rectangles are clipped/scaled to the active framebuffer; all
+                // host-test colors are values, never guest pointers or externally owned images.
+                for run in runs {
+                    let rect = run.rect(swap.extent.width, swap.extent.height);
+                    if rect[2] == 0 || rect[3] == 0 {
+                        continue;
+                    }
+                    let attachment = [vk::ClearAttachment::default()
+                        .aspect_mask(vk::ImageAspectFlags::COLOR)
+                        .color_attachment(0)
+                        .clear_value(vk::ClearValue {
+                            color: vk::ClearColorValue { float32: run.color },
+                        })];
+                    let area = [vk::ClearRect::default()
+                        .rect(vk::Rect2D {
+                            offset: vk::Offset2D {
+                                x: rect[0] as i32,
+                                y: rect[1] as i32,
+                            },
+                            extent: vk::Extent2D {
+                                width: rect[2],
+                                height: rect[3],
+                            },
+                        })
+                        .base_array_layer(0)
+                        .layer_count(1)];
+                    device.cmd_clear_attachments(self.command, &attachment, &area);
+                }
+            }
             device.cmd_end_render_pass(self.command);
             device.end_command_buffer(self.command)?;
             let waits = [self.acquired];
@@ -164,11 +224,14 @@ impl Graphics {
                         self.presented = true;
                     }
                 }
-                Err(vk::Result::ERROR_OUT_OF_DATE_KHR) => self.dirty = true,
+                Err(vk::Result::ERROR_OUT_OF_DATE_KHR) => {
+                    self.dirty = true;
+                    return Ok(false);
+                }
                 Err(error) => return Err(error.into()),
             }
         }
-        Ok(())
+        Ok(true)
     }
 }
 

@@ -96,3 +96,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [M46 sysmodule and allocator continuation](sysmodule_allocator.md): declared-provider lifetime and real heap statistics; unsupported module coverage remains explicit.
 
 - [M47 filesystem startup](filesystem_startup.md): owned descriptors, stdio, explicit mounts and whole-view VM continuation.
+
+- [M48 host presentation](host_presentation.md): bounded frame endpoint, headless sink and synthetic Vulkan window; no guest VideoOut.

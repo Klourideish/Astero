@@ -109,3 +109,7 @@ See [AudioOut](audio_startup.md).
 M43 permits libs -> timing only in tests to instantiate the shared pthread service. Production C11 adapters do not own or construct schedulers.
 
 M44: core composes runtime fingerprints from owner snapshots; CLI terminal rendering consumes them. HLE owns counters, kernel owns sampling/thread/wait mechanisms, audio and memory expose their own state. No service depends on the dashboard or serde.
+
+M48 adds core -> video for optional endpoint lifetime and GUI -> video for a host adapter.
+Video owns host frame contracts/headless consumption; GUI owns Winit/Vulkan resources and
+bypasses ImGui for output. Guest VideoOut/GPU remain absent. See [host presentation](host_presentation.md).

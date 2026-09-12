@@ -7,3 +7,5 @@ mod window;
 pub use app::run;
 // Preserve the existing M1 adapter path.
 pub use model as view_model;
+
+pub use window::presentation::run as presentation_smoke;

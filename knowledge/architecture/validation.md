@@ -2240,3 +2240,31 @@ No additional guest execution followed. Both retained hashes, clean containment,
 joined threads, restored FS/preserved GS, zero native resources/waiters/tickets.
 Exact contexts, limits, limitations and evidence distinctions remain in
 [filesystem startup](filesystem_startup.md). No M48 scope is proposed.
+
+## M48 host presentation validation
+
+Formatting, workspace all-target check/build, warnings-denied Clippy and full Rust tests pass:
+748 executable tests, 23 doctests, no failures. M48 adds 19 Rust tests: 11 video frame/mailbox/
+headless tests, four core composition/weak-observation tests, three pure Vulkan raster tests,
+and one CLI host/guest-status regression. Existing supervisor, worker, CLI and GUI tests are
+included. All 54 Python tests pass, including the new narrow GUI -> video policy test;
+GUI -> GPU remains rejected. No external dependencies or crates were added.
+
+Manual Windows synthetic host output shows alternating red/cyan checkerboards, including
+two opposite phases captured 550 ms apart, and correct maximized rendering. Explicit close
+and the 60-second bound exit 0. The final build closed after 49/49 presentations with zero
+drops/refusals and a matching Closed core observation. The ordinary Session Inspector also
+rendered Ready/No guest loaded and closed with exit 0. No guest artifact was accessed/executed;
+these results prove host presentation only. No GPU/device-loss/validation-layer/scanout-
+fidelity or real guest VideoOut claims are made. Exact commands and limitations are in
+[host presentation](host_presentation.md). Windows OS suspend/resume is not manually tested.
+
+Policy/state/structure, generated-index freshness and Python/whitespace checks cover the
+final source and docs. NIDs remain 409 registered/4 observation-only and ABI remains eight.
+M48 stays ready_for_cleanup pending approval; no commit, push or next milestone work.
+
+M48 final indexes: 4,493 records (1,818 implementation, 138 subsystem, 632 module,
+413 NID, 8 ABI, 45 diagnostic, 827 declared test, 612 source). All 17 generated
+outputs are current. Policy reports 16 packages, 28 edges and 254 homes. Final
+Session.stop closure was checked by the composition suite and warnings-denied
+workspace Clippy after the full run; no runtime execution behavior changed.

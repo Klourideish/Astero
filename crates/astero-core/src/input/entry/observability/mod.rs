@@ -10,6 +10,7 @@ struct State {
     runtime: Weak<Runtime>,
     started: Option<std::time::Instant>,
     sampler: Option<Arc<Sampler>>,
+    presentation: Option<astero_video::presentation::Observation>,
 }
 pub struct Observer {
     state: Mutex<State>,
@@ -26,9 +27,21 @@ impl Observer {
                 runtime: Weak::new(),
                 started: None,
                 sampler: None,
+                presentation: None,
             }),
             interval,
         }))
+    }
+    /// Attach read-only host presentation telemetry, independently of guest VideoOut activity.
+    pub fn observe_presentation(&self, endpoint: Option<&astero_video::presentation::Endpoint>) {
+        let mut s = self.state.lock().unwrap_or_else(|p| p.into_inner());
+        s.presentation = endpoint.map(|p| p.observer());
+        s.report.host_presentation = s
+            .presentation
+            .as_ref()
+            .and_then(|p| p.snapshot())
+            .map(Into::into)
+            .unwrap_or_default();
     }
     pub fn sample_interval(&self) -> Option<u64> {
         self.interval
@@ -46,6 +59,9 @@ impl Observer {
         s.started = Some(std::time::Instant::now());
     }
     fn refresh(s: &mut State) {
+        if let Some(p) = &s.presentation {
+            s.report.host_presentation = p.snapshot().map(Into::into).unwrap_or_default();
+        }
         if let Some(r) = s.runtime.upgrade() {
             collect::runtime(&r, &mut s.report);
         }

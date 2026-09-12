@@ -86,3 +86,7 @@ Structural follow-up: app/ wires the unchanged run entry; ui/ reserves named pan
 M1 public view_model remains a re-export of model; no rendering or lifecycle behavior changed.
 
 M13 adds a read-only [linkage pane](gui_linkage_evidence.md) using the same Winit/Ash/Vulkan/ImGui stack and session snapshot. No rendering backend change.
+
+M48 reuses the private context/swapchain renderer for optional CPU host presentation, with
+no ImGui instance in that mode. No guest GPU device or resource interop is added.
+See [host presentation](host_presentation.md).

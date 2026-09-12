@@ -1,5 +1,5 @@
 //! Display/output state, presentation and presentation timing.
-//! M0 foundation; consult the crate README before extending ownership.
+//! Host presentation is implemented; guest VideoOut and vblank remain scaffolded.
 pub mod presentation;
 pub mod vblank;
 pub mod videoout;

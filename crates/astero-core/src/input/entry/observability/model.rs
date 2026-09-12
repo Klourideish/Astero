@@ -111,6 +111,8 @@ pub struct Teardown {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Snapshot {
     #[serde(default)]
+    pub host_presentation: HostPresentation,
+    #[serde(default)]
     pub filesystem: Filesystem,
 
     #[serde(default)]
@@ -222,4 +224,57 @@ pub struct Filesystem {
     pub stats: u64,
     pub failures: u64,
     pub last_guest_path: String,
+}
+
+/// Host readiness only; never changes guest VideoOut/GPU health.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct HostPresentation {
+    pub sink: String,
+    pub state: String,
+    pub received: u64,
+    pub presented: u64,
+    pub dropped: u64,
+    pub refused: u64,
+    pub last_id: Option<u64>,
+    pub last_presented_id: Option<u64>,
+    pub bytes: u64,
+    pub width: u32,
+    pub height: u32,
+    pub format: Option<String>,
+}
+impl Default for HostPresentation {
+    fn default() -> Self {
+        Self {
+            sink: "none".into(),
+            state: "Unavailable".into(),
+            received: 0,
+            presented: 0,
+            dropped: 0,
+            refused: 0,
+            last_id: None,
+            last_presented_id: None,
+            bytes: 0,
+            width: 0,
+            height: 0,
+            format: None,
+        }
+    }
+}
+impl From<astero_video::presentation::Snapshot> for HostPresentation {
+    fn from(s: astero_video::presentation::Snapshot) -> Self {
+        Self {
+            sink: s.sink.into(),
+            state: format!("{:?}", s.state),
+            received: s.received,
+            presented: s.presented,
+            dropped: s.dropped,
+            refused: s.refused,
+            last_id: s.last_id,
+            last_presented_id: s.last_presented_id,
+            bytes: s.bytes,
+            width: s.width,
+            height: s.height,
+            format: s.format.map(|f| format!("{f:?}")),
+        }
+    }
 }

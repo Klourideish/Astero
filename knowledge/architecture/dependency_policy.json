@@ -73,7 +73,8 @@
     ],
     "astero-gui": [
       "astero-core",
-      "astero-debug"
+      "astero-debug",
+      "astero-video"
     ],
     "astero-gpu-smoke": [
       "astero-gpu",
