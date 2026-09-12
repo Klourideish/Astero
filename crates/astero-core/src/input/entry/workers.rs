@@ -26,11 +26,14 @@ pub const MAX_REGISTERED_PROVIDERS: usize = 256
     + astero_libs::media::ajm::EXPORTS.len()
     + astero_libs::libc::c11::EXPORTS.len()
     + astero_libs::kernel::memory::EXPORTS.len()
-    + astero_libs::kernel::semaphore::EXPORTS.len();
+    + astero_libs::kernel::semaphore::EXPORTS.len()
+    + astero_libs::sysmodule::EXPORTS.len()
+    + 1;
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
+    pub modules: Arc<astero_hle::providers::modules::Modules>,
     pub semaphores: Arc<astero_kernel::synchronization::semaphore::Semaphores>,
     pub memory_resources: Arc<astero_kernel::objects::memory::MemoryResources>,
     pub metrics: astero_hle::calls::metrics::Metrics,
@@ -96,6 +99,7 @@ impl Runtime {
             .try_reserve_exact(4096)
             .map_err(|_| ClosureError::Allocation)?;
         Ok(Arc::new(Self {
+            modules: Arc::new(astero_hle::providers::modules::Modules::new(128)),
             semaphores: Arc::new(
                 astero_kernel::synchronization::semaphore::Semaphores::new(
                     scheduler.clone(),
@@ -162,6 +166,8 @@ impl Runtime {
             self.startup.clone(),
             self.executable.clone(),
         ));
+        entries.extend(astero_libs::sysmodule::registrations(self.modules.clone()));
+        entries.push(astero_libs::libc::stats::registration());
         entries.extend(astero_libs::kernel::memory::registrations(
             self.memory_resources.clone(),
             storage.layout().thread_pointer + 8,
@@ -274,6 +280,7 @@ impl Runtime {
         self.semaphores.shutdown();
         self.table.reap_all();
         self.memory_resources.shutdown();
+        let _ = self.modules.shutdown();
         self.storage
             .lock()
             .unwrap_or_else(|p| p.into_inner())
@@ -561,6 +568,22 @@ impl GuestMemory for Access<'_> {
             .unwrap_or_else(|p| p.into_inner())
             .allocate_aligned(size, alignment)
             .map_err(|_| AccessError::Allocation)
+    }
+    fn heap_stats(&self) -> std::result::Result<astero_hle::calls::memory::HeapStats, AccessError> {
+        let s = self
+            .0
+            .foundation
+            .heap
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .snapshot();
+        Ok(astero_hle::calls::memory::HeapStats {
+            arena_bytes: s.arena_bytes,
+            live_bytes: s.live_bytes,
+            peak_bytes: s.peak_bytes,
+            live: s.live,
+            peak_live: s.peak_live,
+        })
     }
     fn usable_size(&self, a: u64) -> std::result::Result<u64, AccessError> {
         self.0

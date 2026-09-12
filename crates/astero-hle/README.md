@@ -27,3 +27,5 @@ M32 calls/memory provides scoped checked copies to handlers; providers/data is d
 M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_large_memory.md) documents checked chunks, budgets, concurrency and real results.
 
 M44 calls/metrics owns bounded atomic per-import counters with exact raw provider keys and coherent last-ordinal/thread pairs. Registration identity counting distinguishes runtime keys from grouped index records. See [runtime observability](../../knowledge/architecture/runtime_observability.md).
+
+M46 providers/modules owns bounded declared-provider request/refcount/dependency state and lease-gated HLE publication. Artifact declarations fail explicitly until a real loader authority is supplied.

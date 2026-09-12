@@ -14,3 +14,5 @@ pub mod formatting;
 
 pub mod c11;
 pub mod math;
+
+pub mod stats;

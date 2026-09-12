@@ -78,3 +78,18 @@ fn kernel_resources_round_trip_and_older_reports_default_to_zero() {
     assert_eq!(older.kernel_resources.direct_bytes, 0);
     assert_eq!(older.kernel_resources.semaphores, 0);
 }
+
+#[test]
+fn module_metrics_preserve_failed_request_without_claiming_load() {
+    let mut s = Snapshot::preparing("test".into());
+    s.modules.load_requests = 1;
+    s.modules.failed_loads = 1;
+    s.modules.last_id = Some(267);
+    let mut v = serde_json::to_value(s).unwrap();
+    let d: Snapshot = serde_json::from_value(v.clone()).unwrap();
+    assert_eq!(d.modules.loaded, 0);
+    assert_eq!(d.modules.last_id, Some(267));
+    v.as_object_mut().unwrap().remove("modules");
+    let old: Snapshot = serde_json::from_value(v).unwrap();
+    assert_eq!(old.modules.load_requests, 0);
+}

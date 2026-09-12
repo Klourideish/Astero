@@ -6,3 +6,5 @@ pub mod varargs;
 pub mod audio;
 
 pub mod time;
+
+pub mod allocator;

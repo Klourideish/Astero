@@ -16,7 +16,19 @@ pub enum AccessError {
 /// Runtime policy, independent of whether an address is mapped. Copies use bounded scratch.
 pub const COPY_CHUNK_BYTES: u64 = 64 * 1024;
 pub const MAX_OPERATION_BYTES: u64 = 64 * 1024 * 1024;
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct HeapStats {
+    pub arena_bytes: u64,
+    pub live_bytes: u64,
+    pub peak_bytes: u64,
+    pub live: usize,
+    pub peak_live: usize,
+}
 pub trait GuestMemory {
+    fn heap_stats(&self) -> Result<HeapStats, AccessError> {
+        Err(AccessError::InvalidAllocation)
+    }
+
     /// Non-mutating full-range permission preflight. Zero length accesses no bytes.
     fn validate(&self, address: u64, size: u64, write: bool) -> Result<(), AccessError>;
     fn charge(&self, size: u64) -> Result<(), AccessError> {

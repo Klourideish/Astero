@@ -2187,3 +2187,34 @@ and exact contexts remain in kernel_resources.md. Historical error487 remains
 unresolved/unreproduced. Final review changes (empty semaphore names, protection-query
 verification, rollback/JSON tests) passed the full suite; no additional real
 execution was needed. M45 remains subject to cleanup approval.
+
+## M46 sysmodule and allocator validation
+
+Formatting, all-target workspace check/build, warnings-denied Clippy and
+`cargo test --workspace` pass: 701 executable tests and 23 doctests. The 23 added
+cases cover owned module declarations/refcounts/dependencies/leases/publication,
+explicit artifact-backed refusal, checked allocator snapshots/output, guest
+adapters and additive fingerprint compatibility. Existing supervisor, workers,
+synchronization, resource and CLI regressions pass.
+
+All 53 Python tests pass (`python -m unittest discover -s tools -p 'test_*.py' -v`).
+Index generation and policy validation pass: 16 members, 26 internal edges,
+254 homes; 4276 records (1714 implementations, 138 subsystems, 618 modules,
+375 NIDs, 7 ABI, 45 diagnostics, 779 tests, 600 sources). NIDs comprise
+371 registered and 4 observation-only identities. Whitespace and Git diff checks
+complete the final validation.
+
+Real commands: `& ./target/m46-primary-1.ps1` and
+`& ./target/m46-second-1.ps1`, using the existing 250 ms wall, 15000 ms containment
+and 65536-call limits. Primary received an explicit unsupported result for
+sysmodule 0x10b and continued to sceKernelMunmap; no module was loaded. Second
+passed malloc_stats_fast and reached fopen. Both fingerprints preserve unchanged
+source hashes, clean containment, restored FS, preserved GS and zero remaining
+resources/waiters/tickets. Primary joined eight workers. Exact contexts and
+confidence limits are in [M46 architecture](sysmodule_allocator.md).
+
+Artifact-backed dynamic loading remains unsupported by the new request service;
+the artifact test proves refusal, not loading. The stats caller establishes the
+40-byte version-one representation and consumed lanes, while peak-lane semantics
+remain experimental. No additional interactive dashboard smoke is claimed:
+shared report integration and existing rendering regressions were validated.

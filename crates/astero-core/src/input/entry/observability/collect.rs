@@ -45,6 +45,35 @@ pub(super) fn subsystem(k: &ProviderKey) -> &'static str {
 }
 pub(super) fn runtime(r: &Runtime, s: &mut Snapshot) {
     use astero_kernel::{synchronization::owned::Kind, threading::thread::lifecycle::State};
+    let modules = r.modules.snapshot();
+    s.modules = Modules {
+        loaded: modules.records.iter().filter(|r| r.references > 0).count(),
+        hle_backed: modules
+            .records
+            .iter()
+            .filter(|r| {
+                r.references > 0
+                    && r.declaration.backing == astero_hle::providers::modules::Backing::Hle
+            })
+            .count(),
+        artifact_backed: 0,
+        providers: modules
+            .records
+            .iter()
+            .filter(|r| r.references > 0)
+            .map(|r| r.declaration.providers.len())
+            .sum(),
+        load_requests: modules.loads,
+        failed_loads: modules.failed,
+        unloads: modules.unloads,
+        last_id: modules.last,
+        loaded_ids: modules
+            .records
+            .iter()
+            .filter(|r| r.references > 0)
+            .map(|r| r.declaration.id)
+            .collect(),
+    };
     let sync = r.synchronization.snapshot();
     let sema = r.semaphores.snapshot();
     let resources = r.memory_resources.snapshot();
@@ -108,6 +137,22 @@ pub(super) fn runtime(r: &Runtime, s: &mut Snapshot) {
     s.allocations_live = heap.live;
     s.allocations_peak = heap.peak_live;
     providers(r.metrics.snapshot(), s);
+    if s.modules.load_requests > 0 {
+        let h = s
+            .subsystems
+            .get_mut("Modules/sysmodules")
+            .expect("declared row");
+        h.state = if s.modules.failed_loads > 0 {
+            Health::Partial
+        } else {
+            Health::Active
+        };
+        h.detail = format!(
+            "loaded={}, HLE={}, failed={}, last={:?}; request result is not artifact loading",
+            s.modules.loaded, s.modules.hle_backed, s.modules.failed_loads, s.modules.last_id
+        );
+    }
+
     let audio = r.audio.snapshot();
     s.audio_ports = audio
         .objects

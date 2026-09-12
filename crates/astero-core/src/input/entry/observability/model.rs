@@ -18,6 +18,18 @@ pub struct Subsystem {
     pub detail: String,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Modules {
+    pub loaded: usize,
+    pub hle_backed: usize,
+    pub artifact_backed: usize,
+    pub providers: usize,
+    pub load_requests: u64,
+    pub failed_loads: u64,
+    pub unloads: u64,
+    pub last_id: Option<u16>,
+    pub loaded_ids: Vec<u16>,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Provider {
     pub nid: String,
     pub library: String,
@@ -98,6 +110,8 @@ pub struct Teardown {
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Snapshot {
+    #[serde(default)]
+    pub modules: Modules,
     #[serde(default)]
     pub kernel_resources: KernelResources,
     pub schema_version: u32,

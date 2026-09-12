@@ -3,3 +3,5 @@ mod identity;
 pub use identity::Provider;
 
 pub mod data;
+
+pub mod modules;

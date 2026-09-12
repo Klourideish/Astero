@@ -27,3 +27,5 @@ M39 adds byte-exact 80-byte GetSpeakerInfo encoding under layouts/audio; device 
 remain comparative-correlated. See [M39](../../knowledge/architecture/audio_speaker_info.md).
 
 M40 layouts/time encodes the 16-byte guest timespec explicitly; it does not reuse host layout.
+
+M46 layouts/allocator contains explicit experimental version-one managed-size encoding; field confidence is recorded in sysmodule_allocator.md.

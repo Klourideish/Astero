@@ -91,4 +91,6 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 
 [M44 runtime observability](runtime_observability.md): live CLI, owner health, bounded actual-PC sampling and versioned fingerprints.
 
-- [Kernel resource migration (M45, in progress)](kernel_resources.md): direct offsets, shared native views and counting semaphore lifecycle.
+- [Kernel resource migration (M45)](kernel_resources.md): direct offsets, shared native views and counting semaphore lifecycle.
+
+- [M46 sysmodule and allocator continuation](sysmodule_allocator.md): declared-provider lifetime and real heap statistics; unsupported module coverage remains explicit.

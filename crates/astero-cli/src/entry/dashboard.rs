@@ -148,6 +148,18 @@ pub fn render(s: &Snapshot, verbose: bool) -> String {
         s.faults, s.supervisor_interventions, s.audio_ports, s.audio_buffers, s.audio_pending
     )
     .unwrap();
+    let modules = &s.modules;
+    writeln!(
+        out,
+        "Modules loaded={} HLE={} artifacts={} providers={} failed={} last={:?}",
+        modules.loaded,
+        modules.hle_backed,
+        modules.artifact_backed,
+        modules.providers,
+        modules.failed_loads,
+        modules.last_id
+    )
+    .unwrap();
     let k = &s.kernel_resources;
     writeln!(out,"Kernel: direct {} / {} B | mappings {} | sema {} waiters {} | waits/signals/timeouts {}/{}/{}",k.direct_allocations,k.direct_bytes,k.mappings,k.semaphores,k.semaphore_waiters,k.waits,k.signals,k.timeouts).unwrap();
     for (name, h) in &s.subsystems {

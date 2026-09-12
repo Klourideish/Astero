@@ -1039,3 +1039,22 @@ provider stops, not game boots. No real semaphore wait/signal occurred. Both sou
 hashes were unchanged; FS/GS restored, workers joined, zero remaining native resources,
 waiters or timing tickets. Intermediate refusal/fault experiments and exact contexts
 are preserved in [kernel resource evidence](knowledge/architecture/kernel_resources.md).
+
+
+## M46 sysmodule and allocator continuation
+
+Run the same two corpus roles and limits shown under M45, changing only output paths to
+fresh M46 names. Exact validated local scripts: `& ./target/m46-primary-1.ps1` and
+`& ./target/m46-second-1.ps1`. They invoke `first-entry` with 250ms wall,15000ms containment,
+65536HLE calls, `--no-dashboard --report-json target/m46-<role>-1.json --log-file target/m46-<role>-1-trace.log`.
+All acquisition/native/stack/TLS limits and source-hash checks are unchanged. REAL GUEST CODE
+WILL EXECUTE; trusted corpus input only, not a sandbox. Omit `--no-dashboard` for the existing
+interactive renderer. M46 did not repeat interactive terminal validation; shared report tests pass.
+
+The module row distinguishes load requests, failures, actually loaded providers and last ID.
+Primary requested0x10b, received unsupported, loaded **zero** modules and continued to
+sceKernelMunmap (0x71091EF54B8140E9),212.122ms overall. Second passed a checked
+malloc_stats_fast query using the real heap and reached fopen (0xC5E60EE2EEEEC89D),27.005ms.
+Both runs restored FS/GS, joined workers, retained source hashes and released all resources.
+Stats peak-field semantics remain experimental. Artifact-backed module loading is not claimed.
+See [M46 evidence](knowledge/architecture/sysmodule_allocator.md) for exact contexts and limits.

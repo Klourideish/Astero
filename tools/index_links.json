@@ -7705,13 +7705,13 @@
       },
       "guest_library": "libSceSysmodule",
       "guest_module": "libSceSysmodule",
-      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
-      "registration_status": "unregistered",
+      "implementation": "impl:astero-libs/lib:astero_libs/sysmodule::registrations",
+      "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/kernel_resources.md"
+        "knowledge/architecture/sysmodule_allocator.md"
       ],
-      "provenance": "M45 sceSysmoduleLoadModule: observed real unresolved boundary; catalogue/source-known, not implemented or registered in Astero. Implementation link is the identity decoder only, not an HLE implementation."
+      "provenance": "sceSysmoduleLoadModule: M46 bounded declared-provider lifecycle; real dispatch returned unsupported for ID0x10b; no module loaded."
     },
     {
       "id": "nid:m45.2ae3ae0f9f21aa7e",
@@ -7721,13 +7721,141 @@
       },
       "guest_library": "libc",
       "guest_module": "libc",
-      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
-      "registration_status": "unregistered",
+      "implementation": "impl:astero-libs/lib:astero_libs/libc::stats::query",
+      "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/kernel_resources.md"
+        "knowledge/architecture/sysmodule_allocator.md"
       ],
-      "provenance": "M45 malloc_stats_fast: observed real unresolved boundary; catalogue/source-known, not implemented or registered in Astero. Implementation link is the identity decoder only, not an HLE implementation."
+      "provenance": "M46 checked real heap statistics; real call returned zero. Version-one layout is caller-corroborated; peak-lane semantic mapping remains experimental."
+    },
+    {
+      "id": "nid:m46.791d9b6450005344",
+      "nid": {
+        "numeric_hex": "0x791D9B6450005344",
+        "encoded": "eR2bZFAAU0Q"
+      },
+      "related_abi": [],
+      "guest_library": "libSceSysmodule",
+      "guest_module": "libSceSysmodule",
+      "implementation": "impl:astero-libs/lib:astero_libs/sysmodule::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
+      ],
+      "provenance": "sceSysmoduleUnloadModule: M46 bounded declared-provider lifecycle; registered, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m46.7cc3f934750e68c9",
+      "nid": {
+        "numeric_hex": "0x7CC3F934750E68C9",
+        "encoded": "fMP5NHUOaMk"
+      },
+      "related_abi": [],
+      "guest_library": "libSceSysmodule",
+      "guest_module": "libSceSysmodule",
+      "implementation": "impl:astero-libs/lib:astero_libs/sysmodule::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
+      ],
+      "provenance": "sceSysmoduleIsLoaded: M46 bounded declared-provider lifecycle; registered, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m46.dfd895e44d47a029",
+      "nid": {
+        "numeric_hex": "0xDFD895E44D47A029",
+        "encoded": "39iV5E1HoCk"
+      },
+      "related_abi": [],
+      "guest_library": "libSceSysmodule",
+      "guest_module": "libSceSysmodule",
+      "implementation": "impl:astero-libs/lib:astero_libs/sysmodule::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
+      ],
+      "provenance": "sceSysmoduleLoadModuleInternal: M46 bounded declared-provider lifecycle; registered, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m46.847ac6a06a0d7feb",
+      "nid": {
+        "numeric_hex": "0x847AC6A06A0D7FEB",
+        "encoded": "hHrGoGoNf+s"
+      },
+      "related_abi": [],
+      "guest_library": "libSceSysmodule",
+      "guest_module": "libSceSysmodule",
+      "implementation": "impl:astero-libs/lib:astero_libs/sysmodule::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
+      ],
+      "provenance": "sceSysmoduleLoadModuleInternalWithArg: M46 bounded declared-provider lifecycle; registered, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m46.bd7661aed2719067",
+      "nid": {
+        "numeric_hex": "0xBD7661AED2719067",
+        "encoded": "vXZhrtJxkGc"
+      },
+      "related_abi": [],
+      "guest_library": "libSceSysmodule",
+      "guest_module": "libSceSysmodule",
+      "implementation": "impl:astero-libs/lib:astero_libs/sysmodule::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
+      ],
+      "provenance": "sceSysmoduleUnloadModuleInternal: M46 bounded declared-provider lifecycle; registered, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m46.ca714a4396df1a4b",
+      "nid": {
+        "numeric_hex": "0xCA714A4396DF1A4B",
+        "encoded": "ynFKQ5bfGks"
+      },
+      "related_abi": [],
+      "guest_library": "libSceSysmodule",
+      "guest_module": "libSceSysmodule",
+      "implementation": "impl:astero-libs/lib:astero_libs/sysmodule::registrations",
+      "registration_status": "registered",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
+      ],
+      "provenance": "sceSysmoduleIsLoadedInternal: M46 bounded declared-provider lifecycle; registered, not runtime-confirmed."
+    },
+    {
+      "id": "nid:m46.71091ef54b8140e9",
+      "nid": {
+        "numeric_hex": "0x71091EF54B8140E9",
+        "encoded": "cQke9UuBQOk"
+      },
+      "related_abi": [],
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
+      "registration_status": "unregistered",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
+      ],
+      "provenance": "M46 primary unresolved boundary; PS5Rust system.rs identifies sceKernelMunmap. Not migrated. Decoder link only; no HLE implementation."
+    },
+    {
+      "id": "nid:m46.c5e60ee2eeeec89d",
+      "nid": {
+        "numeric_hex": "0xC5E60EE2EEEEC89D",
+        "encoded": "xeYO4u7uyJ0"
+      },
+      "related_abi": [],
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
+      "registration_status": "unregistered",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
+      ],
+      "provenance": "M46 second unresolved boundary; PS5Rust file.rs identifies fopen. Not migrated. Decoder link only; no HLE implementation."
     }
   ],
   "abi": [
@@ -7783,6 +7911,15 @@
       "implementation": "impl:astero-libs/lib:astero_libs/runtime::guards::call",
       "evidence": [
         "knowledge/architecture/native_placement_static_init.md"
+      ]
+    },
+    {
+      "id": "abi:allocator.managed_size_v1",
+      "guest_concept": "Experimental 40-byte managed-size version1/header0x10028; caller consumes64-bit lanes16/32. Four real heap metric lanes; peak semantics remain inferred, not firmware-proven.",
+      "guest_library": "libc",
+      "implementation": "impl:astero-abi/lib:astero_abi/layouts::allocator::managed_size_v1",
+      "evidence": [
+        "knowledge/architecture/sysmodule_allocator.md"
       ]
     }
   ]
