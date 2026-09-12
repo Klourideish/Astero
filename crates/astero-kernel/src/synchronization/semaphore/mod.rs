@@ -1,2 +1,3 @@
-//! Planned synchronization / semaphore ownership within astero-kernel.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Runtime-owned counting semaphores with bounded FIFO waits and M25 deadlines.
+mod service;
+pub use service::*;

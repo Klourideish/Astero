@@ -90,3 +90,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 [M43 AJM and C11 startup](ajm_c11_startup.md): owned codec declarations and shared synchronization; direct-memory/semaphore frontiers.
 
 [M44 runtime observability](runtime_observability.md): live CLI, owner health, bounded actual-PC sampling and versioned fingerprints.
+
+- [Kernel resource migration (M45, in progress)](kernel_resources.md): direct offsets, shared native views and counting semaphore lifecycle.

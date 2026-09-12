@@ -63,3 +63,18 @@ fn panicking_factory_reports_failure_without_fabricated_cleanup() {
     assert_eq!(o.snapshot().runtime_state, "Failed");
     assert!(o.snapshot().teardown.is_none());
 }
+
+#[test]
+fn kernel_resources_round_trip_and_older_reports_default_to_zero() {
+    let mut s = Snapshot::preparing("synthetic".into());
+    s.kernel_resources.direct_bytes = 1048576;
+    s.kernel_resources.semaphores = 4;
+    let mut value = serde_json::to_value(&s).unwrap();
+    let decoded: Snapshot = serde_json::from_value(value.clone()).unwrap();
+    assert_eq!(decoded.kernel_resources.direct_bytes, 1048576);
+    assert_eq!(decoded.kernel_resources.semaphores, 4);
+    value.as_object_mut().unwrap().remove("kernel_resources");
+    let older: Snapshot = serde_json::from_value(value).unwrap();
+    assert_eq!(older.kernel_resources.direct_bytes, 0);
+    assert_eq!(older.kernel_resources.semaphores, 0);
+}

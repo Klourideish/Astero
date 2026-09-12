@@ -7337,13 +7337,13 @@
       },
       "guest_library": "libkernel",
       "guest_module": "libkernel",
-      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
-      "registration_status": "unregistered",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/ajm_c11_startup.md"
+        "knowledge/architecture/kernel_resources.md"
       ],
-      "provenance": "M43 sceKernelGetDirectMemorySize: PS5Rust-correlated exact identity, real unresolved import. Observation only; not implemented or registered."
+      "provenance": "M45 sceKernelGetDirectMemorySize: adapted from PS5Rust, exact registered identity; successful real M45 call confirmed."
     },
     {
       "id": "nid:observed.d7cf31e7b258a748",
@@ -7353,13 +7353,381 @@
       },
       "guest_library": "libkernel",
       "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::semaphore::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelCreateSema: adapted from PS5Rust, exact registered identity; successful real M45 call confirmed."
+    },
+    {
+      "id": "nid:kernel.memory.ad35f0eb9c662c80",
+      "nid": {
+        "numeric_hex": "0xAD35F0EB9C662C80",
+        "encoded": "rTXw65xmLIA"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelAllocateDirectMemory: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.07ebdcd803b666b7",
+      "nid": {
+        "numeric_hex": "0x07EBDCD803B666B7",
+        "encoded": "B+vc2AO2Zrc"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelAllocateMainDirectMemory: adapted from PS5Rust, exact registered identity; successful real M45 call confirmed."
+    },
+    {
+      "id": "nid:kernel.memory.0b47fb4c971b7da7",
+      "nid": {
+        "numeric_hex": "0x0B47FB4C971B7DA7",
+        "encoded": "C0f7TJcbfac"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelAvailableDirectMemorySize: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.047a2e2d0ce1d17d",
+      "nid": {
+        "numeric_hex": "0x047A2E2D0CE1D17D",
+        "encoded": "BHouLQzh0X0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelDirectMemoryQuery: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.2ff4372c48c86e00",
+      "nid": {
+        "numeric_hex": "0x2FF4372C48C86E00",
+        "encoded": "L-Q3LEjIbgA"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelMapDirectMemory: adapted from PS5Rust, exact registered identity; successful real M45 call confirmed."
+    },
+    {
+      "id": "nid:kernel.memory.301b88b6f6daeb3f",
+      "nid": {
+        "numeric_hex": "0x301B88B6F6DAEB3F",
+        "encoded": "MBuItvba6z8"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelReleaseDirectMemory: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.8705523c29a9e6d3",
+      "nid": {
+        "numeric_hex": "0x8705523C29A9E6D3",
+        "encoded": "hwVSPCmp5tM"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelCheckedReleaseDirectMemory: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.ad58d1bc72745fa7",
+      "nid": {
+        "numeric_hex": "0xAD58D1BC72745FA7",
+        "encoded": "rVjRvHJ0X6c"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelVirtualQuery: adapted from PS5Rust, exact registered identity; successful real M45 call confirmed."
+    },
+    {
+      "id": "nid:kernel.memory.93e017aaedbf7817",
+      "nid": {
+        "numeric_hex": "0x93E017AAEDBF7817",
+        "encoded": "k+AXqu2-eBc"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 getpagesize: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.52a0c68d7039c943",
+      "nid": {
+        "numeric_hex": "0x52A0C68D7039C943",
+        "encoded": "UqDGjXA5yUM"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 munmap: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.61039fc4be107de5",
+      "nid": {
+        "numeric_hex": "0x61039FC4BE107DE5",
+        "encoded": "YQOfxL4QfeU"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 mprotect: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.35c6965317cc3484",
+      "nid": {
+        "numeric_hex": "0x35C6965317CC3484",
+        "encoded": "NcaWUxfMNIQ"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelMapNamedDirectMemory: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.0504278a8963f6d4",
+      "nid": {
+        "numeric_hex": "0x0504278A8963F6D4",
+        "encoded": "BQQniolj9tQ"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelMapDirectMemory2: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.memory.0c6306dc9b21ad95",
+      "nid": {
+        "numeric_hex": "0x0C6306DC9B21AD95",
+        "encoded": "DGMG3JshrZU"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelSetVirtualRangeName: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.semaphore.840b48a18b097561",
+      "nid": {
+        "numeric_hex": "0x840B48A18B097561",
+        "encoded": "hAtIoYsJdWE"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::semaphore::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelCreateSema: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.semaphore.6716b45614154ec9",
+      "nid": {
+        "numeric_hex": "0x6716B45614154EC9",
+        "encoded": "Zxa0VhQVTsk"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::semaphore::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelWaitSema: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.semaphore.e1cce9a47062ae2c",
+      "nid": {
+        "numeric_hex": "0xE1CCE9A47062AE2C",
+        "encoded": "4czppHBiriw"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::semaphore::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelSignalSema: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.semaphore.d76c0e1e4f32c1bd",
+      "nid": {
+        "numeric_hex": "0xD76C0E1E4F32C1BD",
+        "encoded": "12wOHk8ywb0"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::semaphore::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelPollSema: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.semaphore.e03334e94d813446",
+      "nid": {
+        "numeric_hex": "0xE03334E94D813446",
+        "encoded": "4DM06U2BNEY"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::semaphore::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelCancelSema: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:kernel.semaphore.47526f9fc6d2096f",
+      "nid": {
+        "numeric_hex": "0x47526F9FC6D2096F",
+        "encoded": "R1Jvn8bSCW8"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::semaphore::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelDeleteSema: adapted from PS5Rust, exact registered identity; not runtime-confirmed; synthetic validation only."
+    },
+    {
+      "id": "nid:m45.ee8c6fdcf3c2ba6a",
+      "nid": {
+        "numeric_hex": "0xEE8C6FDCF3C2BA6A",
+        "encoded": "7oxv3PPCumo"
+      },
+      "guest_library": "libkernel",
+      "guest_module": "libkernel",
+      "implementation": "impl:astero-libs/lib:astero_libs/kernel::memory::registrations",
+      "registration_status": "registered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 sceKernelReserveVirtualRange: adapted from PS5Rust; successful real call confirmed."
+    },
+    {
+      "id": "nid:m45.83c70cdfd11467aa",
+      "nid": {
+        "numeric_hex": "0x83C70CDFD11467AA",
+        "encoded": "g8cM39EUZ6o"
+      },
+      "guest_library": "libSceSysmodule",
+      "guest_module": "libSceSysmodule",
       "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
       "registration_status": "unregistered",
       "related_abi": [],
       "evidence": [
-        "knowledge/architecture/ajm_c11_startup.md"
+        "knowledge/architecture/kernel_resources.md"
       ],
-      "provenance": "M43 sceKernelCreateSema: PS5Rust-correlated exact identity, real unresolved import. Observation only; not implemented or registered."
+      "provenance": "M45 sceSysmoduleLoadModule: observed real unresolved boundary; catalogue/source-known, not implemented or registered in Astero. Implementation link is the identity decoder only, not an HLE implementation."
+    },
+    {
+      "id": "nid:m45.2ae3ae0f9f21aa7e",
+      "nid": {
+        "numeric_hex": "0x2AE3AE0F9F21AA7E",
+        "encoded": "KuOuD58hqn4"
+      },
+      "guest_library": "libc",
+      "guest_module": "libc",
+      "implementation": "impl:astero-loader/lib:astero_loader/elf::dynamic::identity::codec::decode_nid",
+      "registration_status": "unregistered",
+      "related_abi": [],
+      "evidence": [
+        "knowledge/architecture/kernel_resources.md"
+      ],
+      "provenance": "M45 malloc_stats_fast: observed real unresolved boundary; catalogue/source-known, not implemented or registered in Astero. Implementation link is the identity decoder only, not an HLE implementation."
     }
   ],
   "abi": [

@@ -148,7 +148,8 @@ impl Observer {
                 && f.worker_exits.iter().all(|(_, x)| x.host_gs_preserved),
             active_reservations: r.active_reservations,
             release_errors: r.release_errors.clone(),
-            remaining_waiters: f.synchronization.as_ref().map_or(0, |x| x.waiters),
+            remaining_waiters: f.synchronization.as_ref().map_or(0, |x| x.waiters)
+                + f.semaphore_waiters,
             remaining_sleep_tickets: f.guest_timing.as_ref().map_or(0, |x| x.pending),
             audio_stopped: f.audio.as_ref().is_some_and(|x| x.stopped),
             ajm_stopped: f.ajm.as_ref().is_some_and(|x| x.stopped),

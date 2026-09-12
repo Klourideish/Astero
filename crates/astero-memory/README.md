@@ -37,3 +37,5 @@ M35: [large libc memory/runtime continuation](../../knowledge/architecture/libc_
 M42 adds bounded exact-reservation failure evidence; identity placement and transactional release remain unchanged.
 
 M44 heap snapshots include peak live allocation count alongside peak bytes. Ownership and allocation semantics are unchanged. See [runtime observability](../../knowledge/architecture/runtime_observability.md).
+
+M45 shared native sections retain bytes across aliases/remaps, with checked views and explicit backing/view teardown in the existing Windows leaf.

@@ -46,6 +46,21 @@ pub(super) fn subsystem(k: &ProviderKey) -> &'static str {
 pub(super) fn runtime(r: &Runtime, s: &mut Snapshot) {
     use astero_kernel::{synchronization::owned::Kind, threading::thread::lifecycle::State};
     let sync = r.synchronization.snapshot();
+    let sema = r.semaphores.snapshot();
+    let resources = r.memory_resources.snapshot();
+    s.kernel_resources = KernelResources {
+        direct_allocations: resources.allocations.len(),
+        direct_bytes: resources.allocations.iter().map(|r| r.size).sum(),
+        mappings: resources.mappings.len(),
+        allocations_total: resources.allocated_total,
+        mappings_total: resources.mapped_total,
+        semaphores: sema.objects.len(),
+        semaphore_waiters: sema.waiting_threads.len(),
+        waits: sema.waits,
+        signals: sema.signals,
+        timeouts: sema.timeouts,
+        cancellations: sema.cancellations,
+    };
     let timing = r.guest_timing.snapshot();
     let threads = r.table.snapshot();
     let waiting: BTreeSet<_> = sync
@@ -53,6 +68,7 @@ pub(super) fn runtime(r: &Runtime, s: &mut Snapshot) {
         .iter()
         .map(|t| t.0)
         .chain(timing.sleeping.iter().map(|(t, _)| t.0))
+        .chain(sema.waiting_threads.iter().map(|t| t.0))
         .collect();
     s.threads_created = threads.len();
     s.live_threads = threads

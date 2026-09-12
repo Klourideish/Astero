@@ -702,6 +702,7 @@ pub struct StartupCall {
 }
 #[derive(Debug)]
 pub struct FirstEntryReport {
+    pub semaphore_waiters: usize,
     pub threads: Vec<astero_kernel::threading::thread::lifecycle::Record>,
     pub worker_exits: Vec<(
         astero_kernel::synchronization::owned::Thread,
@@ -779,6 +780,10 @@ impl EntryReadyGuest {
                     .map_err(|_| BridgeError::Validation)?;
                 runtime.audio.arm(deadline);
                 runtime.guest_timing.arm(deadline);
+                runtime
+                    .semaphores
+                    .arm(deadline)
+                    .map_err(|_| BridgeError::Validation)?;
             }
         }
         let started = std::time::Instant::now();
@@ -925,6 +930,10 @@ impl EntryReadyGuest {
         }
         let synchronization = owner.synchronization.as_ref().map(|s| s.snapshot());
         Ok(FirstEntryReport {
+            semaphore_waiters: owner
+                .runtime
+                .as_ref()
+                .map_or(0, |r| r.semaphores.snapshot().waiting_threads.len()),
             threads: owner
                 .runtime
                 .as_ref()
@@ -941,7 +950,8 @@ impl EntryReadyGuest {
                     .unwrap_or_else(|p| p.into_inner())
                     .iter()
                     .map(|o| o.active_reservations())
-                    .sum()
+                    .sum::<u64>()
+                    + r.memory_resources.snapshot().active_native_resources
             }),
             worker_release_errors: owner.runtime.as_ref().map_or_else(Vec::new, |r| {
                 r.observers
@@ -949,6 +959,7 @@ impl EntryReadyGuest {
                     .unwrap_or_else(|p| p.into_inner())
                     .iter()
                     .map(|o| o.release_error())
+                    .chain(r.memory_resources.snapshot().release_errors)
                     .filter(|c| *c != 0)
                     .collect()
             }),

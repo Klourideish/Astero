@@ -2150,3 +2150,40 @@ ABI 6. Runtime 385 callable keys are distinct from grouped NID records (explicit
 hashing and terminal handling only. Historical Windows 487 remains unresolved/unreproduced.
 
 Final indexes: implementation1602, subsystems138, modules605, NIDs344, ABI6, diagnostics45, tests726, sources587; total4053. All16 generated index files reproduce byte-identically (17 files including the human README). M44 remains ready_for_cleanup awaiting approval; no commit, push or M45 work.
+
+
+## M45 kernel resource validation
+
+Formatting, all-target workspace check/build, warnings-denied Clippy and workspace
+Rust tests pass. Commands: `cargo fmt --all -- --check`,
+`cargo check --workspace --all-targets`, `cargo build --workspace --all-targets`,
+`cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`.
+678 executable tests and 23 doctests pass, including native supervisor, pthread
+synchronization/lifecycle, dashboard/report, CLI, audio and libc regressions.
+M45 adds 30 executable tests: 10 direct-resource, 10 semaphore, 2 native shared-backing,
+7 libs-adapter and 1 core fingerprint compatibility. Real semaphore waits were not
+observed; manual-clock and threaded mechanism tests supply that evidence.
+
+`python tools/generate_indexes.py`, `python tools/check_policy.py`,
+`python -m unittest discover -s tools -p 'test_*.py' -v`,
+`python tools/check_whitespace.py`, `git -c core.safecrlf=false diff --check` complete
+validation. All 53 Python tests pass. Policy: 16 members, 26 internal edges, 254 homes.
+Indexes: implementation 1684, subsystems 138, modules 613, NIDs 367, ABI 6,
+diagnostics 45, tests 756, sources 595; total 4204. NIDs 363 registered/4 observation-only.
+
+Real execution: `& ./target/m45-primary-1.ps1`, `& ./target/m45-second-4.ps1`, with
+250 ms wall/15000 ms containment/65536 HLE calls and plain JSON/log output. Primary
+returned GetDirectMemorySize and reached sceSysmoduleLoadModule in 202.998 ms overall;
+second passed four semaphore creations plus 1 MiB reservation/allocation/map and reached
+malloc_stats_fast in 5.191 ms. Final fingerprints show no faults/interventions,
+FS restored, GS preserved, workers joined, zero remaining native resources/waiters/tickets,
+no release errors and unchanged hashes. No extra interactive terminal claim:
+M44 rendering regressions pass; M45 validates shared JSON metrics in real runs.
+
+Second development runs exposed ReserveVirtualRange (then migrated), then type12
+and protection0xF2 mismatches causing controlled guest AVs. Both assumptions were
+corrected against prototype behavior and tested; final execution progressed. Failures
+and exact contexts remain in kernel_resources.md. Historical error487 remains
+unresolved/unreproduced. Final review changes (empty semaphore names, protection-query
+verification, rollback/JSON tests) passed the full suite; no additional real
+execution was needed. M45 remains subject to cleanup approval.

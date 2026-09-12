@@ -1002,3 +1002,40 @@ is not clean recovery and may have no final JSON/log. Full deep diagnostics are 
 --trace/--log-file; no raw audio payload or fake CPU/instruction count is introduced.
 
 Post-review verification reused the bodies above with fresh `m44-primary-verified` / `m44-second-verified` output names: primary adds --no-dashboard; second substitutes --trace for --verbose. Both exited cleanly at the same boundaries. Identity-only last/stop provider objects are separate from provider counters in schema v1.
+
+
+## M45 kernel resource continuation
+
+The existing dashboard/fingerprint now includes direct allocations/bytes, mappings,
+semaphores/waiters and wait/signal/timeout/cancel totals. Stop counters describe live
+state at the boundary; teardown fields describe subsequent release. No per-service
+CLI or extra timer is introduced. This remains trusted experimental input, not a sandbox.
+
+Validated commands were `& ./target/m45-primary-1.ps1` and
+`& ./target/m45-second-4.ps1` (local scripts). Reusable equivalent, using corpus roles
+instead of tracked machine paths; choose one role per run and fresh output files:
+
+```powershell
+$corpus = Get-Content ./LOCAL_TEST_CORPUS.json -Raw | ConvertFrom-Json
+$role = 'primary_real_elf' # or 'named_title_elf' for the validated second workload
+$path = $corpus.artifacts.$role.path
+$maxBytes = if ($role -eq 'primary_real_elf') { '16777216' } else { '33554432' }
+$planLimits = @('--max-bytes',$maxBytes,'--max-read-calls','512','--max-program-headers','128','--max-dynamic-entries','1024','--max-hash-words','262144','--max-descriptors','2','--max-symbols','16384','--max-name-lookups','32768','--max-name-scan-bytes','256','--max-total-name-scan-bytes','8388608','--max-relocations','131072','--max-identity-records','32768','--image-bias','4294967296','--max-providers','2','--max-plan-records','524288')
+$before = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+& ./target/debug/astero-cli.exe first-entry --path $path @planLimits --max-mapped-bytes 67108864 --max-native-bytes 67108864 --stack-base 8589934592 --stack-bytes 8388608 --tls-base 8858370048 --max-runtime-bytes 16777216 --max-hle-calls 65536 --wall-ms 250 --containment-ms 15000 --no-dashboard --report-json "target/m45-$role.json" --log-file "target/m45-$role.log"
+$after = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+"Before=$before After=$after"
+```
+
+REAL GUEST CODE WILL EXECUTE. M45 used plain output with JSON/log files and sampling
+disabled; omit `--no-dashboard` for the existing interactive dashboard. No new live
+terminal rendering claim is made beyond the M44 dashboard regression suite.
+
+Primary returned 16 GiB policy size and reached sceSysmoduleLoadModule
+(0x83C70CDFD11467AA), 202.998 ms overall. Second created four semaphores, reserved and
+mapped 1 MiB direct memory (type12, requested protection0xF2), and reached
+malloc_stats_fast (0x2AE3AE0F9F21AA7E), 5.191 ms. Both were controlled unresolved
+provider stops, not game boots. No real semaphore wait/signal occurred. Both source
+hashes were unchanged; FS/GS restored, workers joined, zero remaining native resources,
+waiters or timing tickets. Intermediate refusal/fault experiments and exact contexts
+are preserved in [kernel resource evidence](knowledge/architecture/kernel_resources.md).

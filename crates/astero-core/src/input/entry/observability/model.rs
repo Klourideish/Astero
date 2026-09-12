@@ -98,6 +98,8 @@ pub struct Teardown {
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Snapshot {
+    #[serde(default)]
+    pub kernel_resources: KernelResources,
     pub schema_version: u32,
     pub artifact: String,
     pub sha256: Option<String>,
@@ -153,6 +155,20 @@ pub struct Snapshot {
     pub stop: Option<Stop>,
     pub teardown: Option<Teardown>,
     pub limitations: Vec<String>,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct KernelResources {
+    pub direct_allocations: usize,
+    pub direct_bytes: u64,
+    pub mappings: usize,
+    pub allocations_total: u64,
+    pub mappings_total: u64,
+    pub semaphores: usize,
+    pub semaphore_waiters: usize,
+    pub waits: u64,
+    pub signals: u64,
+    pub timeouts: u64,
+    pub cancellations: u64,
 }
 impl Snapshot {
     pub fn preparing(artifact: String) -> Self {

@@ -2,6 +2,7 @@
 //! successfully reserved envelope; runtime copies touch only committed owned RW/NX pages.
 //! No callable pointer escapes. x86-64 Windows ABI declarations are pinned below.
 use super::*;
+use crate::mapping::GuestAddress;
 use std::{
     ffi::c_void,
     mem::{MaybeUninit, size_of},
@@ -41,6 +42,24 @@ unsafe extern "system" {
     fn GetCurrentProcess() -> *mut c_void;
     fn VirtualAlloc(address: *mut c_void, size: usize, kind: u32, protection: u32) -> *mut c_void;
     fn VirtualFree(address: *mut c_void, size: usize, kind: u32) -> i32;
+    fn CreateFileMappingW(
+        file: *mut c_void,
+        attributes: *const c_void,
+        protection: u32,
+        high: u32,
+        low: u32,
+        name: *const u16,
+    ) -> *mut c_void;
+    fn MapViewOfFileEx(
+        mapping: *mut c_void,
+        access: u32,
+        high: u32,
+        low: u32,
+        size: usize,
+        address: *mut c_void,
+    ) -> *mut c_void;
+    fn UnmapViewOfFile(address: *const c_void) -> i32;
+    fn CloseHandle(handle: *mut c_void) -> i32;
     fn VirtualProtect(address: *mut c_void, size: usize, protection: u32, old: *mut u32) -> i32;
     fn VirtualQuery(address: *const c_void, info: *mut MemoryInfo, size: usize) -> usize;
     fn FlushInstructionCache(process: *mut c_void, address: *const c_void, size: usize) -> i32;
@@ -91,6 +110,198 @@ fn flags(p: Protection) -> u32 {
         (_, true, false) => 4,
         (true, false, false) => 2,
         _ => 1,
+    }
+}
+/// Pagefile-backed bytes with independent view lifetime. No host handle escapes.
+/// A section may permit executable views, but no RWX view is ever created here.
+pub struct NativeBacking {
+    handle: *mut c_void,
+    size: u64,
+    observer: NativeObserver,
+}
+// SAFETY: section handles are process resources; lifetime is retained by every view's Arc.
+// Access to bytes is exclusively via checked NativeImage OS copies or native guest access.
+unsafe impl Send for NativeBacking {}
+unsafe impl Sync for NativeBacking {}
+impl NativeBacking {
+    pub fn new(size: u64, maximum: u64) -> Result<std::sync::Arc<Self>, NativeError> {
+        let g = host_geometry()?;
+        if size == 0 || !size.is_multiple_of(g.page_size) {
+            return Err(NativeError::Geometry);
+        }
+        if size > maximum {
+            return Err(NativeError::Budget {
+                kind: "shared backing",
+                required: size,
+                maximum,
+            });
+        }
+        // SAFETY: invalid-file sentinel selects an unnamed pagefile section, bounded nonzero size.
+        let handle = unsafe {
+            CreateFileMappingW(
+                usize::MAX as *mut c_void,
+                ptr::null(),
+                0x40,
+                (size >> 32) as u32,
+                size as u32,
+                ptr::null(),
+            )
+        };
+        if handle.is_null() {
+            return Err(error("create-backing", 0, size));
+        }
+        let observer = NativeObserver::default();
+        observer.active.store(1, Ordering::SeqCst);
+        Ok(std::sync::Arc::new(Self {
+            handle,
+            size,
+            observer,
+        }))
+    }
+    pub fn observer(&self) -> NativeObserver {
+        self.observer.clone()
+    }
+    pub fn map(
+        self: &std::sync::Arc<Self>,
+        range: GuestRange,
+        offset: u64,
+        protection: Protection,
+    ) -> Result<NativeImage, NativeError> {
+        let geometry = host_geometry()?;
+        if range.start.0 == 0
+            || range.size == 0
+            || !range
+                .start
+                .0
+                .is_multiple_of(geometry.allocation_granularity)
+            || !offset.is_multiple_of(geometry.allocation_granularity)
+            || !range.size.is_multiple_of(geometry.page_size)
+        {
+            return Err(NativeError::Geometry);
+        }
+        if offset
+            .checked_add(range.size)
+            .is_none_or(|end| end > self.size)
+            || range.start.0.checked_add(range.size).is_none()
+        {
+            return Err(NativeError::Overflow);
+        }
+        if protection.write && protection.execute {
+            return Err(NativeError::WritableExecutable {
+                address: range.start.0,
+            });
+        }
+        let count = usize::try_from(range.size / geometry.page_size)
+            .map_err(|_| NativeError::Allocation)?;
+        let mut pages = Vec::new();
+        pages
+            .try_reserve_exact(count)
+            .map_err(|_| NativeError::Allocation)?;
+        for i in 0..count {
+            pages.push(NativePage {
+                range: GuestRange {
+                    start: GuestAddress(range.start.0 + i as u64 * geometry.page_size),
+                    size: geometry.page_size,
+                },
+                protection,
+                widened: false,
+            });
+        }
+        // Begin with exactly R/RW/RX access; a no-access view starts R and is sealed before publication.
+        let access = if protection.execute {
+            0x24
+        } else if protection.write {
+            6
+        } else {
+            4
+        };
+        // SAFETY: retained section handle, checked view bounds/alignment, no replacement of existing VM.
+        let base = unsafe {
+            MapViewOfFileEx(
+                self.handle,
+                access,
+                (offset >> 32) as u32,
+                offset as u32,
+                range.size as usize,
+                range.start.0 as *mut c_void,
+            )
+        };
+        if base.is_null() {
+            return Err(error("map-backing", range.start.0, range.size));
+        }
+        let observer = NativeObserver::default();
+        observer.active.store(1, Ordering::SeqCst);
+        let reservation = Reservation {
+            base,
+            size: range.size,
+            observer,
+            backing: Some(self.clone()),
+        };
+        if base as u64 != range.start.0 {
+            return Err(NativeError::PlacementMismatch);
+        }
+        let mut old = 0;
+        // SAFETY: complete owned view; final requested protection is never writable-executable.
+        if unsafe { VirtualProtect(base, range.size as usize, flags(protection), &mut old) } == 0 {
+            return Err(error("view-protect", range.start.0, range.size));
+        }
+        let mut info = MaybeUninit::<MemoryInfo>::zeroed();
+        // SAFETY: bounded output with pinned Windows structure layout.
+        if unsafe { VirtualQuery(base, info.as_mut_ptr(), size_of::<MemoryInfo>()) }
+            != size_of::<MemoryInfo>()
+        {
+            return Err(error("view-query", range.start.0, range.size));
+        }
+        // SAFETY: VirtualQuery initialized a full structure.
+        let info = unsafe { info.assume_init() };
+        if info.protect != flags(protection)
+            || info.state != 0x1000
+            || info.allocation != base
+            || info.region_size < range.size as usize
+        {
+            return Err(NativeError::ProtectionMismatch {
+                address: range.start.0,
+            });
+        }
+        if protection.execute {
+            // SAFETY: live view and pseudo process handle; no guest instruction executes.
+            if unsafe { FlushInstructionCache(GetCurrentProcess(), base, range.size as usize) } == 0
+            {
+                return Err(error("view-flush", range.start.0, range.size));
+            }
+        }
+        Ok(NativeImage {
+            reservation,
+            layout: NativeLayout {
+                envelope: range,
+                pages,
+                geometry,
+            },
+            snapshot: NativeSnapshot {
+                guest_envelope: range,
+                host_envelope: range,
+                geometry,
+                committed_bytes: range.size,
+                copied_bytes: 0,
+                widened_pages: 0,
+                active: true,
+                readback_before_protection: false,
+                protections_verified: true,
+                instruction_cache_flushed: protection.execute,
+            },
+        })
+    }
+}
+impl Drop for NativeBacking {
+    fn drop(&mut self) {
+        // SAFETY: final Arc owner closes only its own section handle after all views release.
+        if unsafe { CloseHandle(self.handle) } == 0 {
+            if let NativeError::Os { code, .. } = error("close-backing", 0, self.size) {
+                self.observer.failure.store(code, Ordering::SeqCst);
+            }
+        } else {
+            self.observer.active.store(0, Ordering::SeqCst);
+        }
     }
 }
 /// Query only the failed envelope, at most 64 regions. VirtualQuery does not read payloads.
@@ -144,6 +355,7 @@ struct Reservation {
     base: *mut c_void,
     size: u64,
     observer: NativeObserver,
+    backing: Option<std::sync::Arc<NativeBacking>>,
 }
 impl Reservation {
     fn release(&mut self) -> Result<(), NativeError> {
@@ -151,7 +363,14 @@ impl Reservation {
             return Ok(());
         }
         // SAFETY: base is exactly this owner's successful reservation, not a committed subrange.
-        if unsafe { VirtualFree(self.base, 0, 0x8000) } == 0 {
+        if unsafe {
+            if self.backing.is_some() {
+                UnmapViewOfFile(self.base)
+            } else {
+                VirtualFree(self.base, 0, 0x8000)
+            }
+        } == 0
+        {
             let e = error("release", self.base as u64, self.size);
             if let NativeError::Os { code, .. } = e {
                 self.observer.failure.store(code, Ordering::SeqCst);
@@ -183,6 +402,148 @@ pub struct NativeImage {
 unsafe impl Send for NativeImage {}
 unsafe impl Sync for NativeImage {}
 impl NativeImage {
+    /// Reserve address identity without commitment. It is never exposed as readable memory.
+    pub fn reserve(range: GuestRange, maximum: u64) -> Result<Self, NativeError> {
+        let geometry = host_geometry()?;
+        if range.start.0 == 0
+            || range.size == 0
+            || !range
+                .start
+                .0
+                .is_multiple_of(geometry.allocation_granularity)
+            || !range.size.is_multiple_of(geometry.page_size)
+        {
+            return Err(NativeError::Geometry);
+        }
+        range
+            .start
+            .0
+            .checked_add(range.size)
+            .ok_or(NativeError::Overflow)?;
+        if range.size > maximum {
+            return Err(NativeError::Budget {
+                kind: "resource reservation",
+                required: range.size,
+                maximum,
+            });
+        }
+        // SAFETY: bounded exact aligned allocation request; no existing allocation is replaced.
+        let base =
+            unsafe { VirtualAlloc(range.start.0 as *mut c_void, range.size as usize, 0x2000, 1) };
+        if base.is_null() {
+            return Err(error("resource-reserve", range.start.0, range.size));
+        }
+        let observer = NativeObserver::default();
+        observer.active.store(1, Ordering::SeqCst);
+        let reservation = Reservation {
+            base,
+            size: range.size,
+            observer,
+            backing: None,
+        };
+        if base as u64 != range.start.0 {
+            return Err(NativeError::PlacementMismatch);
+        }
+        Ok(Self {
+            reservation,
+            layout: NativeLayout {
+                envelope: range,
+                pages: vec![],
+                geometry,
+            },
+            snapshot: NativeSnapshot {
+                guest_envelope: range,
+                host_envelope: range,
+                geometry,
+                committed_bytes: 0,
+                copied_bytes: 0,
+                widened_pages: 0,
+                active: true,
+                readback_before_protection: false,
+                protections_verified: true,
+                instruction_cache_flushed: false,
+            },
+        })
+    }
+    /// Whole-view protection transition; caller serializes metadata updates and VM copies.
+    /// Native guest races retain native platform behavior; no Rust byte references exist.
+    pub fn protect_all(&mut self, p: Protection) -> Result<(), NativeError> {
+        if self.reservation.backing.is_none() {
+            return Err(NativeError::Geometry);
+        }
+        if self.reservation.base.is_null() {
+            return Err(NativeError::Released);
+        }
+        if p.write && p.execute {
+            return Err(NativeError::WritableExecutable {
+                address: self.layout.envelope.start.0,
+            });
+        }
+        let mut old = 0;
+        // SAFETY: entire live owned view; requested protection excludes RWX.
+        if unsafe {
+            VirtualProtect(
+                self.reservation.base,
+                self.reservation.size as usize,
+                flags(p),
+                &mut old,
+            )
+        } == 0
+        {
+            return Err(error(
+                "resource-protect",
+                self.layout.envelope.start.0,
+                self.reservation.size,
+            ));
+        }
+        for page in &mut self.layout.pages {
+            page.protection = p;
+        }
+        let mut info = MaybeUninit::<MemoryInfo>::zeroed();
+        // SAFETY: pinned output layout, live owned view; query never reads guest payload.
+        if unsafe {
+            VirtualQuery(
+                self.reservation.base,
+                info.as_mut_ptr(),
+                size_of::<MemoryInfo>(),
+            )
+        } != size_of::<MemoryInfo>()
+        {
+            return Err(error(
+                "resource-protect-query",
+                self.layout.envelope.start.0,
+                self.reservation.size,
+            ));
+        }
+        // SAFETY: successful query populated the complete structure.
+        let info = unsafe { info.assume_init() };
+        if info.protect != flags(p)
+            || info.state != 0x1000
+            || info.region_size < self.reservation.size as usize
+        {
+            return Err(NativeError::ProtectionMismatch {
+                address: self.layout.envelope.start.0,
+            });
+        }
+        if p.execute {
+            // SAFETY: live owned view, process pseudo handle.
+            if unsafe {
+                FlushInstructionCache(
+                    GetCurrentProcess(),
+                    self.reservation.base,
+                    self.reservation.size as usize,
+                )
+            } == 0
+            {
+                return Err(error(
+                    "resource-flush",
+                    self.layout.envelope.start.0,
+                    self.reservation.size,
+                ));
+            }
+        }
+        Ok(())
+    }
     pub fn observer(&self) -> NativeObserver {
         self.reservation.observer.clone()
     }
@@ -410,6 +771,7 @@ fn construct_checked(
     }
     observer.active.store(1, Ordering::SeqCst);
     let reservation = Reservation {
+        backing: None,
         base,
         size: range.size,
         observer,

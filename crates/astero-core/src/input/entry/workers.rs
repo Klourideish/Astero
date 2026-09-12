@@ -24,11 +24,15 @@ pub const MAX_REGISTERED_PROVIDERS: usize = 256
     + astero_libs::kernel::timing::EXPORTS.len()
     + astero_libs::libc::math::exports::EXPORTS.len()
     + astero_libs::media::ajm::EXPORTS.len()
-    + astero_libs::libc::c11::EXPORTS.len();
+    + astero_libs::libc::c11::EXPORTS.len()
+    + astero_libs::kernel::memory::EXPORTS.len()
+    + astero_libs::kernel::semaphore::EXPORTS.len();
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
+    pub semaphores: Arc<astero_kernel::synchronization::semaphore::Semaphores>,
+    pub memory_resources: Arc<astero_kernel::objects::memory::MemoryResources>,
     pub metrics: astero_hle::calls::metrics::Metrics,
     pub ajm: Arc<astero_audio::codecs::ajm::Ajm>,
     pub guards: Arc<astero_kernel::process::guards::Guards>,
@@ -92,6 +96,15 @@ impl Runtime {
             .try_reserve_exact(4096)
             .map_err(|_| ClosureError::Allocation)?;
         Ok(Arc::new(Self {
+            semaphores: Arc::new(
+                astero_kernel::synchronization::semaphore::Semaphores::new(
+                    scheduler.clone(),
+                    1024,
+                    128,
+                )
+                .map_err(|_| ClosureError::Allocation)?,
+            ),
+            memory_resources: Arc::new(astero_kernel::objects::memory::MemoryResources::new()),
             metrics: astero_hle::calls::metrics::Metrics::new(keys.clone())
                 .map_err(|_| ClosureError::Allocation)?,
             ajm: Arc::new(astero_audio::codecs::ajm::Ajm::new(4096)),
@@ -148,6 +161,14 @@ impl Runtime {
         entries.push(astero_libs::libc::startup::cxa_registration(
             self.startup.clone(),
             self.executable.clone(),
+        ));
+        entries.extend(astero_libs::kernel::memory::registrations(
+            self.memory_resources.clone(),
+            storage.layout().thread_pointer + 8,
+        ));
+        entries.extend(astero_libs::kernel::semaphore::registrations(
+            self.semaphores.clone(),
+            thread,
         ));
         entries.extend(astero_libs::libc::math::exports::registrations());
         entries.extend(astero_libs::media::ajm::registrations(self.ajm.clone()));
@@ -250,7 +271,9 @@ impl Runtime {
         self.ajm.shutdown();
         self.audio.shutdown();
         self.guest_timing.shutdown();
+        self.semaphores.shutdown();
         self.table.reap_all();
+        self.memory_resources.shutdown();
         self.storage
             .lock()
             .unwrap_or_else(|p| p.into_inner())
@@ -440,6 +463,7 @@ impl Runtime {
                     self.ajm.shutdown();
                     self.audio.shutdown();
                     self.guest_timing.shutdown();
+                    self.semaphores.shutdown();
                 }
                 Outcome { value, reason }
             }
@@ -450,6 +474,7 @@ impl Runtime {
                 self.ajm.shutdown();
                 self.audio.shutdown();
                 self.guest_timing.shutdown();
+                self.semaphores.shutdown();
                 Outcome {
                     value: 0,
                     reason: if error == Error::Interrupted {
@@ -491,7 +516,11 @@ impl Access<'_> {
         for (_, s) in storage.iter() {
             regions.extend(s.native_regions());
         }
-        f(&regions)
+        r.memory_resources.with_regions(|extra| {
+            let mut combined = regions.clone();
+            combined.extend_from_slice(extra);
+            f(&combined)
+        })
     }
 }
 impl GuestMemory for Access<'_> {
