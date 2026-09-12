@@ -1,2 +1,46 @@
-//! Planned filesystem ownership within astero-libs.
-//! Structural home only; no additional functionality or capability is implemented.
+//! Exact filesystem guest exports; mechanisms remain kernel-owned.
+mod adapter;
+pub use adapter::registrations;
+pub const EXPORTS: &[(&str, u64, &str, &str)] = &[
+    ("sceKernelOpen", 0xD46DE51751A0D64F, "open", "sce"),
+    ("sceKernelClose", 0x50AD939760D6527B, "close", "sce"),
+    ("sceKernelRead", 0x0A0E2CAD9E9329B5, "read", "sce"),
+    ("sceKernelWrite", 0xE304B37BDD8184B2, "write", "sce"),
+    ("sceKernelPread", 0xFABDEB305C08B55E, "pread", "sce"),
+    ("sceKernelPwrite", 0x9CA5A2FCDD87055E, "pwrite", "sce"),
+    ("sceKernelLseek", 0xA226FBE85FF5D9F9, "seek", "sce"),
+    ("sceKernelStat", 0x795F70003DAB8880, "stat", "sce"),
+    ("sceKernelFstat", 0x901C023EC617FE6E, "fstat", "sce"),
+    ("sceKernelFtruncate", 0x556DD355988CE3F1, "truncate", "sce"),
+    (
+        "sceKernelCheckReachability",
+        0xB96C96DEFF7CB14E,
+        "access",
+        "sce",
+    ),
+    ("open", 0xC2E0ABA081A3B768, "open", "posix"),
+    ("close", 0x6D8FCF3BA261CE14, "close", "posix"),
+    ("read", 0x02A062A02DAF1772, "read", "posix"),
+    ("write", 0x14DE2068F9AE155F, "write", "posix"),
+    ("pread", 0x7B3BFF45204D2AA2, "pread", "posix"),
+    ("pwrite", 0xB6909FDBC92E6B3, "pwrite", "posix"),
+    ("lseek", 0x3B2E88A7082D60E9, "seek", "posix"),
+    ("ftruncate", 0x8A1E020FDFE08213, "truncate", "posix"),
+    ("fopen", 0xC5E60EE2EEEEC89D, "fopen", "libc"),
+    ("fclose", 0xBA874B632522A76D, "fclose", "libc"),
+    ("fread", 0x95B07E52566A546D, "fread", "libc"),
+    ("fwrite", 0x329C61321F1016BA, "fwrite", "libc"),
+    ("fseek", 0xAD0155057A7F0B18, "fseek", "libc"),
+    ("ftell", 0x41ACF2F0B9974EFC, "ftell", "libc"),
+    ("rewind", 0xDD020F221FC60E3C, "rewind", "libc"),
+    ("feof", 0x2F170453E202BBC5, "feof", "libc"),
+    ("ferror", 0x007C7284DF7A772E, "ferror", "libc"),
+    ("fflush", 0x3148C2E256C7ACAE, "fflush", "libc"),
+    ("fileno", 0x166FDD9B2CB01FD4, "fileno", "libc"),
+    ("fstat", 0x9AA40C875CCF3D3F, "fstat", "libc"),
+    ("stat", 0x13A6A8DF8C0FC3E5, "stat", "libc"),
+    ("fgetc", 0x004B85DC5D9FF130, "fgetc", "libc"),
+    ("fputc", 0x6992BC94D7A2FD0C, "fputc", "libc"),
+    ("fgets", 0x29D3FF9D42E9B86C, "fgets", "libc"),
+    ("fputs", 0x42B659749F17B17D, "fputs", "libc"),
+];

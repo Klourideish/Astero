@@ -8,3 +8,5 @@ pub mod audio;
 pub mod time;
 
 pub mod allocator;
+
+pub mod stat;

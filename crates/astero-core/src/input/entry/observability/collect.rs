@@ -45,6 +45,20 @@ pub(super) fn subsystem(k: &ProviderKey) -> &'static str {
 }
 pub(super) fn runtime(r: &Runtime, s: &mut Snapshot) {
     use astero_kernel::{synchronization::owned::Kind, threading::thread::lifecycle::State};
+    let f = r.filesystem.snapshot();
+    s.filesystem = Filesystem {
+        open: f.open,
+        streams: f.streams,
+        peak: f.peak,
+        opens: f.opens,
+        closes: f.closes,
+        bytes_read: f.read,
+        bytes_written: f.written,
+        seeks: f.seeks,
+        stats: f.stats,
+        failures: f.failures,
+        last_guest_path: f.last_path,
+    };
     let modules = r.modules.snapshot();
     s.modules = Modules {
         loaded: modules.records.iter().filter(|r| r.references > 0).count(),
@@ -83,6 +97,8 @@ pub(super) fn runtime(r: &Runtime, s: &mut Snapshot) {
         mappings: resources.mappings.len(),
         allocations_total: resources.allocated_total,
         mappings_total: resources.mapped_total,
+        unmaps_total: resources.unmapped_total,
+        mapped_bytes: resources.mappings.iter().map(|m| m.size).sum(),
         semaphores: sema.objects.len(),
         semaphore_waiters: sema.waiting_threads.len(),
         waits: sema.waits,
@@ -137,6 +153,21 @@ pub(super) fn runtime(r: &Runtime, s: &mut Snapshot) {
     s.allocations_live = heap.live;
     s.allocations_peak = heap.peak_live;
     providers(r.metrics.snapshot(), s);
+    if !s.filesystem.last_guest_path.is_empty() {
+        let h = s.subsystems.get_mut("Filesystem").unwrap();
+        h.state = if s.filesystem.failures > 0 {
+            Health::Partial
+        } else {
+            Health::Active
+        };
+        h.detail = format!(
+            "open={} read={} written={} failures={}",
+            s.filesystem.open,
+            s.filesystem.bytes_read,
+            s.filesystem.bytes_written,
+            s.filesystem.failures
+        );
+    }
     if s.modules.load_requests > 0 {
         let h = s
             .subsystems

@@ -50,3 +50,5 @@ M42 process/guards owns bounded static-initializer exclusion using existing sync
 M44 execution/host/sampling aggregates optional actual-PC captures in the existing owned watchdog. Synchronization exposes waiter identities and shutdown cancellations; thread storage exposes committed bytes and the table reports peak live/starting records. No new guest behavior. See [runtime observability](../../knowledge/architecture/runtime_observability.md).
 
 M45 objects/memory and synchronization/semaphore own bounded direct-offset resources and M25-backed counting waits; both real workload frontiers advanced with clean teardown. See [kernel resources](../../knowledge/architecture/kernel_resources.md) for limits and evidence.
+
+M47 filesystem owns bounded descriptors, explicit app0/data mounts and host I/O; see [filesystem startup](../../knowledge/architecture/filesystem_startup.md).

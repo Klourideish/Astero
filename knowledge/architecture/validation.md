@@ -2218,3 +2218,25 @@ the artifact test proves refusal, not loading. The stats caller establishes the
 40-byte version-one representation and consumed lanes, while peak-lane semantics
 remain experimental. No additional interactive dashboard smoke is claimed:
 shared report integration and existing rendering regressions were validated.
+
+## M47 filesystem and VM validation
+
+Full workspace formatting, all-target check/build, warnings-denied Clippy and
+Rust tests pass: 729 executable tests and23 doctests. M47 adds28 meaningful tests:
+19 filesystem owner/path/lifecycle/concurrency,7 guest adapter/stdio/stat/preflight,
+1 whole-view SCE unmap/backing-preservation and1 additive filesystem JSON test.
+Existing supervisor, pthread workers, M45 resources and M46 stats/modules are
+included. A final short-write adapter check was followed by the libs suite and
+warnings-denied Clippy; metadata compatibility remains prototype-derived.
+All53 Python tests pass. Policy:16 members,26 edges,254 homes. Index freshness:
+4398 records (1757 implementations,138 subsystems,624 modules,413 NIDs,8 ABI,
+45 diagnostics,807 tests,606 sources);409 registered/4 observation-only NIDs.
+Whitespace checks cover both supplemental files and Git diff.
+
+Real scripts: `& ./target/m47-primary-1.ps1`, `& ./target/m47-second-1.ps1`.
+Primary passed Munmap, reached raw libc0x5CA45E82C1691299 in207.991ms; second
+opened/read420bytes/sought/closed boot.config and reached __getpctype in40.581ms.
+No additional guest execution followed. Both retained hashes, clean containment,
+joined threads, restored FS/preserved GS, zero native resources/waiters/tickets.
+Exact contexts, limits, limitations and evidence distinctions remain in
+[filesystem startup](filesystem_startup.md). No M48 scope is proposed.

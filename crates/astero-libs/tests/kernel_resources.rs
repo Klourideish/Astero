@@ -171,3 +171,25 @@ fn direct_query_exact_bytes() {
     assert_eq!(&m.bytes[32..40], &[3, 0, 0, 0, 0, 0, 0, 0]);
     assert_eq!(m.bytes[40], 0xaa);
 }
+
+#[test]
+fn sce_unmap_preserves_partial_and_backing() {
+    let s = Arc::new(MemoryResources::new());
+    let offset = s.allocate(0, DIRECT_SIZE, 65536, 65536, 0).unwrap();
+    let address = s.map(0, 65536, 3, 0, offset, 65536).unwrap();
+    let r = astero_libs::kernel::memory::registrations(s.clone(), 100);
+    let i = r
+        .iter()
+        .position(|r| r.key.nid == 0x71091EF54B8140E9)
+        .unwrap();
+    let mut m = Memory::new();
+    assert_ne!(invoke(&r, i, [address, 32768, 0, 0, 0, 0], &mut m).1, 0);
+    assert_eq!(s.snapshot().mappings.len(), 1);
+    assert_eq!(invoke(&r, i, [address, 65536, 0, 0, 0, 0], &mut m).1, 0);
+    assert!(s.snapshot().mappings.is_empty());
+    assert_eq!(s.snapshot().unmapped_total, 1);
+    assert_eq!(s.snapshot().allocations.len(), 1);
+    assert_ne!(invoke(&r, i, [address, 65536, 0, 0, 0, 0], &mut m).1, 0);
+    s.release(offset, 65536).unwrap();
+    s.shutdown();
+}

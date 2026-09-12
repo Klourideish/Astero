@@ -50,3 +50,5 @@ M43 media/ajm supplies checked lifecycle exports; libc/c11 reuses kernel synchro
 M45 kernel/memory and kernel/semaphore adapt exact kernel resource identities; owned mechanisms remain in kernel/memory.
 
 M46 sysmodule adapts seven lifecycle identities; libc/stats writes caller-corroborated version-one heap statistics. Unsupported module requests are not loaded modules.
+
+M47 filesystem adapters implement the descriptor/stdio cluster; kernel memory adds exact Munmap/Mprotect wrappers. See [filesystem startup](../../knowledge/architecture/filesystem_startup.md).

@@ -28,11 +28,13 @@ pub const MAX_REGISTERED_PROVIDERS: usize = 256
     + astero_libs::kernel::memory::EXPORTS.len()
     + astero_libs::kernel::semaphore::EXPORTS.len()
     + astero_libs::sysmodule::EXPORTS.len()
+    + astero_libs::filesystem::EXPORTS.len()
     + 1;
 /// Placement is runtime policy in a reserved-purpose address band; OS conflicts refuse creation.
 const WORKER_BASE: u64 = 0x240000000;
 const WORKER_STRIDE: u64 = 0x1000000;
 pub struct Runtime {
+    pub filesystem: Arc<astero_kernel::filesystem::service::Filesystem>,
     pub modules: Arc<astero_hle::providers::modules::Modules>,
     pub semaphores: Arc<astero_kernel::synchronization::semaphore::Semaphores>,
     pub memory_resources: Arc<astero_kernel::objects::memory::MemoryResources>,
@@ -99,6 +101,10 @@ impl Runtime {
             .try_reserve_exact(4096)
             .map_err(|_| ClosureError::Allocation)?;
         Ok(Arc::new(Self {
+            filesystem: Arc::new(astero_kernel::filesystem::service::Filesystem::new(
+                1024,
+                foundation.output.clone(),
+            )),
             modules: Arc::new(astero_hle::providers::modules::Modules::new(128)),
             semaphores: Arc::new(
                 astero_kernel::synchronization::semaphore::Semaphores::new(
@@ -190,6 +196,10 @@ impl Runtime {
             self.audio.clone(),
         ));
         let errno = storage.layout().thread_pointer + 8;
+        entries.extend(astero_libs::filesystem::registrations(
+            self.filesystem.clone(),
+            errno,
+        ));
         entries.extend(astero_libs::kernel::timing::registrations(
             self.guest_timing.clone(),
             thread,
@@ -279,6 +289,7 @@ impl Runtime {
         self.guest_timing.shutdown();
         self.semaphores.shutdown();
         self.table.reap_all();
+        self.filesystem.shutdown();
         self.memory_resources.shutdown();
         let _ = self.modules.shutdown();
         self.storage

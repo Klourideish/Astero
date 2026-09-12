@@ -17,11 +17,21 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
     use std::{io::Write, sync::Arc};
     let mut a = args.iter().cloned();
     let mut lower = Vec::new();
+    let mut title_root = None;
     let mut wall = None;
     let mut outer = None;
     let mut hle = None;
     let mut options = super::dashboard::Options::default();
     while let Some(k) = a.next() {
+        if k == "--title-root" {
+            if title_root.is_some() {
+                return Err("Duplicate title-root".into());
+            }
+            title_root = Some(std::path::PathBuf::from(
+                a.next().ok_or("Missing title-root")?,
+            ));
+            continue;
+        }
         if options.take(&k, &mut a)? {
             continue;
         }
@@ -93,6 +103,11 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
                 .into_owned()
         })
         .unwrap_or_else(|| "artifact".into());
+    let source_path = args
+        .windows(2)
+        .find(|a| a[0] == "--path")
+        .map(|a| std::path::PathBuf::from(&a[1]))
+        .ok_or("Missing source path")?;
     let observer = entry::observability::Observer::new(label, options.sample)?;
     let live = super::dashboard::Live::start(observer.clone(), &options);
     let result = entry::execute_first_entry_observed(
@@ -125,6 +140,7 @@ fn run_windows(args: Vec<OsString>, worker: bool) -> Result<(), String> {
                 .try_ready()
                 .map_err(|_| "PreparedBlocked; no execution".to_string())?;
             ready
+                .with_filesystem(&source_path, title_root)?
                 .with_call_budget(hle as usize)
                 .map_err(|e| format!("Call budget: {e:?}"))
         },

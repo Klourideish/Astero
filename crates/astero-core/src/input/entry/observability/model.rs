@@ -111,6 +111,9 @@ pub struct Teardown {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Snapshot {
     #[serde(default)]
+    pub filesystem: Filesystem,
+
+    #[serde(default)]
     pub modules: Modules,
     #[serde(default)]
     pub kernel_resources: KernelResources,
@@ -177,6 +180,10 @@ pub struct KernelResources {
     pub mappings: usize,
     pub allocations_total: u64,
     pub mappings_total: u64,
+    #[serde(default)]
+    pub unmaps_total: u64,
+    #[serde(default)]
+    pub mapped_bytes: u64,
     pub semaphores: usize,
     pub semaphore_waiters: usize,
     pub waits: u64,
@@ -200,4 +207,19 @@ impl Snapshot {
 }
 pub fn address(n: u64) -> String {
     format!("0x{n:x}")
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Filesystem {
+    pub open: usize,
+    pub streams: usize,
+    pub peak: usize,
+    pub opens: u64,
+    pub closes: u64,
+    pub bytes_read: u64,
+    pub bytes_written: u64,
+    pub seeks: u64,
+    pub stats: u64,
+    pub failures: u64,
+    pub last_guest_path: String,
 }

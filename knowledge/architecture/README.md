@@ -94,3 +94,5 @@ Other knowledge directories are reserved for focused evidence as work proceeds; 
 - [Kernel resource migration (M45)](kernel_resources.md): direct offsets, shared native views and counting semaphore lifecycle.
 
 - [M46 sysmodule and allocator continuation](sysmodule_allocator.md): declared-provider lifetime and real heap statistics; unsupported module coverage remains explicit.
+
+- [M47 filesystem startup](filesystem_startup.md): owned descriptors, stdio, explicit mounts and whole-view VM continuation.

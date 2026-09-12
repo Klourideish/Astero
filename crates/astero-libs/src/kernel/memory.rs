@@ -46,6 +46,9 @@ pub const EXPORTS: &[(&str, u64, &str)] = &[
         0xEE8C6FDCF3C2BA6A,
         "reserve",
     ),
+    ("sceKernelMunmap", 0x71091EF54B8140E9, "sceunmap"),
+    ("sceKernelMprotect", 0x03A66B3A6F21CB46, "sceprotect"),
+    ("sceKernelMprotect", 0xBD23009B77316136, "sceprotect"),
 ];
 fn out(m: &dyn GuestMemory, p: u64, n: u64) -> Result<(), AccessError> {
     if p == 0 {
@@ -120,11 +123,11 @@ fn run(
             }
             Ok(0)
         }
-        "unmap" => {
+        "unmap" | "sceunmap" => {
             s.unmap(a[0], a[1])?;
             Ok(0)
         }
-        "protect" => {
+        "protect" | "sceprotect" => {
             s.protect(a[0], a[1], a[2] as u32)?;
             Ok(0)
         }

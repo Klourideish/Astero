@@ -93,3 +93,18 @@ fn module_metrics_preserve_failed_request_without_claiming_load() {
     let old: Snapshot = serde_json::from_value(v).unwrap();
     assert_eq!(old.modules.load_requests, 0);
 }
+
+#[test]
+fn filesystem_snapshot_preserves_activity_and_defaults_old_schema() {
+    let mut s = Snapshot::preparing("test".into());
+    s.filesystem.opens = 1;
+    s.filesystem.bytes_read = 420;
+    s.filesystem.last_guest_path = "/app0/Media/boot.config".into();
+    let mut v = serde_json::to_value(&s).unwrap();
+    let read: Snapshot = serde_json::from_value(v.clone()).unwrap();
+    assert_eq!(read.filesystem.bytes_read, 420);
+    assert_eq!(read.filesystem.open, 0);
+    v.as_object_mut().unwrap().remove("filesystem");
+    let old: Snapshot = serde_json::from_value(v).unwrap();
+    assert_eq!(old.filesystem.opens, 0);
+}

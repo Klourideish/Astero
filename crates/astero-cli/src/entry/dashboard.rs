@@ -148,6 +148,13 @@ pub fn render(s: &Snapshot, verbose: bool) -> String {
         s.faults, s.supervisor_interventions, s.audio_ports, s.audio_buffers, s.audio_pending
     )
     .unwrap();
+    let f = &s.filesystem;
+    writeln!(
+        out,
+        "Files: open {} streams {} peak {} | read/write {}/{} B | failures {}",
+        f.open, f.streams, f.peak, f.bytes_read, f.bytes_written, f.failures
+    )
+    .unwrap();
     let modules = &s.modules;
     writeln!(
         out,
@@ -162,6 +169,12 @@ pub fn render(s: &Snapshot, verbose: bool) -> String {
     .unwrap();
     let k = &s.kernel_resources;
     writeln!(out,"Kernel: direct {} / {} B | mappings {} | sema {} waiters {} | waits/signals/timeouts {}/{}/{}",k.direct_allocations,k.direct_bytes,k.mappings,k.semaphores,k.semaphore_waiters,k.waits,k.signals,k.timeouts).unwrap();
+    writeln!(
+        out,
+        "VM maps/unmaps {}/{} | mapped {} B",
+        k.mappings_total, k.unmaps_total, k.mapped_bytes
+    )
+    .unwrap();
     for (name, h) in &s.subsystems {
         writeln!(
             out,

@@ -29,3 +29,5 @@ remain comparative-correlated. See [M39](../../knowledge/architecture/audio_spea
 M40 layouts/time encodes the 16-byte guest timespec explicitly; it does not reuse host layout.
 
 M46 layouts/allocator contains explicit experimental version-one managed-size encoding; field confidence is recorded in sysmodule_allocator.md.
+
+M47 layouts/stat encodes the prototype-corroborated 120-byte stat representation; metadata fields remain compatibility policy.

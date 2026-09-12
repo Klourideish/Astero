@@ -1058,3 +1058,26 @@ malloc_stats_fast query using the real heap and reached fopen (0xC5E60EE2EEEEC89
 Both runs restored FS/GS, joined workers, retained source hashes and released all resources.
 Stats peak-field semantics remain experimental. Artifact-backed module loading is not claimed.
 See [M46 evidence](knowledge/architecture/sysmodule_allocator.md) for exact contexts and limits.
+
+## M47 filesystem and VM continuation
+
+Use the M45/M46 first-entry commands and limits above with fresh output filenames.
+Exact validated local scripts: `& ./target/m47-primary-1.ps1` and
+`& ./target/m47-second-1.ps1`. Optional `--title-root <directory>` explicitly
+selects app0; it wins over structural code/data overlay detection. Without it,
+the executable parent is code root; a structurally title-shaped immediate parent
+is data root only when both have title structure. App0 is read-only. No implicit
+host-current-directory, system or savedata mount is supplied.
+
+REAL GUEST CODE WILL EXECUTE; trusted corpus only, not a security sandbox.
+Retain `--wall-ms 250 --containment-ms 15000 --max-hle-calls 65536`,
+`--no-dashboard --report-json <file> --log-file <file>` for comparable plain runs.
+Guest stdout/stderr uses the existing bounded capture, not terminal writes.
+The dashboard/JSON now includes filesystem open/stream/byte counters and VM
+map/unmap totals. No new interactive renderer claim is made in M47.
+
+Primary passed whole-view Munmap and reached raw libc NID0x5CA45E82C1691299.
+Second read420bytes from `/app0/Media/boot.config` and reached __getpctype,
+NID0xB143F58416A8B8EC. Both stopped cleanly with unchanged source hashes.
+See [M47 evidence](knowledge/architecture/filesystem_startup.md) for exact
+contexts, provider status, mount limitations and teardown evidence.

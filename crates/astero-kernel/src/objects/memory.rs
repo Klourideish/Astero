@@ -54,6 +54,7 @@ struct State {
     stopped: bool,
     allocated: u64,
     mapped: u64,
+    unmapped: u64,
 }
 #[derive(Clone, Debug)]
 pub struct Mapping {
@@ -71,6 +72,7 @@ pub struct Snapshot {
     pub mappings: Vec<Mapping>,
     pub allocated_total: u64,
     pub mapped_total: u64,
+    pub unmapped_total: u64,
     pub active_native_resources: u64,
     pub release_errors: Vec<u32>,
 }
@@ -176,6 +178,7 @@ impl MemoryResources {
                 stopped: false,
                 allocated: 0,
                 mapped: 0,
+                unmapped: 0,
             }),
         }
     }
@@ -368,6 +371,7 @@ impl MemoryResources {
                         }
                         Err(restore) => {
                             s.views.remove(i);
+                            s.unmapped += 1;
                             return Err(Error::Native(restore));
                         }
                     }
@@ -377,6 +381,7 @@ impl MemoryResources {
         };
         if let Some(i) = replacement {
             s.views.remove(i);
+            s.unmapped += 1;
         }
         s.observers.push(image.observer());
         s.views.push(View {
@@ -401,6 +406,7 @@ impl MemoryResources {
             .ok_or(Error::NotFound)?;
         s.views[i].image.release()?;
         s.views.remove(i);
+        s.unmapped += 1;
         Self::reap(&mut s);
         Ok(())
     }
@@ -493,6 +499,7 @@ impl MemoryResources {
             mappings: s.views.iter().map(|v| Self::mapping(&s, v)).collect(),
             allocated_total: s.allocated,
             mapped_total: s.mapped,
+            unmapped_total: s.unmapped,
             active_native_resources: s.observers.iter().map(|o| o.active_reservations()).sum(),
             release_errors: s
                 .observers

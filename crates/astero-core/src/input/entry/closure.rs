@@ -94,6 +94,24 @@ pub struct EntryReadyGuest {
     call_budget: usize,
 }
 impl EntryReadyGuest {
+    /// Configure explicit guest mounts before handing execution authority to the controller.
+    pub fn with_filesystem(
+        self,
+        executable: &std::path::Path,
+        title_root: Option<std::path::PathBuf>,
+    ) -> Result<Self, String> {
+        let mounts = astero_kernel::filesystem::mounts::Mounts::detect(executable, title_root)
+            .map_err(|e| format!("Mount: {e:?}"))?;
+        self.owner
+            .runtime
+            .as_ref()
+            .ok_or("Runtime unavailable")?
+            .filesystem
+            .configure(mounts)
+            .map_err(|e| format!("Mount: {e:?}"))?;
+        Ok(self)
+    }
+
     /// Explicit per-run admission/retention bound; no change to wall-clock supervision.
     pub fn with_call_budget(mut self, maximum: usize) -> Result<Self, BridgeError> {
         if !(1..=65_536).contains(&maximum) {
